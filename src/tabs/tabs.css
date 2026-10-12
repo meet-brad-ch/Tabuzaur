@@ -608,7 +608,7 @@ details.window > summary .count {
 .cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: 8px;
   align-items: start;
 }
 
@@ -647,7 +647,7 @@ details.window > summary .count {
   cursor: grabbing;
 }
 
-/* the insertion line sits in the gap between the tiles (the grid gap is 16px) */
+/* the insertion line sits in the gap between the tiles (the grid gap is 8px) */
 .card.insert-before::before,
 .card.insert-after::after {
   content: "";
@@ -661,11 +661,11 @@ details.window > summary .count {
 }
 
 .card.insert-before::before {
-  top: -10px;
+  top: -6px;
 }
 
 .card.insert-after::after {
-  bottom: -10px;
+  bottom: -6px;
 }
 
 .card .name {
