@@ -1,0 +1,17 @@
+# sw-project: local working log, never committed
+LOG.md
+
+# Node / Vite
+node_modules/
+dist/
+.vite/
+coverage/
+*.zip
+*.tsbuildinfo
+
+# IDE and OS
+.vs/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
