@@ -62,10 +62,12 @@ jobs:
         env:
           ZIP: ${{ steps.version.outputs.zip }}
         run: |
-          mkdir out
-          (cd dist && zip -r "../out/$ZIP" .)
-          (cd out && sha256sum "$ZIP" > SHA256SUMS && cat SHA256SUMS)
-          unzip -l "out/$ZIP"
+          out="$GITHUB_WORKSPACE/out"
+          mkdir "$out"
+          (cd dist && zip -r "$out/$ZIP" .)
+          test -f "$out/$ZIP"
+          (cd "$out" && sha256sum "$ZIP" > SHA256SUMS && cat SHA256SUMS)
+          unzip -l "$out/$ZIP"
 
       - uses: actions/upload-artifact@v7
         with:
