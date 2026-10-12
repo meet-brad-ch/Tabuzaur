@@ -647,11 +647,11 @@ details.window > summary .count {
 }
 
 .card.insert-before {
-  box-shadow: -4px 0 0 0 var(--accent), var(--shadow);
+  box-shadow: inset 0 4px 0 0 var(--accent), var(--shadow);
 }
 
 .card.insert-after {
-  box-shadow: 4px 0 0 0 var(--accent), var(--shadow);
+  box-shadow: inset 0 -4px 0 0 var(--accent), var(--shadow);
 }
 
 .card .name {

@@ -405,7 +405,7 @@ class TabsPage {
       if (transfer.types.includes(CARD_DRAG_TYPE)) {
         event.preventDefault();
         transfer.dropEffect = "move";
-        const after = isRightHalf(card, event);
+        const after = isLowerHalf(card, event);
         card.classList.toggle("insert-before", !after);
         card.classList.toggle("insert-after", after);
       } else if (transfer.types.includes(DRAG_TYPE)) {
@@ -424,7 +424,7 @@ class TabsPage {
       card.classList.remove("over", "insert-before", "insert-after");
       const movedId = event.dataTransfer?.getData(CARD_DRAG_TYPE) ?? "";
       if (movedId !== "") {
-        const place = this.book.collections.indexOf(collection) + (isRightHalf(card, event) ? 1 : 0);
+        const place = this.book.collections.indexOf(collection) + (isLowerHalf(card, event) ? 1 : 0);
         this.run(() => this.change(this.book.reorderCollection(movedId, place)));
         return;
       }
@@ -688,17 +688,12 @@ function startDrag(event: DragEvent, row: HTMLElement, payload: DragPayload): vo
   setTimeout(() => { row.classList.add("dragging"); }, 0);
 }
 
-/** Whether the pointer is in the lower half of the row: the drop goes after it. */
+/** Whether the pointer is in the lower half of the element: the drop goes after it. */
 function isLowerHalf(row: HTMLElement, event: DragEvent): boolean {
   const box = row.getBoundingClientRect();
   return event.clientY - box.top > box.height / 2;
 }
 
-/** Whether the pointer is in the right half of the card: the dragged card goes after it. */
-function isRightHalf(card: HTMLElement, event: DragEvent): boolean {
-  const box = card.getBoundingClientRect();
-  return event.clientX - box.left > box.width / 2;
-}
 
 /** Hands the viewer a text file to save. */
 function download(name: string, text: string): void {
