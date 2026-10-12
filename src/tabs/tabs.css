@@ -121,7 +121,8 @@ ul {
   border-radius: 4px;
 }
 
-.tab {
+.tab,
+.page {
   cursor: grab;
 }
 

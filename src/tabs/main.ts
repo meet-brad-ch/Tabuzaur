@@ -8,6 +8,20 @@ import { ChromeTabBrowser } from "../lib/tabs.ts";
 
 const DRAG_TYPE = "application/x-tabuzaur-page";
 
+/** What a drag carries: a page, and where it comes from when it is already in a collection. */
+interface DragPayload {
+  readonly page: SavedPage;
+  readonly from?: { readonly collectionId: string; readonly index: number };
+}
+
+function startDrag(event: DragEvent, payload: DragPayload): void {
+  if (event.dataTransfer === null) {
+    return;
+  }
+  event.dataTransfer.setData(DRAG_TYPE, JSON.stringify(payload));
+  event.dataTransfer.effectAllowed = payload.from === undefined ? "copy" : "move";
+}
+
 /** The Tabuzaur page: open tabs on the left, collections on the right, drag from left to right. */
 class TabsPage {
   private book = CollectionBook.empty();
@@ -137,10 +151,7 @@ class TabsPage {
       const page: SavedPage = tab.favIconUrl === undefined
         ? { title: tab.title, url: tab.url }
         : { title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl };
-      event.dataTransfer?.setData(DRAG_TYPE, JSON.stringify(page));
-      if (event.dataTransfer !== null) {
-        event.dataTransfer.effectAllowed = "copy";
-      }
+      startDrag(event, { page });
     });
     return row;
   }
@@ -168,7 +179,7 @@ class TabsPage {
     card.addEventListener("dragover", (event) => {
       if (event.dataTransfer?.types.includes(DRAG_TYPE) === true) {
         event.preventDefault();
-        event.dataTransfer.dropEffect = "copy";
+        event.dataTransfer.dropEffect = event.dataTransfer.effectAllowed === "move" ? "move" : "copy";
         card.classList.add("over");
       }
     });
@@ -180,8 +191,10 @@ class TabsPage {
       if (raw === "") {
         return;
       }
-      const page = JSON.parse(raw) as SavedPage;
-      this.run(() => this.change(this.book.addPage(collection.id, page)));
+      const { page, from } = JSON.parse(raw) as DragPayload;
+      this.run(() => this.change(from === undefined
+        ? this.book.addPage(collection.id, page)
+        : this.book.movePage(from.collectionId, from.index, collection.id)));
     });
     const header = el("header");
     header.append(this.nameField(collection));
@@ -198,6 +211,10 @@ class TabsPage {
     const list = el("ul");
     collection.pages.forEach((page, index) => {
       const row = el("li", "page");
+      row.draggable = true;
+      row.addEventListener("dragstart", (event) => {
+        startDrag(event, { page, from: { collectionId: collection.id, index } });
+      });
       const link = el("a") as HTMLAnchorElement;
       link.href = page.url;
       link.textContent = page.title;

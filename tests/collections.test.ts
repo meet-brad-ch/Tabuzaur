@@ -88,6 +88,29 @@ describe("CollectionBook.removePage", () => {
   });
 });
 
+describe("CollectionBook.movePage", () => {
+  it("appends the page to the target and removes it from the source", () => {
+    const book = bookWithTwo().movePage("id-2", 1, "id-1");
+    expect(book.get("id-1").pages).toEqual([pageA, pageB]);
+    expect(book.get("id-2").pages).toEqual([pageA]);
+  });
+
+  it("changes nothing when source and target are the same collection", () => {
+    const book = bookWithTwo();
+    expect(book.movePage("id-2", 0, "id-2")).toBe(book);
+  });
+
+  it("rejects a url already in the target, leaving the source untouched", () => {
+    expect(() => bookWithTwo().movePage("id-2", 0, "id-1")).toThrow("already in First");
+  });
+
+  it("fails on a missing page or collection", () => {
+    expect(() => bookWithTwo().movePage("id-1", 1, "id-2")).toThrow("no page at index 1");
+    expect(() => bookWithTwo().movePage("nope", 0, "id-2")).toThrow("no collection with id nope");
+    expect(() => bookWithTwo().movePage("id-2", 1, "nope")).toThrow("no collection with id nope");
+  });
+});
+
 describe("CollectionBook.search", () => {
   it("returns everything for a blank query", () => {
     expect(bookWithTwo().search("  ").length).toBe(2);

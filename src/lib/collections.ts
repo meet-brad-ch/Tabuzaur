@@ -66,6 +66,21 @@ export class CollectionBook {
     return this.replace(id, { ...collection, pages: collection.pages.filter((_, i) => i !== index) });
   }
 
+  /**
+   * Moves one page to the end of another collection. A URL already in the target is an error;
+   * a move onto the page's own collection changes nothing.
+   */
+  movePage(fromId: string, index: number, toId: string): CollectionBook {
+    if (fromId === toId) {
+      return this;
+    }
+    const page = this.get(fromId).pages[index];
+    if (page === undefined) {
+      throw new Error(`collection ${fromId} has no page at index ${String(index)}`);
+    }
+    return this.addPage(toId, page).removePage(fromId, index);
+  }
+
   /** Collections whose name, or any page title or url, contains the query (case-insensitive). */
   search(query: string): readonly Collection[] {
     const needle = query.trim().toLowerCase();
