@@ -56,11 +56,6 @@ button {
   cursor: pointer;
 }
 
-button.danger {
-  color: var(--danger);
-  font-weight: 600;
-}
-
 button.remove,
 button.edit {
   padding: 0 6px;
@@ -69,12 +64,26 @@ button.edit {
   background: none;
 }
 
-.page button.edit {
+.page button.edit,
+.card > header button.trash {
   visibility: hidden;
 }
 
-.page:hover button.edit {
+.page:hover button.edit,
+.card:hover > header button.trash {
   visibility: visible;
+}
+
+button.trash {
+  padding: 0 4px;
+  border: none;
+  background: none;
+  font-size: 15px;
+  line-height: 1;
+}
+
+button.trash:hover {
+  color: var(--danger);
 }
 
 .page input.title {

@@ -33,7 +33,6 @@ class TabsPage {
   private query = "";
   private renaming: string | undefined;
   private editingPage: { collectionId: string; index: number } | undefined;
-  private pendingDelete: string | undefined;
 
   constructor(
     private readonly root: HTMLElement,
@@ -232,7 +231,7 @@ class TabsPage {
   /** The link and its edit button, or an input while the title is being edited. */
   private pageTitle(collection: Collection, page: SavedPage, index: number): HTMLElement[] {
     const editing = this.editingPage;
-    if (editing === undefined || editing.collectionId !== collection.id || editing.index !== index) {
+    if (editing?.collectionId !== collection.id || editing.index !== index) {
       const link = el("a") as HTMLAnchorElement;
       link.href = page.url;
       link.textContent = page.title;
@@ -311,21 +310,21 @@ class TabsPage {
     return input;
   }
 
+  /** A trash icon, shown on hover; deleting asks first. */
   private deleteButton(collection: Collection): HTMLElement {
-    if (this.pendingDelete === collection.id) {
-      return button("Confirm delete", () => {
+    const trash = button("🗑", () => {
+      const count = collection.pages.length;
+      const question = `Delete the collection "${collection.name}" with ${String(count)} ${count === 1 ? "link" : "links"}?`;
+      if (window.confirm(question)) {
         this.run(() => this.change(this.book.remove(collection.id)));
-      }, "button", "danger");
-    }
-    return button("Delete", () => {
-      this.pendingDelete = collection.id;
-      this.renderCollections();
-    });
+      }
+    }, "button", "trash");
+    trash.title = "Delete this collection";
+    return trash;
   }
 
   private async change(next: CollectionBook): Promise<void> {
     this.book = next;
-    this.pendingDelete = undefined;
     await this.persistence.save(this.book.toData());
   }
 
