@@ -1,7 +1,7 @@
 import { backupFileName, parseBackup, serializeBackup } from "../lib/backup.ts";
 import { CollectionBook, findMatch } from "../lib/collections.ts";
 import type { Clock, Collection, IdSource, SavedPage } from "../lib/model.ts";
-import { RandomIdSource, SystemClock } from "../lib/model.ts";
+import { HUE_COUNT, RandomIdSource, SystemClock } from "../lib/model.ts";
 import type { Persistence, Theme } from "../lib/storage.ts";
 import { LocalPersistence, THEMES, ThemeStore } from "../lib/storage.ts";
 import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
@@ -10,7 +10,6 @@ import { hostnameOf, hueOf, initialOf } from "../lib/urls.ts";
 
 const DRAG_TYPE = "application/x-tabuzaur-page";
 const CARD_DRAG_TYPE = "application/x-tabuzaur-collection";
-const HUE_COUNT = 16;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /** Stroke icons, 24-unit grid, drawn with currentColor. */
@@ -91,7 +90,11 @@ class TabsPage {
 
   private async loadBook(): Promise<void> {
     const data = await this.persistence.load();
-    this.book = data === undefined ? CollectionBook.empty() : CollectionBook.fromData(data);
+    const loaded = data === undefined ? CollectionBook.empty() : CollectionBook.fromData(data);
+    this.book = loaded.assignHues();
+    if (this.book !== loaded) {
+      await this.persistence.save(this.book.toData());  // a pre-0.3.0 document: colors are stamped once
+    }
   }
 
   /** Resolves "system" to the OS choice, so the stylesheet only knows light and dark. */
@@ -387,7 +390,7 @@ class TabsPage {
       return;
     }
     const cards = el("div", "cards");
-    cards.append(...shown.map((c) => this.card(c, this.book.collections.indexOf(c) % HUE_COUNT)));
+    cards.append(...shown.map((c) => this.card(c, c.hue ?? this.book.collections.indexOf(c) % HUE_COUNT)));
     main.append(cards);
     this.justAdded = undefined;
   }
@@ -657,7 +660,7 @@ class TabsPage {
   // ---- state changes ----------------------------------------------------------------------
 
   private async change(next: CollectionBook): Promise<void> {
-    this.book = next;
+    this.book = next.assignHues();  // an imported document may lack colors
     await this.persistence.save(this.book.toData());
   }
 

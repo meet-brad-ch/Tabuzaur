@@ -67,6 +67,8 @@ the stored document itself, so it is also the way to carry collections to anothe
   in that collection is refused with a visible notice. Clicking a link activates the open tab with
   exactly that URL, or opens a new tab. Links are reordered by drag within and across collections;
   a collection is moved by dragging its header band onto the left or right half of another card.
+  Each collection keeps its color: a new one takes the least-used of the sixteen, and the hue is
+  stored with the collection and travels in backups.
 - The welcome page is Chrome's startup-page setting, not a new-tab override, so Ctrl+T stays
   Chrome's and the owner opts in.
 - Pure logic (collections, store parser, URL helpers, theme store) sits in `src/lib/` behind

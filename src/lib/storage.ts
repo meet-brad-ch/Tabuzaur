@@ -1,5 +1,5 @@
 import type { Collection, SavedPage, StoreData } from "./model.ts";
-import { SCHEMA_VERSION, STORAGE_KEY } from "./model.ts";
+import { HUE_COUNT, SCHEMA_VERSION, STORAGE_KEY } from "./model.ts";
 
 /** Where the store document lives. */
 export interface Persistence {
@@ -71,12 +71,19 @@ function parseCollection(raw: unknown, index: number): Collection {
   if (!Array.isArray(pages)) {
     throw new Error(`${where}.pages is not an array`);
   }
-  return {
+  const collection: Collection = {
     id: asString(c.id, `${where}.id`),
     name: asString(c.name, `${where}.name`),
     createdAt: asString(c.createdAt, `${where}.createdAt`),
     pages: pages.map((t: unknown, j) => parsePage(t, `${where}.pages[${String(j)}]`)),
   };
+  if (c.hue === undefined) {
+    return collection;
+  }
+  if (typeof c.hue !== "number" || !Number.isInteger(c.hue) || c.hue < 0 || c.hue >= HUE_COUNT) {
+    throw new Error(`${where}.hue is not an integer in 0..${String(HUE_COUNT - 1)}`);
+  }
+  return { ...collection, hue: c.hue };
 }
 
 function parsePage(raw: unknown, where: string): SavedPage {

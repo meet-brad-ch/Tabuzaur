@@ -1,5 +1,5 @@
 import type { Clock, Collection, IdSource, SavedPage, StoreData } from "./model.ts";
-import { SCHEMA_VERSION } from "./model.ts";
+import { HUE_COUNT, SCHEMA_VERSION } from "./model.ts";
 
 /**
  * The immutable list of collections with every operation the pages need.
@@ -20,15 +20,46 @@ export class CollectionBook {
     return { schemaVersion: SCHEMA_VERSION, collections: this.collections };
   }
 
-  /** Appends an empty collection. The name is trimmed; an empty name is an error. */
+  /** Appends an empty collection with the next free color. The name is trimmed; an empty name is an error. */
   create(name: string, clock: Clock, ids: IdSource): CollectionBook {
     const created: Collection = {
       id: ids.next(),
       name: validName(name),
       createdAt: clock.now().toISOString(),
       pages: [],
+      hue: this.nextHue(),
     };
     return new CollectionBook([...this.collections, created]);
+  }
+
+  /**
+   * The least-used hue, looking from the one after the last collection's hue, so neighbours
+   * differ and the palette is spent evenly.
+   */
+  nextHue(): number {
+    const counts = new Array<number>(HUE_COUNT).fill(0);
+    for (const c of this.collections) {
+      if (c.hue !== undefined) {
+        counts[c.hue] = (counts[c.hue] ?? 0) + 1;
+      }
+    }
+    const last = this.collections[this.collections.length - 1]?.hue ?? -1;
+    let best = (last + 1) % HUE_COUNT;
+    for (let step = 0; step < HUE_COUNT; step++) {
+      const hue = (last + 1 + step) % HUE_COUNT;
+      if ((counts[hue] ?? 0) < (counts[best] ?? 0)) {
+        best = hue;
+      }
+    }
+    return best;
+  }
+
+  /** Gives every collection without a hue the color it shows today (its position), so colors stick from now on. */
+  assignHues(): CollectionBook {
+    if (this.collections.every((c) => c.hue !== undefined)) {
+      return this;
+    }
+    return new CollectionBook(this.collections.map((c, i) => (c.hue === undefined ? { ...c, hue: i % HUE_COUNT } : c)));
   }
 
   get(id: string): Collection {

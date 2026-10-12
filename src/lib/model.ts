@@ -12,7 +12,12 @@ export interface Collection {
   /** ISO 8601 timestamp. */
   readonly createdAt: string;
   readonly pages: readonly SavedPage[];
+  /** Index into the card palette, 0 .. HUE_COUNT - 1; absent in documents written before 0.3.0. */
+  readonly hue?: number;
 }
+
+/** The number of card colors in the stylesheet's palette. */
+export const HUE_COUNT = 16;
 
 /** The whole persisted document, as stored under {@link STORAGE_KEY}. */
 export interface StoreData {

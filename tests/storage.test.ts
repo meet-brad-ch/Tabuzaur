@@ -41,6 +41,13 @@ describe("parseStoreData", () => {
     expect("favIconUrl" in (parsed.collections[0]?.pages[0] ?? {})).toBe(false);
   });
 
+  it("keeps a valid hue and rejects a bad one", () => {
+    expect(parseStoreData({ schemaVersion: 1, collections: [{ ...collection, hue: 15 }] }).collections[0]?.hue).toBe(15);
+    for (const hue of [16, -1, 1.5, "3"]) {
+      expect(() => parseStoreData({ schemaVersion: 1, collections: [{ ...collection, hue }] })).toThrow("collections[0].hue is not an integer in 0..15");
+    }
+  });
+
   it("reads the pre-0.1.0 field name tabs as pages", () => {
     const { pages, ...rest } = collection;
     expect(parseStoreData({ schemaVersion: 1, collections: [{ ...rest, tabs: pages }] })).toEqual(valid);

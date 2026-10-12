@@ -20,7 +20,7 @@ describe("CollectionBook.create", () => {
   it("appends an empty collection with a trimmed name, id and timestamp", () => {
     const book = CollectionBook.empty().create("  Work  ", clock, new CountingIdSource());
     expect(book.collections).toEqual([
-      { id: "id-1", name: "Work", createdAt: "2026-10-12T10:00:00.000Z", pages: [] },
+      { id: "id-1", name: "Work", createdAt: "2026-10-12T10:00:00.000Z", pages: [], hue: 0 },
     ]);
     expect(bookWithTwo().collections.map((c) => c.name)).toEqual(["First", "Second"]);
   });
@@ -33,6 +33,47 @@ describe("CollectionBook.create", () => {
     const empty = CollectionBook.empty();
     empty.create("Work", clock, new CountingIdSource());
     expect(empty.collections).toEqual([]);
+  });
+});
+
+describe("CollectionBook hues", () => {
+  const ids = (): CountingIdSource => new CountingIdSource();
+
+  it("gives new collections the next hue, in order", () => {
+    const source = ids();
+    const book = CollectionBook.empty().create("A", clock, source).create("B", clock, source).create("C", clock, source);
+    expect(book.collections.map((c) => c.hue)).toEqual([0, 1, 2]);
+  });
+
+  it("continues after the last collection's hue and prefers hues used least", () => {
+    const seed = { schemaVersion: 1 as const, collections: [
+      { id: "a", name: "A", createdAt: "x", pages: [], hue: 3 },
+      { id: "b", name: "B", createdAt: "x", pages: [], hue: 4 },
+      { id: "c", name: "C", createdAt: "x", pages: [], hue: 3 },
+    ] };
+    expect(CollectionBook.fromData(seed).nextHue()).toBe(5);
+    const full = { schemaVersion: 1 as const, collections: Array.from({ length: 16 }, (_, i) => ({ id: String(i), name: String(i), createdAt: "x", pages: [], hue: i })) };
+    expect(CollectionBook.fromData(full).nextHue()).toBe(0);
+    const uneven = { schemaVersion: 1 as const, collections: [...full.collections, { id: "x", name: "x", createdAt: "x", pages: [], hue: 0 }] };
+    expect(CollectionBook.fromData(uneven).nextHue()).toBe(1);
+  });
+
+  it("assigns missing hues by position and leaves set ones alone", () => {
+    const data = { schemaVersion: 1 as const, collections: [
+      { id: "a", name: "A", createdAt: "x", pages: [] },
+      { id: "b", name: "B", createdAt: "x", pages: [], hue: 9 },
+      { id: "c", name: "C", createdAt: "x", pages: [] },
+    ] };
+    const book = CollectionBook.fromData(data);
+    expect(book.assignHues().collections.map((c) => c.hue)).toEqual([0, 9, 2]);
+    const stamped = book.assignHues();
+    expect(stamped.assignHues()).toBe(stamped);
+  });
+
+  it("keeps the hue when a collection is moved", () => {
+    const source = ids();
+    const book = CollectionBook.empty().create("A", clock, source).create("B", clock, source).reorderCollection("id-1", 2);
+    expect(book.collections.map((c) => [c.id, c.hue])).toEqual([["id-2", 1], ["id-1", 0]]);
   });
 });
 
