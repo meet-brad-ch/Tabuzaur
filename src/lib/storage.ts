@@ -6,6 +6,8 @@ export interface Persistence {
   /** The stored document, or undefined when nothing was ever saved. */
   load(): Promise<StoreData | undefined>;
   save(data: StoreData): Promise<void>;
+  /** Calls the listener after the document was saved, by this page or another one. */
+  onChange(listener: () => void): void;
 }
 
 /** The part of chrome.storage.local this module uses; a fake implements it in tests. */
@@ -14,9 +16,25 @@ export interface KeyValueArea {
   set(items: Record<string, unknown>): Promise<void>;
 }
 
+/** The part of chrome.storage.onChanged this module uses. */
+export interface ChangeEvent {
+  addListener(callback: (changes: Record<string, unknown>) => void): void;
+}
+
 /** Persistence in a key-value area such as chrome.storage.local. Never syncs. */
 export class LocalPersistence implements Persistence {
-  constructor(private readonly area: KeyValueArea) {}
+  constructor(
+    private readonly area: KeyValueArea,
+    private readonly changes: ChangeEvent,
+  ) {}
+
+  onChange(listener: () => void): void {
+    this.changes.addListener((changes) => {
+      if (STORAGE_KEY in changes) {
+        listener();
+      }
+    });
+  }
 
   async load(): Promise<StoreData | undefined> {
     const items = await this.area.get(STORAGE_KEY);

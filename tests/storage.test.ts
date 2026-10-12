@@ -2,18 +2,18 @@ import { describe, expect, it } from "vitest";
 import { CollectionBook } from "../src/lib/collections.ts";
 import { STORAGE_KEY } from "../src/lib/model.ts";
 import { LocalPersistence, parseStoreData } from "../src/lib/storage.ts";
-import { CountingIdSource, FixedClock, MemoryArea, pageA, pageB } from "./fakes.ts";
+import { CountingIdSource, FixedClock, MemoryArea, noChanges, pageA, pageB } from "./fakes.ts";
 
 const clock = new FixedClock("2026-10-12T10:00:00.000Z");
 
 describe("LocalPersistence", () => {
   it("loads undefined when nothing was saved", async () => {
-    expect(await new LocalPersistence(new MemoryArea()).load()).toBeUndefined();
+    expect(await new LocalPersistence(new MemoryArea(), noChanges).load()).toBeUndefined();
   });
 
   it("round-trips a book through the area under the storage key", async () => {
     const area = new MemoryArea();
-    const persistence = new LocalPersistence(area);
+    const persistence = new LocalPersistence(area, noChanges);
     const book = CollectionBook.empty()
       .create("Work", clock, new CountingIdSource())
       .addPage("id-1", pageA)
@@ -26,7 +26,7 @@ describe("LocalPersistence", () => {
   it("fails loudly on a document it does not understand", async () => {
     const area = new MemoryArea();
     area.seed(STORAGE_KEY, { schemaVersion: 2, collections: [] });
-    await expect(new LocalPersistence(area).load()).rejects.toThrow("unsupported schemaVersion 2");
+    await expect(new LocalPersistence(area, noChanges).load()).rejects.toThrow("unsupported schemaVersion 2");
   });
 });
 

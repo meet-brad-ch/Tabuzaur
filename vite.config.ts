@@ -1,6 +1,6 @@
 import { defineConfig } from "vitest/config";
 
-// The popup is the only entry. Output names are fixed (no hashes) so manifest.json can name
+// Two entries: the toolbar popup and the Tabuzaur page. Output names are fixed (no hashes) so manifest.json can name
 // them; public/manifest.json is copied verbatim into dist/.
 export default defineConfig({
   build: {
@@ -8,10 +8,10 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: false,
     rollupOptions: {
-      input: { popup: "popup.html" },
+      input: { popup: "popup.html", tabs: "tabs.html" },
       output: {
         entryFileNames: "[name].js",
-        chunkFileNames: "[name].js",
+        chunkFileNames: "chunks/[name].js",
         assetFileNames: "[name][extname]",
       },
     },

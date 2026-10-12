@@ -1,5 +1,5 @@
 import type { Clock, IdSource, SavedPage } from "../src/lib/model.ts";
-import type { KeyValueArea } from "../src/lib/storage.ts";
+import type { ChangeEvent, KeyValueArea } from "../src/lib/storage.ts";
 
 export class FixedClock implements Clock {
   constructor(private readonly iso: string) {}
@@ -43,4 +43,11 @@ export const pageB: SavedPage = {
   title: "Docs",
   url: "https://docs.example.com/x",
   favIconUrl: "https://docs.example.com/i.png",
+};
+
+/** A change event that never fires. */
+export const noChanges: ChangeEvent = {
+  addListener(): void {
+    // nothing changes in these tests
+  },
 };
