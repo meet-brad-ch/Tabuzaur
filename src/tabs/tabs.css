@@ -412,18 +412,93 @@ dialog.import .actions button.primary {
 
 /* ---- layout ------------------------------------------------------------------------------- */
 
+/* ---- layout: the sidebar is a flyout over the collections unless pinned ----------------- */
+
 .layout {
+  position: relative;
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 32px 1fr;
   min-height: 0;
 }
 
+.layout.pinned {
+  grid-template-columns: 340px 1fr;
+}
+
+.rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 14px;
+  background: var(--panel);
+  border-right: 1px solid var(--line);
+  color: var(--muted);
+  cursor: default;
+  user-select: none;
+}
+
+.rail .label {
+  writing-mode: vertical-rl;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rail .count {
+  min-width: 20px;
+  padding: 1px 5px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.layout.pinned .rail {
+  display: none;
+}
+
 aside {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 3;
+  width: 340px;
   min-height: 0;
   overflow-y: auto;
   padding: 0 12px 16px;
   background: var(--panel);
   border-right: 1px solid var(--line);
+  box-shadow: var(--shadow-lift);
+  transform: translateX(-100%);
+  transition: transform 160ms ease-out;
+}
+
+/* hovering the rail or the panel itself keeps it out; a drag from it ends with the pointer elsewhere, so it folds back */
+.layout:has(.rail:hover) aside,
+aside:hover {
+  transform: none;
+}
+
+.layout.pinned aside {
+  position: static;
+  transform: none;
+  box-shadow: none;
+}
+
+.side-head .title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+button.pin.on {
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 
 main {
@@ -826,7 +901,7 @@ button.remove:hover {
     grid-template-columns: 1fr;
   }
 
-  aside {
+  .layout.pinned aside {
     max-height: 40vh;
     border-right: none;
     border-bottom: 1px solid var(--line);

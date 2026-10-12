@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CollectionBook } from "../src/lib/collections.ts";
 import { STORAGE_KEY } from "../src/lib/model.ts";
-import { LocalPersistence, parseStoreData, THEME_KEY, ThemeStore } from "../src/lib/storage.ts";
+import { FlagStore, LocalPersistence, parseStoreData, SIDEBAR_PINNED_KEY, THEME_KEY, ThemeStore } from "../src/lib/storage.ts";
 import { CountingIdSource, FixedClock, MemoryArea, noChanges, pageA, pageB } from "./fakes.ts";
 
 const clock = new FixedClock("2026-10-12T10:00:00.000Z");
@@ -81,5 +81,22 @@ describe("ThemeStore", () => {
     const area = new MemoryArea();
     area.seed(THEME_KEY, "sepia");
     await expect(new ThemeStore(area).load()).rejects.toThrow('unknown theme "sepia"');
+  });
+});
+
+describe("FlagStore", () => {
+  it("is false until saved, then round-trips, under its own key", async () => {
+    const area = new MemoryArea();
+    const store = new FlagStore(area, SIDEBAR_PINNED_KEY);
+    expect(await store.load()).toBe(false);
+    await store.save(true);
+    expect(await store.load()).toBe(true);
+    expect(Object.keys(await area.get(STORAGE_KEY))).toEqual([]);
+  });
+
+  it("fails on a value that is not a boolean", async () => {
+    const area = new MemoryArea();
+    area.seed(SIDEBAR_PINNED_KEY, "yes");
+    await expect(new FlagStore(area, SIDEBAR_PINNED_KEY).load()).rejects.toThrow('tabuzaur-sidebar-pinned is not a boolean: "yes"');
   });
 });

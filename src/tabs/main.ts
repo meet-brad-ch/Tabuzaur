@@ -3,7 +3,7 @@ import { CollectionBook, findMatch } from "../lib/collections.ts";
 import type { Clock, Collection, IdSource, SavedPage } from "../lib/model.ts";
 import { HUE_COUNT, RandomIdSource, SystemClock } from "../lib/model.ts";
 import type { Persistence, Theme } from "../lib/storage.ts";
-import { LocalPersistence, THEMES, ThemeStore } from "../lib/storage.ts";
+import { FlagStore, LocalPersistence, SIDEBAR_PINNED_KEY, THEMES, ThemeStore } from "../lib/storage.ts";
 import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
 import { ChromeTabBrowser } from "../lib/tabs.ts";
 import { hostnameOf, hueOf, initialOf } from "../lib/urls.ts";
@@ -21,6 +21,7 @@ const ICONS = {
   moon: '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/>',
   auto: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18Z" fill="currentColor"/>',
   chevron: '<path d="m9 6 6 6-6 6"/>',
+  pin: '<path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3H7l3-3z"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/>',
@@ -51,6 +52,7 @@ class TabsPage {
   private query = "";
   private tabQuery = "";
   private theme: Theme = "system";
+  private pinned = false;
   private shortcut = "";
   private renaming: string | undefined;
   private editingPage: PageRef | undefined;
@@ -64,6 +66,7 @@ class TabsPage {
     private readonly ownUrl: string,
     private readonly persistence: Persistence,
     private readonly themes: ThemeStore,
+    private readonly sidebarPinned: FlagStore,
     private readonly browser: TabBrowser,
     private readonly clock: Clock,
     private readonly ids: IdSource,
@@ -71,6 +74,7 @@ class TabsPage {
 
   async start(): Promise<void> {
     this.theme = await this.themes.load();
+    this.pinned = await this.sidebarPinned.load();
     this.applyTheme();
     this.darkSystem.addEventListener("change", () => { this.applyTheme(); });
     await this.loadBook();
@@ -267,18 +271,44 @@ class TabsPage {
     return toggle;
   }
 
+  /** Pinned: a two-column grid. Unpinned: the sidebar is a flyout over the collections, opened by hovering the rail. */
   private layout(): HTMLElement {
-    const layout = el("div", "layout");
+    const layout = el("div", this.pinned ? "layout pinned" : "layout");
+    const rail = el("div", "rail");
     const aside = el("aside");
     const main = el("main");
-    layout.append(aside, main);
+    layout.append(rail, aside, main);
     this.fillSidebar(aside);
+    this.fillRail(rail);
     this.fillCollections(main);
     return layout;
   }
 
+  private fillRail(rail: HTMLElement): void {
+    const count = this.openTabs.filter((t) => t.url !== this.ownUrl).length;
+    const label = el("span", "label");
+    label.textContent = "Open tabs";
+    const badge = el("span", "count");
+    badge.textContent = String(count);
+    rail.replaceChildren(badge, label);
+    rail.title = "Rest the pointer here to see the open tabs";
+  }
+
+  private pinButton(): HTMLElement {
+    const pin = button(() => {
+      this.run(async () => {
+        this.pinned = !this.pinned;
+        await this.sidebarPinned.save(this.pinned);
+      });
+    }, "button", this.pinned ? "icon pin on" : "icon pin");
+    pin.append(icon("pin"));
+    pin.title = this.pinned ? "Unpin: the panel slides in on hover" : "Pin the panel open";
+    return pin;
+  }
+
   private renderSidebar(): void {
     this.fillSidebar(this.must("aside"));
+    this.fillRail(this.must(".rail"));
   }
 
   private renderCollections(): void {
@@ -297,8 +327,10 @@ class TabsPage {
 
   private fillSidebar(aside: HTMLElement): void {
     const head = el("div", "side-head");
+    const titleRow = el("div", "title-row");
     const heading = el("h2");
     heading.textContent = "Open tabs";
+    titleRow.append(heading, this.pinButton());
     const filter = el("label", "field search small");
     const input = el("input") as HTMLInputElement;
     input.type = "search";
@@ -310,7 +342,7 @@ class TabsPage {
       this.root.querySelector<HTMLInputElement>("aside .search input")?.focus();
     });
     filter.append(icon("search"), input);
-    head.append(heading, filter);
+    head.append(titleRow, filter);
     aside.replaceChildren(head);
 
     const tabs = this.openTabs.filter((t) => t.url !== this.ownUrl && this.tabMatches(t));
@@ -784,6 +816,7 @@ const page = new TabsPage(
   chrome.runtime.getURL("tabs.html"),
   new LocalPersistence(chrome.storage.local, chrome.storage.onChanged),
   new ThemeStore(chrome.storage.local),
+  new FlagStore(chrome.storage.local, SIDEBAR_PINNED_KEY),
   new ChromeTabBrowser(),
   new SystemClock(),
   new RandomIdSource(),

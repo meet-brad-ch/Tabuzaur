@@ -3,8 +3,9 @@
 *Tame your tabs.*
 
 **What:** A Chrome extension (Manifest V3) for organizing the pages you work with into
-collections, starting from the tabs that are open. Its page shows every open tab in a sidebar and
-your hand-made collections next to it; drag a tab onto a collection to keep it there as a link.
+collections, starting from the tabs that are open. Its page shows your hand-made collections, with every
+open tab in a panel that slides in from the left rail (or stays pinned); drag a tab onto a
+collection to keep it there as a link.
 Clicking a saved link jumps to the tab when it is open and opens the page otherwise. Everything is
 kept in `chrome.storage.local` on the machine; nothing is synced or sent anywhere.
 
@@ -48,7 +49,7 @@ the stored document itself, so it is also the way to carry collections to anothe
 ## Layout
 
 - `public/manifest.json` — the extension manifest, copied verbatim into `dist/`
-- `tabs.html`, `src/tabs/` — the Tabuzaur page: open-tab sidebar, collection cards, drag and drop
+- `tabs.html`, `src/tabs/` — the Tabuzaur page: open-tab panel (a flyout from the left rail, or pinned), collection cards, drag and drop
 - `src/background.ts` — the service worker: the toolbar button opens or jumps to the page
 - `src/lib/` — collection model and operations (`CollectionBook`), the local store and its parser, the backup file format, URL helpers, the Chrome tab adapter
 - `tests/` — Vitest unit tests of `src/lib/` with in-memory fakes (no browser needed)

@@ -136,3 +136,29 @@ export class ThemeStore {
     await this.area.set({ [THEME_KEY]: theme });
   }
 }
+
+export const SIDEBAR_PINNED_KEY = "tabuzaur-sidebar-pinned";
+
+/** A boolean setting in the key-value area under its own key; false until saved. */
+export class FlagStore {
+  constructor(
+    private readonly area: KeyValueArea,
+    private readonly key: string,
+  ) {}
+
+  async load(): Promise<boolean> {
+    const items = await this.area.get(this.key);
+    const raw = items[this.key];
+    if (raw === undefined) {
+      return false;
+    }
+    if (typeof raw !== "boolean") {
+      throw new Error(`${this.key} is not a boolean: ${JSON.stringify(raw)}`);
+    }
+    return raw;
+  }
+
+  async save(value: boolean): Promise<void> {
+    await this.area.set({ [this.key]: value });
+  }
+}
