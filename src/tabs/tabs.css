@@ -613,10 +613,10 @@ details.window > summary .count {
 }
 
 .card {
+  position: relative;
   border-radius: var(--radius);
   background: var(--card-bg);
   box-shadow: var(--shadow);
-  overflow: hidden;
   transition: transform 120ms, box-shadow 120ms, outline-color 120ms;
   outline: 2px dashed transparent;
   outline-offset: -8px;
@@ -639,6 +639,7 @@ details.window > summary .count {
   gap: 6px;
   padding: 10px 10px 10px 14px;
   background: var(--card-band);
+  border-radius: var(--radius) var(--radius) 0 0;
   cursor: grab;
 }
 
@@ -646,12 +647,25 @@ details.window > summary .count {
   cursor: grabbing;
 }
 
-.card.insert-before {
-  box-shadow: inset 0 4px 0 0 var(--accent), var(--shadow);
+/* the insertion line sits in the gap between the tiles (the grid gap is 16px) */
+.card.insert-before::before,
+.card.insert-after::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+  pointer-events: none;
 }
 
-.card.insert-after {
-  box-shadow: inset 0 -4px 0 0 var(--accent), var(--shadow);
+.card.insert-before::before {
+  top: -10px;
+}
+
+.card.insert-after::after {
+  bottom: -10px;
 }
 
 .card .name {
