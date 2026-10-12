@@ -8,6 +8,9 @@ import { ChromeTabBrowser } from "../lib/tabs.ts";
 
 const DRAG_TYPE = "application/x-tabuzaur-page";
 
+/** Pastel hues for the cards, cycled by position: rose, peach, lemon, mint, aqua, sky, lavender, pink. */
+const CARD_HUES: readonly number[] = [0, 30, 55, 120, 170, 210, 260, 320];
+
 /** What a drag carries: a page, and where it comes from when it is already in a collection. */
 interface DragPayload {
   readonly page: SavedPage;
@@ -170,12 +173,13 @@ class TabsPage {
       return;
     }
     const cards = el("div", "cards");
-    cards.append(...shown.map((c) => this.card(c)));
+    cards.append(...shown.map((c, i) => this.card(c, CARD_HUES[i % CARD_HUES.length] ?? 0)));
     main.append(cards);
   }
 
-  private card(collection: Collection): HTMLElement {
+  private card(collection: Collection, hue: number): HTMLElement {
     const card = el("section", "card");
+    card.style.setProperty("--hue", String(hue));
     card.addEventListener("dragover", (event) => {
       if (event.dataTransfer?.types.includes(DRAG_TYPE) === true) {
         event.preventDefault();

@@ -168,14 +168,28 @@ main {
 }
 
 .card {
-  border: 1px solid var(--line);
+  --card-bg: hsl(var(--hue) 70% 90%);
+  --card-line: hsl(var(--hue) 50% 75%);
+  border: 1px solid var(--card-line);
   border-radius: 6px;
   padding: 8px 10px;
+  background: var(--card-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  .card {
+    --card-bg: hsl(var(--hue) 25% 22%);
+    --card-line: hsl(var(--hue) 30% 35%);
+  }
 }
 
 .card.over {
   border-color: var(--accent);
-  background: var(--over);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.card .page:hover {
+  background: #fff4;
 }
 
 .card header {
