@@ -1,51 +1,91 @@
-import type { SavedTab } from "./model.ts";
+import type { SavedPage } from "./model.ts";
 
 /** A tab that is open right now. */
-export interface OpenTab extends SavedTab {
+export interface OpenTab extends SavedPage {
   readonly tabId: number;
+  readonly windowId: number;
+  /** The active tab of its window. */
+  readonly active: boolean;
+}
+
+/** The open tab showing a URL, exact match, first in tab-strip order; undefined when none. */
+export function findOpenTab(tabs: readonly OpenTab[], url: string): OpenTab | undefined {
+  return tabs.find((t) => t.url === url);
 }
 
 /** Reads and changes the browser's tabs. The Chrome adapter is the only implementation outside tests. */
 export interface TabBrowser {
-  /** Every tab of the window the popup belongs to, in tab-strip order, without tabs that have no URL yet. */
-  currentWindowTabs(): Promise<readonly OpenTab[]>;
-  /** Opens the URLs in a new window. */
-  openInNewWindow(urls: readonly string[]): Promise<void>;
-  /** Closes the tabs. When they are the whole window, a blank tab is opened first so the window stays. */
-  close(tabs: readonly OpenTab[]): Promise<void>;
+  /** Every open tab of every window, in window and tab-strip order, without tabs that have no URL yet. */
+  openTabs(): Promise<readonly OpenTab[]>;
+  /** The window the calling page lives in. */
+  currentWindowId(): Promise<number>;
+  /** Makes the tab active and focuses its window. */
+  activate(tab: OpenTab): Promise<void>;
+  openInNewTab(url: string): Promise<void>;
+  /** Activates the open tab showing the URL, or opens the URL in a new tab. */
+  jumpTo(url: string): Promise<void>;
+  /** Calls the listener after any tab is created, removed, moved, updated or activated. */
+  onChange(listener: () => void): void;
 }
 
 export class ChromeTabBrowser implements TabBrowser {
-  async currentWindowTabs(): Promise<readonly OpenTab[]> {
-    const tabs = await chrome.tabs.query({ currentWindow: true });
+  async openTabs(): Promise<readonly OpenTab[]> {
+    const tabs = await chrome.tabs.query({});
     const open: OpenTab[] = [];
     for (const tab of tabs) {
       if (tab.id === undefined || tab.url === undefined || tab.url === "") {
         continue;
       }
-      const saved: OpenTab = { tabId: tab.id, title: tab.title ?? tab.url, url: tab.url };
-      open.push(tab.favIconUrl === undefined ? saved : { ...saved, favIconUrl: tab.favIconUrl });
+      const base: OpenTab = {
+        tabId: tab.id,
+        windowId: tab.windowId,
+        active: tab.active,
+        title: tab.title === undefined || tab.title === "" ? tab.url : tab.title,
+        url: tab.url,
+      };
+      open.push(tab.favIconUrl === undefined || tab.favIconUrl === "" ? base : { ...base, favIconUrl: tab.favIconUrl });
     }
     return open;
   }
 
-  async openInNewWindow(urls: readonly string[]): Promise<void> {
-    if (urls.length === 0) {
-      throw new Error("nothing to open");
+  async currentWindowId(): Promise<number> {
+    const window = await chrome.windows.getCurrent();
+    if (window.id === undefined) {
+      throw new Error("the current window has no id");
     }
-    await chrome.windows.create({ url: [...urls], focused: true });
+    return window.id;
   }
 
-  async close(tabs: readonly OpenTab[]): Promise<void> {
-    if (tabs.length === 0) {
-      return;
+  async activate(tab: OpenTab): Promise<void> {
+    await chrome.tabs.update(tab.tabId, { active: true });
+    await chrome.windows.update(tab.windowId, { focused: true });
+  }
+
+  async openInNewTab(url: string): Promise<void> {
+    await chrome.tabs.create({ url, active: true });
+  }
+
+  async jumpTo(url: string): Promise<void> {
+    const open = findOpenTab(await this.openTabs(), url);
+    if (open === undefined) {
+      await this.openInNewTab(url);
+    } else {
+      await this.activate(open);
     }
-    const all = await chrome.tabs.query({ currentWindow: true });
-    const closing = new Set(tabs.map((t) => t.tabId));
-    const survivors = all.filter((t) => t.id !== undefined && !closing.has(t.id));
-    if (survivors.length === 0) {
-      await chrome.tabs.create({});
+  }
+
+  onChange(listener: () => void): void {
+    const events: { addListener(callback: () => void): void }[] = [
+      chrome.tabs.onCreated,
+      chrome.tabs.onRemoved,
+      chrome.tabs.onUpdated,
+      chrome.tabs.onMoved,
+      chrome.tabs.onActivated,
+      chrome.tabs.onAttached,
+      chrome.tabs.onDetached,
+    ];
+    for (const event of events) {
+      event.addListener(listener);
     }
-    await chrome.tabs.remove([...closing]);
   }
 }
