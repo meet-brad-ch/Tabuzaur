@@ -113,6 +113,25 @@ export class CollectionBook {
   }
 }
 
+/** The pieces of a text around its first case-insensitive match of the query; undefined when none or the query is blank. */
+export interface TextMatch {
+  readonly before: string;
+  readonly match: string;
+  readonly after: string;
+}
+
+export function findMatch(text: string, query: string): TextMatch | undefined {
+  const needle = query.trim().toLowerCase();
+  if (needle === "") {
+    return undefined;
+  }
+  const at = text.toLowerCase().indexOf(needle);
+  if (at < 0) {
+    return undefined;
+  }
+  return { before: text.slice(0, at), match: text.slice(at, at + needle.length), after: text.slice(at + needle.length) };
+}
+
 function validName(name: string): string {
   const trimmed = name.trim();
   if (trimmed === "") {

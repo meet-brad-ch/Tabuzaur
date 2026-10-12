@@ -227,6 +227,24 @@ main {
   background: #fff4;
 }
 
+.page.hit {
+  box-shadow: inset 3px 0 var(--accent);
+  background: #fff6;
+}
+
+mark {
+  background: #ffd54a;
+  color: #000;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .page.hit {
+    background: #fff2;
+  }
+}
+
 .card header {
   padding: 0 0 6px;
   border: none;
@@ -242,8 +260,19 @@ main {
 }
 
 .card .meta {
-  color: var(--muted);
+  flex: none;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #0002;
+  font-size: 12px;
+  font-weight: 600;
   white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card .meta {
+    background: #fff2;
+  }
 }
 
 .card .empty-hint {

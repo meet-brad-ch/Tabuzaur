@@ -1,4 +1,4 @@
-import { CollectionBook } from "../lib/collections.ts";
+import { CollectionBook, findMatch } from "../lib/collections.ts";
 import type { Clock, Collection, IdSource, SavedPage } from "../lib/model.ts";
 import { RandomIdSource, SystemClock } from "../lib/model.ts";
 import type { Persistence } from "../lib/storage.ts";
@@ -203,7 +203,9 @@ class TabsPage {
     const header = el("header");
     header.append(...this.nameField(collection));
     const meta = el("span", "meta");
-    meta.textContent = `${String(collection.pages.length)} pages`;
+    const count = collection.pages.length;
+    meta.textContent = `${String(count)} ${count === 1 ? "link" : "links"}`;
+    meta.title = `${String(count)} saved ${count === 1 ? "link" : "links"} in this collection`;
     header.append(meta, this.deleteButton(collection));
     card.append(header);
     if (collection.pages.length === 0) {
@@ -214,7 +216,8 @@ class TabsPage {
     }
     const list = el("ul");
     collection.pages.forEach((page, index) => {
-      const row = el("li", "page");
+      const hit = findMatch(page.title, this.query) !== undefined || findMatch(page.url, this.query) !== undefined;
+      const row = el("li", hit ? "page hit" : "page");
       row.draggable = true;
       row.addEventListener("dragstart", (event) => {
         startDrag(event, { page, from: { collectionId: collection.id, index } });
@@ -234,7 +237,7 @@ class TabsPage {
     if (editing?.collectionId !== collection.id || editing.index !== index) {
       const link = el("a") as HTMLAnchorElement;
       link.href = page.url;
-      link.textContent = page.title;
+      link.replaceChildren(...marked(page.title, this.query));
       link.title = page.url;
       link.addEventListener("click", (event) => {
         event.preventDefault();
@@ -277,7 +280,7 @@ class TabsPage {
   private nameField(collection: Collection): HTMLElement[] {
     if (this.renaming !== collection.id) {
       const name = el("span", "name");
-      name.textContent = collection.name;
+      name.replaceChildren(...marked(collection.name, this.query));
       const edit = button("✎", () => {
         this.renaming = collection.id;
         this.renderCollections();
@@ -341,6 +344,17 @@ class TabsPage {
       },
     );
   }
+}
+
+/** The text with its first match of the query wrapped in <mark>; the plain text when there is none. */
+function marked(text: string, query: string): (string | HTMLElement)[] {
+  const match = findMatch(text, query);
+  if (match === undefined) {
+    return [text];
+  }
+  const mark = el("mark");
+  mark.textContent = match.match;
+  return [match.before, mark, match.after];
 }
 
 function favicon(page: SavedPage): HTMLElement {
