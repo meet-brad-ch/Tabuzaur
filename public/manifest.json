@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Tabuzaur",
+  "version": "0.1.0",
+  "description": "Saves a window's tabs as a named collection and reopens it later. Local only: no sync, no network.",
+  "minimum_chrome_version": "116",
+  "permissions": ["tabs", "storage"],
+  "action": {
+    "default_title": "Tabuzaur",
+    "default_popup": "popup.html"
+  }
+}
