@@ -58,16 +58,17 @@ jobs:
       - name: Gate (lint, types, tests, build)
         run: npm run verify
 
+      # The variable is not called ZIP: Info-ZIP's zip reads $ZIP as extra options.
       - name: Zip the extension
         env:
-          ZIP: ${{ steps.version.outputs.zip }}
+          ARCHIVE: ${{ steps.version.outputs.zip }}
         run: |
           out="$GITHUB_WORKSPACE/out"
           mkdir "$out"
-          (cd dist && zip -r "$out/$ZIP" .)
-          test -f "$out/$ZIP"
-          (cd "$out" && sha256sum "$ZIP" > SHA256SUMS && cat SHA256SUMS)
-          unzip -l "$out/$ZIP"
+          (cd dist && zip -r "$out/$ARCHIVE" .)
+          test -f "$out/$ARCHIVE"
+          (cd "$out" && sha256sum "$ARCHIVE" > SHA256SUMS && cat SHA256SUMS)
+          unzip -l "$out/$ARCHIVE"
 
       - uses: actions/upload-artifact@v7
         with:
@@ -88,19 +89,19 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       VERSION: ${{ needs.build.outputs.version }}
-      ZIP: ${{ needs.build.outputs.zip }}
+      ARCHIVE: ${{ needs.build.outputs.zip }}
     steps:
       - name: Download the zip built above
-        run: gh run download "$GITHUB_RUN_ID" --name "$ZIP" --dir dist
+        run: gh run download "$GITHUB_RUN_ID" --name "$ARCHIVE" --dir dist
 
       - name: Release notes
         run: |
-          test -f "dist/$ZIP"
+          test -f "dist/$ARCHIVE"
           sha=$(cut -d' ' -f1 dist/SHA256SUMS)
           {
             echo "Tabuzaur $VERSION: tab collections for Chrome, stored locally only."
             echo
-            echo "Install: unzip \`$ZIP\`, then chrome://extensions > Developer mode > Load unpacked > the unzipped folder."
+            echo "Install: unzip \`$ARCHIVE\`, then chrome://extensions > Developer mode > Load unpacked > the unzipped folder."
             echo
             echo "- SHA256: \`$sha\`"
             echo "- Built by GitHub Actions run $GITHUB_RUN_NUMBER from commit $GITHUB_SHA."
@@ -108,4 +109,4 @@ jobs:
           cat notes.md
 
       - name: Create the GitHub release
-        run: gh release create "$GITHUB_REF_NAME" "dist/$ZIP" dist/SHA256SUMS --verify-tag --title "Tabuzaur $VERSION" --notes-file notes.md
+        run: gh release create "$GITHUB_REF_NAME" "dist/$ARCHIVE" dist/SHA256SUMS --verify-tag --title "Tabuzaur $VERSION" --notes-file notes.md
