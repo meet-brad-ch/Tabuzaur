@@ -66,6 +66,21 @@ export class CollectionBook {
     return this.replace(id, { ...collection, pages: collection.pages.filter((_, i) => i !== index) });
   }
 
+  /** Changes a page's title. The title is trimmed; an empty title is an error. */
+  retitlePage(id: string, index: number, title: string): CollectionBook {
+    const collection = this.get(id);
+    const page = collection.pages[index];
+    if (page === undefined) {
+      throw new Error(`collection ${id} has no page at index ${String(index)}`);
+    }
+    const trimmed = title.trim();
+    if (trimmed === "") {
+      throw new Error("a link needs a title");
+    }
+    const pages = collection.pages.map((p, i) => (i === index ? { ...p, title: trimmed } : p));
+    return this.replace(id, { ...collection, pages });
+  }
+
   /**
    * Moves one page to the end of another collection. A URL already in the target is an error;
    * a move onto the page's own collection changes nothing.

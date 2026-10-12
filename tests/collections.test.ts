@@ -88,6 +88,19 @@ describe("CollectionBook.removePage", () => {
   });
 });
 
+describe("CollectionBook.retitlePage", () => {
+  it("changes only that page's title, trimmed", () => {
+    const book = bookWithTwo().retitlePage("id-2", 1, "  New title ");
+    expect(book.get("id-2").pages).toEqual([pageA, { ...pageB, title: "New title" }]);
+    expect(book.get("id-1").pages).toEqual([pageA]);
+  });
+
+  it("rejects an empty title or a missing page", () => {
+    expect(() => bookWithTwo().retitlePage("id-2", 1, " ")).toThrow("a link needs a title");
+    expect(() => bookWithTwo().retitlePage("id-1", 1, "x")).toThrow("no page at index 1");
+  });
+});
+
 describe("CollectionBook.movePage", () => {
   it("appends the page to the target and removes it from the source", () => {
     const book = bookWithTwo().movePage("id-2", 1, "id-1");

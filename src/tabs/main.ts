@@ -32,6 +32,7 @@ class TabsPage {
   private ownWindowId = -1;
   private query = "";
   private renaming: string | undefined;
+  private editingPage: { collectionId: string; index: number } | undefined;
   private pendingDelete: string | undefined;
 
   constructor(
@@ -219,6 +220,19 @@ class TabsPage {
       row.addEventListener("dragstart", (event) => {
         startDrag(event, { page, from: { collectionId: collection.id, index } });
       });
+      row.append(favicon(page), ...this.pageTitle(collection, page, index), button("×", () => {
+        this.run(() => this.change(this.book.removePage(collection.id, index)));
+      }, "button", "remove"));
+      list.append(row);
+    });
+    card.append(list);
+    return card;
+  }
+
+  /** The link and its edit button, or an input while the title is being edited. */
+  private pageTitle(collection: Collection, page: SavedPage, index: number): HTMLElement[] {
+    const editing = this.editingPage;
+    if (editing === undefined || editing.collectionId !== collection.id || editing.index !== index) {
       const link = el("a") as HTMLAnchorElement;
       link.href = page.url;
       link.textContent = page.title;
@@ -227,13 +241,37 @@ class TabsPage {
         event.preventDefault();
         this.run(() => this.browser.jumpTo(page.url));
       });
-      row.append(favicon(page), link, button("×", () => {
-        this.run(() => this.change(this.book.removePage(collection.id, index)));
-      }, "button", "remove"));
-      list.append(row);
+      const edit = button("✎", () => {
+        this.editingPage = { collectionId: collection.id, index };
+        this.renderCollections();
+        const input = this.root.querySelector<HTMLInputElement>(".page input.title");
+        input?.focus();
+        input?.select();
+      }, "button", "edit");
+      edit.title = "Edit the title";
+      return [link, edit];
+    }
+    const input = el("input", "title") as HTMLInputElement;
+    input.type = "text";
+    input.value = page.title;
+    const finish = (): void => {
+      this.editingPage = undefined;
+      this.run(() => this.change(this.book.retitlePage(collection.id, index, input.value)));
+    };
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        finish();
+      } else if (event.key === "Escape") {
+        this.editingPage = undefined;
+        this.renderCollections();
+      }
     });
-    card.append(list);
-    return card;
+    input.addEventListener("blur", () => {
+      if (this.editingPage !== undefined) {
+        finish();
+      }
+    });
+    return [input];
   }
 
   private nameField(collection: Collection): HTMLElement {

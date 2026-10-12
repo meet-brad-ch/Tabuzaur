@@ -61,11 +61,27 @@ button.danger {
   font-weight: 600;
 }
 
-button.remove {
+button.remove,
+button.edit {
   padding: 0 6px;
   color: var(--muted);
   border: none;
   background: none;
+}
+
+.page button.edit {
+  visibility: hidden;
+}
+
+.page:hover button.edit {
+  visibility: visible;
+}
+
+.page input.title {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 2px 4px;
 }
 
 .notice {
