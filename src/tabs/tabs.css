@@ -65,13 +65,23 @@ button.edit {
 }
 
 .page button.edit,
+.card > header button.edit,
 .card > header button.trash {
   visibility: hidden;
 }
 
 .page:hover button.edit,
+.card:hover > header button.edit,
 .card:hover > header button.trash {
   visibility: visible;
+}
+
+.card > header input.name {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-weight: 600;
+  padding: 2px 4px;
 }
 
 button.trash {
@@ -226,7 +236,6 @@ main {
 .card .name {
   flex: 1;
   font-weight: 600;
-  cursor: text;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -201,7 +201,7 @@ class TabsPage {
         : this.book.movePage(from.collectionId, from.index, collection.id)));
     });
     const header = el("header");
-    header.append(this.nameField(collection));
+    header.append(...this.nameField(collection));
     const meta = el("span", "meta");
     meta.textContent = `${String(collection.pages.length)} pages`;
     header.append(meta, this.deleteButton(collection));
@@ -273,19 +273,20 @@ class TabsPage {
     return [input];
   }
 
-  private nameField(collection: Collection): HTMLElement {
+  /** The collection name and its pen button, or an input while it is being renamed. */
+  private nameField(collection: Collection): HTMLElement[] {
     if (this.renaming !== collection.id) {
       const name = el("span", "name");
       name.textContent = collection.name;
-      name.title = "Click to rename";
-      name.addEventListener("click", () => {
+      const edit = button("✎", () => {
         this.renaming = collection.id;
         this.renderCollections();
         const input = this.root.querySelector<HTMLInputElement>(".card input.name");
         input?.focus();
         input?.select();
-      });
-      return name;
+      }, "button", "edit");
+      edit.title = "Rename this collection";
+      return [name, edit];
     }
     const input = el("input", "name") as HTMLInputElement;
     input.type = "text";
@@ -307,7 +308,7 @@ class TabsPage {
         finish();
       }
     });
-    return input;
+    return [input];
   }
 
   /** A trash icon, shown on hover; deleting asks first. */
