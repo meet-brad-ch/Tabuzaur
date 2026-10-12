@@ -39,7 +39,7 @@ Chrome Settings → On startup → "Open a specific page or set of pages" add
 
 - `public/manifest.json` — the extension manifest, copied verbatim into `dist/`
 - `tabs.html`, `src/tabs/` — the Tabuzaur page: open-tab sidebar, collection cards, drag and drop
-- `popup.html`, `src/popup/` — the toolbar popup: one button that opens or jumps to the page
+- `src/background.ts` — the service worker: the toolbar button opens or jumps to the page
 - `src/lib/` — collection model and operations (`CollectionBook`), the local store and its parser, the Chrome tab adapter
 - `tests/` — Vitest unit tests of `src/lib/` with in-memory fakes (no browser needed)
 - `.github/workflows/build.yml` — CI: runs the verify gate, zips `dist/`, publishes a Release on a `v*` tag
@@ -48,7 +48,7 @@ Chrome Settings → On startup → "Open a specific page or set of pages" add
 
 One line each: the choice, and the reason it was made. Append; do not rewrite history.
 
-- 2026-10-12 — Manifest V3 without a background service worker: nothing has to run while no Tabuzaur page is open.
+- 2026-10-12 — Manifest V3 with a minimal service worker that only handles the toolbar click: there is one action, so no popup; nothing else runs while no Tabuzaur page is open.
 - 2026-10-12 — TypeScript + Vite + Vitest + ESLint, plain Vite with fixed entry names instead of a CRX plugin: fewer moving parts to maintain.
 - 2026-10-12 — Data stays in `chrome.storage.local`, permissions `tabs` and `storage` only: the reason the project exists.
 - 2026-10-12 — Pure logic in `src/lib/` behind adapter interfaces, Chrome API only in thin adapters: tests run in Node with fakes.
