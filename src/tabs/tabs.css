@@ -484,13 +484,34 @@ details.window > summary .count {
   gap: 10px;
   padding: 6px 8px;
   border-radius: 8px;
-  cursor: grab;
+  cursor: pointer;
   transition: background 100ms;
+}
+
+.page:hover .text a {
+  text-decoration: underline;
+}
+
+.page .actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+  padding-left: 6px;
+  border-left: 1px solid #00000018;
+}
+
+:root[data-theme="dark"] .page .actions {
+  border-left-color: #ffffff24;
 }
 
 .tab:active,
 .page:active {
   cursor: grabbing;
+}
+
+.page .actions button {
+  cursor: pointer;
 }
 
 .tab:hover {

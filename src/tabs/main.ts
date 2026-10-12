@@ -464,7 +464,20 @@ class TabsPage {
       }, "button", "icon remove");
       remove.append(icon("close"));
       remove.title = "Remove this link";
-      row.append(favicon(page), ...this.pageTitle(collection, page, index), remove);
+      const { body, edit } = this.pageTitle(collection, page, index);
+      row.append(favicon(page), body);
+      if (edit !== undefined) {
+        const actions = el("span", "actions");
+        actions.append(edit, remove);
+        row.append(actions);
+      }
+      // the whole row follows the link; the buttons and the editor are exempt
+      row.addEventListener("click", (event) => {
+        if ((event.target as Element).closest("button, form, input") !== null) {
+          return;
+        }
+        this.run(() => this.browser.jumpTo(page.url));
+      });
       list.append(row);
     });
     card.append(list);
@@ -491,7 +504,7 @@ class TabsPage {
   }
 
   /** The link with its host line and pen button, or a title + url form while it is being edited. */
-  private pageTitle(collection: Collection, page: SavedPage, index: number): HTMLElement[] {
+  private pageTitle(collection: Collection, page: SavedPage, index: number): { body: HTMLElement; edit: HTMLElement | undefined } {
     const editing = this.editingPage;
     if (editing?.collectionId !== collection.id || editing.index !== index) {
       const body = el("span", "text");
@@ -499,10 +512,7 @@ class TabsPage {
       link.href = page.url;
       link.replaceChildren(...marked(page.title, this.query));
       link.title = page.url;
-      link.addEventListener("click", (event) => {
-        event.preventDefault();
-        this.run(() => this.browser.jumpTo(page.url));
-      });
+      link.addEventListener("click", (event) => { event.preventDefault(); });  // the row handles it
       const host = el("span", "host");
       host.replaceChildren(...marked(hostnameOf(page.url), this.query));
       body.append(link, host);
@@ -513,7 +523,7 @@ class TabsPage {
       }, "button", "icon edit");
       edit.append(icon("pen"));
       edit.title = "Edit the title and the url";
-      return [body, edit];
+      return { body, edit };
     }
     const form = el("form", "edit") as HTMLFormElement;
     const title = el("input", "title") as HTMLInputElement;
@@ -552,7 +562,7 @@ class TabsPage {
         save();
       }
     });
-    return [form];
+    return { body: form, edit: undefined };
   }
 
   /** The collection name and its pen button, or an input while it is being renamed. */
