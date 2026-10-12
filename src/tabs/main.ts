@@ -9,6 +9,7 @@ import { ChromeTabBrowser } from "../lib/tabs.ts";
 import { hostnameOf, hueOf, initialOf } from "../lib/urls.ts";
 
 const DRAG_TYPE = "application/x-tabuzaur-page";
+const CARD_DRAG_TYPE = "application/x-tabuzaur-collection";
 const HUE_COUNT = 8;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
@@ -394,25 +395,53 @@ class TabsPage {
   private card(collection: Collection, hue: number): HTMLElement {
     const card = el("section", `card hue-${String(hue)}`);
     card.addEventListener("dragover", (event) => {
-      if (event.dataTransfer?.types.includes(DRAG_TYPE) === true) {
+      const transfer = event.dataTransfer;
+      if (transfer === null) {
+        return;
+      }
+      if (transfer.types.includes(CARD_DRAG_TYPE)) {
         event.preventDefault();
-        event.dataTransfer.dropEffect = event.dataTransfer.effectAllowed === "move" ? "move" : "copy";
+        transfer.dropEffect = "move";
+        const after = isRightHalf(card, event);
+        card.classList.toggle("insert-before", !after);
+        card.classList.toggle("insert-after", after);
+      } else if (transfer.types.includes(DRAG_TYPE)) {
+        event.preventDefault();
+        transfer.dropEffect = transfer.effectAllowed === "move" ? "move" : "copy";
         card.classList.add("over");
       }
     });
     card.addEventListener("dragleave", (event) => {
       if (!card.contains(event.relatedTarget as Node | null)) {
-        card.classList.remove("over");
+        card.classList.remove("over", "insert-before", "insert-after");
       }
     });
     card.addEventListener("drop", (event) => {
       event.preventDefault();
-      card.classList.remove("over");
+      card.classList.remove("over", "insert-before", "insert-after");
+      const movedId = event.dataTransfer?.getData(CARD_DRAG_TYPE) ?? "";
+      if (movedId !== "") {
+        const place = this.book.collections.indexOf(collection) + (isRightHalf(card, event) ? 1 : 0);
+        this.run(() => this.change(this.book.reorderCollection(movedId, place)));
+        return;
+      }
       this.dropInto(collection, event, undefined);
     });
 
     const header = el("header");
     header.append(...this.nameField(collection), this.deleteButton(collection));
+    header.draggable = this.renaming !== collection.id;
+    header.title = header.draggable ? "Drag to move this collection" : "";
+    header.addEventListener("dragstart", (event) => {
+      if (event.dataTransfer === null) {
+        return;
+      }
+      event.dataTransfer.setData(CARD_DRAG_TYPE, collection.id);
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setDragImage(card, 24, 20);
+      setTimeout(() => { card.classList.add("dragging"); }, 0);
+    });
+    header.addEventListener("dragend", () => { card.classList.remove("dragging"); });
     card.append(header);
 
     if (collection.pages.length === 0) {
@@ -452,6 +481,9 @@ class TabsPage {
       });
       row.addEventListener("dragleave", () => { row.classList.remove("drop-before", "drop-after"); });
       row.addEventListener("drop", (event) => {
+        if (event.dataTransfer?.types.includes(DRAG_TYPE) !== true) {
+          return;
+        }
         event.preventDefault();
         event.stopPropagation();
         card.classList.remove("over");
@@ -657,6 +689,12 @@ function startDrag(event: DragEvent, row: HTMLElement, payload: DragPayload): vo
 function isLowerHalf(row: HTMLElement, event: DragEvent): boolean {
   const box = row.getBoundingClientRect();
   return event.clientY - box.top > box.height / 2;
+}
+
+/** Whether the pointer is in the right half of the card: the dragged card goes after it. */
+function isRightHalf(card: HTMLElement, event: DragEvent): boolean {
+  const box = card.getBoundingClientRect();
+  return event.clientX - box.left > box.width / 2;
 }
 
 /** Hands the viewer a text file to save. */

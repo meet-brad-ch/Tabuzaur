@@ -615,6 +615,19 @@ details.window > summary .count {
   gap: 6px;
   padding: 10px 10px 10px 14px;
   background: var(--card-band);
+  cursor: grab;
+}
+
+.card > header:active {
+  cursor: grabbing;
+}
+
+.card.insert-before {
+  box-shadow: -4px 0 0 0 var(--accent), var(--shadow);
+}
+
+.card.insert-after {
+  box-shadow: 4px 0 0 0 var(--accent), var(--shadow);
 }
 
 .card .name {

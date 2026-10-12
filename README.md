@@ -65,7 +65,8 @@ the stored document itself, so it is also the way to carry collections to anothe
   Segoe UI or the system font).
 - A collection is a hand-made folder of links. Dropping a tab keeps the tab open; a link already
   in that collection is refused with a visible notice. Clicking a link activates the open tab with
-  exactly that URL, or opens a new tab.
+  exactly that URL, or opens a new tab. Links are reordered by drag within and across collections;
+  a collection is moved by dragging its header band onto the left or right half of another card.
 - The welcome page is Chrome's startup-page setting, not a new-tab override, so Ctrl+T stays
   Chrome's and the owner opts in.
 - Pure logic (collections, store parser, URL helpers, theme store) sits in `src/lib/` behind

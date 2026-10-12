@@ -118,6 +118,21 @@ export class CollectionBook {
     return added.reorderPage(toId, target.pages.length - 1, to);
   }
 
+  /**
+   * Moves a collection so that it sits where index `to` was before the move (0 .. length, length
+   * meaning the end). Moving it onto its own place changes nothing.
+   */
+  reorderCollection(id: string, to: number): CollectionBook {
+    const collection = this.get(id);
+    if (!Number.isInteger(to) || to < 0 || to > this.collections.length) {
+      throw new Error(`no place for a collection at index ${String(to)}`);
+    }
+    const from = this.collections.indexOf(collection);
+    const rest = this.collections.filter((c) => c.id !== id);
+    const at = to > from ? to - 1 : to;
+    return new CollectionBook([...rest.slice(0, at), collection, ...rest.slice(at)]);
+  }
+
   private pageAt(collection: Collection, index: number): SavedPage {
     const page = Number.isInteger(index) ? collection.pages[index] : undefined;
     if (page === undefined) {

@@ -181,6 +181,33 @@ describe("CollectionBook.search", () => {
   });
 });
 
+describe("CollectionBook.reorderCollection", () => {
+  const three = (): CollectionBook => bookWithTwo().create("Third", clock, { next: () => "id-3" });
+  const ids = (book: CollectionBook): string[] => book.collections.map((c) => c.id);
+
+  it("moves a collection down and up: to is the slot before the move", () => {
+    expect(ids(three().reorderCollection("id-1", 2))).toEqual(["id-2", "id-1", "id-3"]);
+    expect(ids(three().reorderCollection("id-1", 3))).toEqual(["id-2", "id-3", "id-1"]);
+    expect(ids(three().reorderCollection("id-3", 0))).toEqual(["id-3", "id-1", "id-2"]);
+    expect(ids(three().reorderCollection("id-3", 1))).toEqual(["id-1", "id-3", "id-2"]);
+  });
+
+  it("changes nothing when the collection lands on its own place", () => {
+    expect(ids(three().reorderCollection("id-2", 1))).toEqual(["id-1", "id-2", "id-3"]);
+    expect(ids(three().reorderCollection("id-2", 2))).toEqual(["id-1", "id-2", "id-3"]);
+  });
+
+  it("keeps the collections' contents", () => {
+    expect(three().reorderCollection("id-2", 0).get("id-2").pages).toEqual([pageA, pageB]);
+  });
+
+  it("rejects an unknown id or an impossible place", () => {
+    expect(() => three().reorderCollection("nope", 0)).toThrow("no collection with id nope");
+    expect(() => three().reorderCollection("id-1", 4)).toThrow("no place for a collection at index 4");
+    expect(() => three().reorderCollection("id-1", -1)).toThrow("no place for a collection at index -1");
+  });
+});
+
 describe("CollectionBook.merge", () => {
   const pageC = { title: "C", url: "https://c.example/" };
 
