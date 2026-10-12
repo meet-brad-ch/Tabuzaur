@@ -36,6 +36,11 @@ time. Chrome assigns Alt+T at install only when no other extension or Chrome its
 the page's header shows the key that is in effect, or a red "No shortcut assigned" link that opens
 `chrome://extensions/shortcuts`, where any key can be set.
 
+Backup: the two arrow buttons in the page header export the collections as
+`tabuzaur-backup-YYYY-MM-DD.json` and import such a file, replacing the current collections after a
+confirmation. The file is the stored document itself, so it is also the way to carry collections to
+another machine.
+
 **Verify:** `npm run verify`
 
 **Prerequisites:** Node 24, npm 11, Chrome 116 or newer.
@@ -45,7 +50,7 @@ the page's header shows the key that is in effect, or a red "No shortcut assigne
 - `public/manifest.json` — the extension manifest, copied verbatim into `dist/`
 - `tabs.html`, `src/tabs/` — the Tabuzaur page: open-tab sidebar, collection cards, drag and drop
 - `src/background.ts` — the service worker: the toolbar button opens or jumps to the page
-- `src/lib/` — collection model and operations (`CollectionBook`), the local store and its parser, the Chrome tab adapter
+- `src/lib/` — collection model and operations (`CollectionBook`), the local store and its parser, the backup file format, URL helpers, the Chrome tab adapter
 - `tests/` — Vitest unit tests of `src/lib/` with in-memory fakes (no browser needed)
 - `.github/workflows/build.yml` — CI: runs the verify gate, zips `dist/`, publishes a Release on a `v*` tag
 - `branding/` — the brand showcase (mascot, wordmark, app icons) and the mascot cut from it, which the `public/icons/` set is resized from

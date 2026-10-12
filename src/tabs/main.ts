@@ -1,3 +1,4 @@
+import { backupFileName, parseBackup, serializeBackup } from "../lib/backup.ts";
 import { CollectionBook, findMatch } from "../lib/collections.ts";
 import type { Clock, Collection, IdSource, SavedPage } from "../lib/model.ts";
 import { RandomIdSource, SystemClock } from "../lib/model.ts";
@@ -22,6 +23,8 @@ const ICONS = {
   chevron: '<path d="m9 6 6 6-6 6"/>',
   search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
+  download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/>',
+  upload: '<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 19h16"/>',
 } as const;
 
 /** The empty-card drawing: a tab sliding into a folder. */
@@ -52,6 +55,7 @@ class TabsPage {
   private renaming: string | undefined;
   private editingPage: PageRef | undefined;
   private justAdded: { collectionId: string; url: string } | undefined;
+  private pendingNotice: string | undefined;
   private readonly collapsed = new Set<number>();
   private readonly darkSystem = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -99,7 +103,19 @@ class TabsPage {
 
   private render(): void {
     this.root.replaceChildren(this.header(), el("p", "notice"), this.layout());
-    this.root.querySelector<HTMLElement>(".notice")?.setAttribute("hidden", "");
+    if (this.pendingNotice === undefined) {
+      this.must(".notice").setAttribute("hidden", "");
+    } else {
+      this.notify(this.pendingNotice, "info");
+      this.pendingNotice = undefined;
+    }
+  }
+
+  private notify(message: string, kind: "info" | "error"): void {
+    const notice = this.must(".notice");
+    notice.textContent = message;
+    notice.className = `notice ${kind}`;
+    notice.removeAttribute("hidden");
   }
 
   private header(): HTMLElement {
@@ -144,8 +160,46 @@ class TabsPage {
       this.run(() => this.change(this.book.create(name.value, this.clock, this.ids)));
     });
 
-    header.append(brand, search, form, this.themeButton());
+    header.append(brand, search, form, this.backupButtons(), this.themeButton());
     return header;
+  }
+
+  /** Export downloads the document as JSON; import replaces it from such a file, after asking. */
+  private backupButtons(): HTMLElement {
+    const group = el("div", "backup");
+    const exportButton = button(() => {
+      const now = this.clock.now();
+      download(backupFileName(now), serializeBackup(this.book.toData(), now));
+    }, "button", "icon");
+    exportButton.append(icon("download"));
+    exportButton.title = "Export a backup (JSON)";
+    const picker = el("input") as HTMLInputElement;
+    picker.type = "file";
+    picker.accept = ".json,application/json";
+    picker.hidden = true;
+    picker.addEventListener("change", () => {
+      const file = picker.files?.[0];
+      if (file === undefined) {
+        return;
+      }
+      this.run(async () => {
+        const data = parseBackup(await file.text());
+        const count = data.collections.length;
+        const current = this.book.collections.length;
+        const question = `Import ${String(count)} ${count === 1 ? "collection" : "collections"} from ${file.name}? `
+          + `This replaces the ${String(current)} ${current === 1 ? "collection" : "collections"} you have now.`;
+        if (!window.confirm(question)) {
+          return;
+        }
+        await this.change(CollectionBook.fromData(data));
+        this.pendingNotice = `Imported ${String(count)} ${count === 1 ? "collection" : "collections"} from ${file.name}.`;
+      });
+    });
+    const importButton = button(() => { picker.click(); }, "button", "icon");
+    importButton.append(icon("upload"));
+    importButton.title = "Import a backup (replaces the current collections)";
+    group.append(exportButton, importButton, picker);
+    return group;
   }
 
   /** The assigned key, or, when Chrome assigned none, a link to its shortcut settings. */
@@ -539,9 +593,7 @@ class TabsPage {
       () => { rerender(); },
       (error: unknown) => {
         rerender();
-        const notice = this.must(".notice");
-        notice.textContent = error instanceof Error ? error.message : String(error);
-        notice.removeAttribute("hidden");
+        this.notify(error instanceof Error ? error.message : String(error), "error");
       },
     );
   }
@@ -563,6 +615,16 @@ function startDrag(event: DragEvent, row: HTMLElement, payload: DragPayload): vo
 function isLowerHalf(row: HTMLElement, event: DragEvent): boolean {
   const box = row.getBoundingClientRect();
   return event.clientY - box.top > box.height / 2;
+}
+
+/** Hands the viewer a text file to save. */
+function download(name: string, text: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  const link = el("a") as HTMLAnchorElement;
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => { URL.revokeObjectURL(url); }, 1000);
 }
 
 function focusAndSelect(input: HTMLInputElement | null): void {

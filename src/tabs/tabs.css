@@ -284,7 +284,6 @@ button.icon:hover {
 }
 
 button.theme {
-  margin-left: auto;
   border: 1px solid var(--line);
   width: 36px;
   height: 36px;
@@ -296,6 +295,23 @@ button.theme {
   background: #d23b3b14;
   color: var(--danger);
   border-bottom: 1px solid #d23b3b40;
+}
+
+.notice.info {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.backup {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.backup button.icon {
+  width: 36px;
+  height: 36px;
 }
 
 .notice[hidden] {
