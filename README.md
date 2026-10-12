@@ -29,7 +29,8 @@ After a rebuild, click the reload icon on the extension card.
 
 Make it the welcome page: copy the extension ID from its card on `chrome://extensions`, then in
 Chrome Settings → On startup → "Open a specific page or set of pages" add
-`chrome-extension://<id>/tabs.html`. The toolbar button opens the same page at any time.
+`chrome-extension://<id>/tabs.html`. The toolbar button and **Alt+T** open the same page at any
+time; the key can be changed on `chrome://extensions/shortcuts`.
 
 **Verify:** `npm run verify`
 
