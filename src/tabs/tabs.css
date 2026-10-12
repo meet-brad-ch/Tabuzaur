@@ -496,13 +496,7 @@ details.window > summary .count {
   display: flex;
   align-items: center;
   gap: 2px;
-  margin-left: 4px;
-  padding-left: 6px;
-  border-left: 1px solid #00000018;
-}
-
-:root[data-theme="dark"] .page .actions {
-  border-left-color: #ffffff24;
+  margin-left: 8px;
 }
 
 .tab:active,
