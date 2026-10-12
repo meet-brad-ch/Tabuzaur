@@ -32,7 +32,9 @@ After a rebuild, click the reload icon on the extension card.
 Make it the welcome page: copy the extension ID from its card on `chrome://extensions`, then in
 Chrome Settings → On startup → "Open a specific page or set of pages" add
 `chrome-extension://<id>/tabs.html`. The toolbar button and **Alt+T** open the same page at any
-time; the key can be changed on `chrome://extensions/shortcuts`.
+time. Chrome assigns Alt+T at install only when no other extension or Chrome itself uses it;
+the page's header shows the key that is in effect, or a red "No shortcut assigned" link that opens
+`chrome://extensions/shortcuts`, where any key can be set.
 
 **Verify:** `npm run verify`
 

@@ -185,6 +185,23 @@ header.top {
   color: var(--muted);
 }
 
+.shortcut {
+  margin-left: 10px;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  background: var(--bg);
+  font: 600 11px/1.4 Inter, "Segoe UI", system-ui, sans-serif;
+  color: var(--muted);
+}
+
+button.shortcut.unset {
+  color: var(--danger);
+  border-color: var(--danger);
+  cursor: pointer;
+}
+
 .field {
   display: flex;
   align-items: center;

@@ -48,6 +48,7 @@ class TabsPage {
   private query = "";
   private tabQuery = "";
   private theme: Theme = "system";
+  private shortcut = "";
   private renaming: string | undefined;
   private editingPage: PageRef | undefined;
   private justAdded: { collectionId: string; url: string } | undefined;
@@ -71,6 +72,7 @@ class TabsPage {
     await this.loadBook();
     this.ownWindowId = await this.browser.currentWindowId();
     this.openTabs = await this.browser.openTabs();
+    this.shortcut = await this.browser.actionShortcut();
     this.render();
     this.browser.onChange(() => {
       this.run(async () => {
@@ -116,7 +118,7 @@ class TabsPage {
     const tagline = el("span", "tagline");
     tagline.textContent = "Tame your tabs";
     words.append(title, tagline);
-    brand.append(logo, words);
+    brand.append(logo, words, this.shortcutBadge());
 
     const search = el("label", "field search");
     const input = el("input") as HTMLInputElement;
@@ -144,6 +146,22 @@ class TabsPage {
 
     header.append(brand, search, form, this.themeButton());
     return header;
+  }
+
+  /** The assigned key, or, when Chrome assigned none, a link to its shortcut settings. */
+  private shortcutBadge(): HTMLElement {
+    if (this.shortcut !== "") {
+      const key = el("kbd", "shortcut");
+      key.textContent = this.shortcut;
+      key.title = "Opens Tabuzaur from any tab";
+      return key;
+    }
+    const hint = button(() => {
+      this.run(() => this.browser.openInNewTab("chrome://extensions/shortcuts"));
+    }, "button", "shortcut unset");
+    hint.textContent = "No shortcut assigned - set one";
+    hint.title = "Chrome assigns Alt+T only when no other extension uses it; pick a key on chrome://extensions/shortcuts";
+    return hint;
   }
 
   private themeButton(): HTMLElement {

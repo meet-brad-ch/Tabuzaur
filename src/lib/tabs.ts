@@ -26,6 +26,8 @@ export interface TabBrowser {
   jumpTo(url: string): Promise<void>;
   /** Calls the listener after any tab is created, removed, moved, updated or activated. */
   onChange(listener: () => void): void;
+  /** The key Chrome assigned to the toolbar action, e.g. "Alt+T"; empty when none is assigned. */
+  actionShortcut(): Promise<string>;
 }
 
 export class ChromeTabBrowser implements TabBrowser {
@@ -72,6 +74,15 @@ export class ChromeTabBrowser implements TabBrowser {
     } else {
       await this.activate(open);
     }
+  }
+
+  async actionShortcut(): Promise<string> {
+    const commands = await chrome.commands.getAll();
+    const action = commands.find((c) => c.name === "_execute_action");
+    if (action === undefined) {
+      throw new Error("the manifest declares no _execute_action command");
+    }
+    return action.shortcut ?? "";
   }
 
   onChange(listener: () => void): void {
