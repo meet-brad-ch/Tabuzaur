@@ -18,15 +18,23 @@
   --shadow-lift: 0 2px 4px #00000014, 0 10px 24px #00000014;
   --radius: 10px;
 
-  /* card hues: a light body and a stronger band for the header */
-  --hue-0-bg: #fdecef; --hue-0-band: #f8cdd5;
-  --hue-1-bg: #fdeee2; --hue-1-band: #f9d3b8;
-  --hue-2-bg: #fbf5d8; --hue-2-band: #f0e39a;
-  --hue-3-bg: #e6f6ea; --hue-3-band: #bfe8cb;
-  --hue-4-bg: #e3f5f6; --hue-4-band: #b7e5e8;
-  --hue-5-bg: #e6eefc; --hue-5-band: #c3d6f8;
-  --hue-6-bg: #eee8fb; --hue-6-band: #d4c6f3;
-  --hue-7-bg: #fbe7f3; --hue-7-band: #f3c3df;
+  /* card hues: a light body and a stronger band for the header; 16 hues cycle by position */
+  --hue-0-bg: #fce8ec; --hue-0-band: #f0c1c9;  /* rose */
+  --hue-1-bg: #fcece8; --hue-1-band: #f0c9c1;  /* coral */
+  --hue-2-bg: #fcf2e8; --hue-2-band: #f0d7c1;  /* peach */
+  --hue-3-bg: #fcf6e8; --hue-3-band: #f0e1c1;  /* apricot */
+  --hue-4-bg: #fcfae8; --hue-4-band: #f0ecc1;  /* lemon */
+  --hue-5-bg: #f6fce8; --hue-5-band: #e2f0c1;  /* lime */
+  --hue-6-bg: #e8fcef; --hue-6-band: #c1f0d1;  /* mint */
+  --hue-7-bg: #e8fcf8; --hue-7-band: #c1f0e7;  /* teal */
+  --hue-8-bg: #e8fafc; --hue-8-band: #c1eaf0;  /* aqua */
+  --hue-9-bg: #e8f4fc; --hue-9-band: #c1ddf0;  /* sky */
+  --hue-10-bg: #e8effc; --hue-10-band: #c1d1f0;  /* azure */
+  --hue-11-bg: #e8e9fc; --hue-11-band: #c1c3f0;  /* periwinkle */
+  --hue-12-bg: #f0e8fc; --hue-12-band: #d2c1f0;  /* lavender */
+  --hue-13-bg: #f6e8fc; --hue-13-band: #e1c1f0;  /* violet */
+  --hue-14-bg: #fce8fc; --hue-14-band: #f0c1f0;  /* orchid */
+  --hue-15-bg: #fce8f4; --hue-15-band: #f0c1dd;  /* pink */
 }
 
 :root[data-theme="dark"] {
@@ -45,14 +53,22 @@
   --shadow: 0 1px 2px #00000040, 0 4px 12px #00000033;
   --shadow-lift: 0 2px 4px #00000059, 0 10px 24px #00000059;
 
-  --hue-0-bg: #3a262b; --hue-0-band: #4f3039;
-  --hue-1-bg: #3a2d24; --hue-1-band: #503b2c;
-  --hue-2-bg: #363321; --hue-2-band: #4b4628;
-  --hue-3-bg: #22332a; --hue-3-band: #2c4638;
-  --hue-4-bg: #213335; --hue-4-band: #2b4649;
-  --hue-5-bg: #232c3b; --hue-5-band: #2d3b54;
-  --hue-6-bg: #2c2740; --hue-6-band: #3b3258;
-  --hue-7-bg: #36253a; --hue-7-band: #4a314e;
+  --hue-0-bg: #3f272b; --hue-0-band: #5f353c;  /* rose */
+  --hue-1-bg: #3f2b27; --hue-1-band: #5f3c35;  /* coral */
+  --hue-2-bg: #3f3227; --hue-2-band: #5f4935;  /* peach */
+  --hue-3-bg: #3f3727; --hue-3-band: #5f5135;  /* apricot */
+  --hue-4-bg: #3b3a2b; --hue-4-band: #59563b;  /* lemon */
+  --hue-5-bg: #363b2b; --hue-5-band: #50593b;  /* lime */
+  --hue-6-bg: #273f2f; --hue-6-band: #355f43;  /* mint */
+  --hue-7-bg: #273f3a; --hue-7-band: #355f56;  /* teal */
+  --hue-8-bg: #273c3f; --hue-8-band: #35595f;  /* aqua */
+  --hue-9-bg: #27353f; --hue-9-band: #354d5f;  /* sky */
+  --hue-10-bg: #272f3f; --hue-10-band: #35435f;  /* azure */
+  --hue-11-bg: #27283f; --hue-11-band: #35375f;  /* periwinkle */
+  --hue-12-bg: #30273f; --hue-12-band: #44355f;  /* lavender */
+  --hue-13-bg: #37273f; --hue-13-band: #51355f;  /* violet */
+  --hue-14-bg: #3f273f; --hue-14-band: #5f355f;  /* orchid */
+  --hue-15-bg: #3f2735; --hue-15-band: #5f354d;  /* pink */
 }
 
 .hue-0 { --card-bg: var(--hue-0-bg); --card-band: var(--hue-0-band); }
@@ -63,6 +79,14 @@
 .hue-5 { --card-bg: var(--hue-5-bg); --card-band: var(--hue-5-band); }
 .hue-6 { --card-bg: var(--hue-6-bg); --card-band: var(--hue-6-band); }
 .hue-7 { --card-bg: var(--hue-7-bg); --card-band: var(--hue-7-band); }
+.hue-8 { --card-bg: var(--hue-8-bg); --card-band: var(--hue-8-band); }
+.hue-9 { --card-bg: var(--hue-9-bg); --card-band: var(--hue-9-band); }
+.hue-10 { --card-bg: var(--hue-10-bg); --card-band: var(--hue-10-band); }
+.hue-11 { --card-bg: var(--hue-11-bg); --card-band: var(--hue-11-band); }
+.hue-12 { --card-bg: var(--hue-12-bg); --card-band: var(--hue-12-band); }
+.hue-13 { --card-bg: var(--hue-13-bg); --card-band: var(--hue-13-band); }
+.hue-14 { --card-bg: var(--hue-14-bg); --card-band: var(--hue-14-band); }
+.hue-15 { --card-bg: var(--hue-15-bg); --card-band: var(--hue-15-band); }
 
 /* ---- base --------------------------------------------------------------------------------- */
 

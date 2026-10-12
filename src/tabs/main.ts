@@ -10,7 +10,7 @@ import { hostnameOf, hueOf, initialOf } from "../lib/urls.ts";
 
 const DRAG_TYPE = "application/x-tabuzaur-page";
 const CARD_DRAG_TYPE = "application/x-tabuzaur-collection";
-const HUE_COUNT = 8;
+const HUE_COUNT = 16;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /** Stroke icons, 24-unit grid, drawn with currentColor. */
