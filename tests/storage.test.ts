@@ -41,6 +41,11 @@ describe("parseStoreData", () => {
     expect("favIconUrl" in (parsed.collections[0]?.pages[0] ?? {})).toBe(false);
   });
 
+  it("reads the pre-0.1.0 field name tabs as pages", () => {
+    const { pages, ...rest } = collection;
+    expect(parseStoreData({ schemaVersion: 1, collections: [{ ...rest, tabs: pages }] })).toEqual(valid);
+  });
+
   it.each([
     [null, "store is not an object"],
     [[], "store is not an object"],

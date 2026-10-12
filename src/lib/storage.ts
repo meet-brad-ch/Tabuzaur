@@ -66,14 +66,16 @@ export function parseStoreData(raw: unknown): StoreData {
 function parseCollection(raw: unknown, index: number): Collection {
   const where = `collections[${String(index)}]`;
   const c = asRecord(raw, where);
-  if (!Array.isArray(c.pages)) {
+  // Before 0.1.0 the field was called "tabs"; a document written then is read as pages.
+  const pages = c.pages === undefined && Array.isArray(c.tabs) ? c.tabs : c.pages;
+  if (!Array.isArray(pages)) {
     throw new Error(`${where}.pages is not an array`);
   }
   return {
     id: asString(c.id, `${where}.id`),
     name: asString(c.name, `${where}.name`),
     createdAt: asString(c.createdAt, `${where}.createdAt`),
-    pages: c.pages.map((t: unknown, j) => parsePage(t, `${where}.pages[${String(j)}]`)),
+    pages: pages.map((t: unknown, j) => parsePage(t, `${where}.pages[${String(j)}]`)),
   };
 }
 
