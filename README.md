@@ -13,8 +13,8 @@ the pages are open as tabs, and the saved links stay linked to those tabs. Exist
 collections through their own cloud or a Google account. Tabuzaur keeps everything local, with no
 network access and no account.
 
-**Status:** partly working — the page and the popup are built and pass the gate; the owner's
-hands-on test in Chrome is the next step.
+**Status:** working — the page, the toolbar button and Alt+T are tested by hand in Chrome;
+`npm run verify` is green; releases are built by CI from a `v*` tag.
 
 ## How to run
 
