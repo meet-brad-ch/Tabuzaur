@@ -88,16 +88,49 @@ describe("CollectionBook.removePage", () => {
   });
 });
 
-describe("CollectionBook.retitlePage", () => {
-  it("changes only that page's title, trimmed", () => {
-    const book = bookWithTwo().retitlePage("id-2", 1, "  New title ");
-    expect(book.get("id-2").pages).toEqual([pageA, { ...pageB, title: "New title" }]);
+describe("CollectionBook.editPage", () => {
+  it("changes that page's title and url, trimmed", () => {
+    const book = bookWithTwo().editPage("id-2", 1, "  New title ", " https://new.example/p ");
+    expect(book.get("id-2").pages).toEqual([pageA, { ...pageB, title: "New title", url: "https://new.example/p" }]);
     expect(book.get("id-1").pages).toEqual([pageA]);
   });
 
-  it("rejects an empty title or a missing page", () => {
-    expect(() => bookWithTwo().retitlePage("id-2", 1, " ")).toThrow("a link needs a title");
-    expect(() => bookWithTwo().retitlePage("id-1", 1, "x")).toThrow("no page at index 1");
+  it("keeps the url when it is unchanged", () => {
+    expect(bookWithTwo().editPage("id-2", 1, "x", pageB.url).get("id-2").pages[1]?.url).toBe(pageB.url);
+  });
+
+  it("rejects an empty title, a bad url, a url of another page in the collection, or a missing page", () => {
+    expect(() => bookWithTwo().editPage("id-2", 1, " ", pageB.url)).toThrow("a link needs a title");
+    expect(() => bookWithTwo().editPage("id-2", 1, "x", "not a url")).toThrow("not a valid url: not a url");
+    expect(() => bookWithTwo().editPage("id-2", 1, "x", pageA.url)).toThrow("already in Second");
+    expect(() => bookWithTwo().editPage("id-1", 1, "x", pageA.url)).toThrow("no page at index 1");
+  });
+});
+
+describe("CollectionBook.reorderPage", () => {
+  const pageC = { title: "C", url: "https://c.example/" };
+  const three = (): CollectionBook => bookWithTwo().addPage("id-2", pageC);
+  const urls = (book: CollectionBook): string[] => book.get("id-2").pages.map((p) => p.url);
+
+  it("moves a page down: to is the slot before the move", () => {
+    expect(urls(three().reorderPage("id-2", 0, 2))).toEqual([pageB.url, pageA.url, pageC.url]);
+    expect(urls(three().reorderPage("id-2", 0, 3))).toEqual([pageB.url, pageC.url, pageA.url]);
+  });
+
+  it("moves a page up", () => {
+    expect(urls(three().reorderPage("id-2", 2, 0))).toEqual([pageC.url, pageA.url, pageB.url]);
+    expect(urls(three().reorderPage("id-2", 2, 1))).toEqual([pageA.url, pageC.url, pageB.url]);
+  });
+
+  it("changes nothing when the page lands on its own place", () => {
+    expect(urls(three().reorderPage("id-2", 1, 1))).toEqual([pageA.url, pageB.url, pageC.url]);
+    expect(urls(three().reorderPage("id-2", 1, 2))).toEqual([pageA.url, pageB.url, pageC.url]);
+  });
+
+  it("rejects a missing page or an impossible place", () => {
+    expect(() => three().reorderPage("id-2", 3, 0)).toThrow("no page at index 3");
+    expect(() => three().reorderPage("id-2", 0, 4)).toThrow("no place at index 4");
+    expect(() => three().reorderPage("id-2", 0, -1)).toThrow("no place at index -1");
   });
 });
 
@@ -108,9 +141,19 @@ describe("CollectionBook.movePage", () => {
     expect(book.get("id-2").pages).toEqual([pageA]);
   });
 
-  it("changes nothing when source and target are the same collection", () => {
+  it("changes nothing when source and target are the same collection and no place is given", () => {
     const book = bookWithTwo();
     expect(book.movePage("id-2", 0, "id-2")).toBe(book);
+  });
+
+  it("reorders when source and target are the same collection and a place is given", () => {
+    expect(bookWithTwo().movePage("id-2", 0, "id-2", 2).get("id-2").pages).toEqual([pageB, pageA]);
+  });
+
+  it("inserts at the given place in the target", () => {
+    const book = bookWithTwo().movePage("id-2", 1, "id-1", 0);
+    expect(book.get("id-1").pages).toEqual([pageB, pageA]);
+    expect(book.get("id-2").pages).toEqual([pageA]);
   });
 
   it("rejects a url already in the target, leaving the source untouched", () => {

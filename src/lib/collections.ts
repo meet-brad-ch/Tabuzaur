@@ -66,34 +66,64 @@ export class CollectionBook {
     return this.replace(id, { ...collection, pages: collection.pages.filter((_, i) => i !== index) });
   }
 
-  /** Changes a page's title. The title is trimmed; an empty title is an error. */
-  retitlePage(id: string, index: number, title: string): CollectionBook {
+  /**
+   * Changes a page's title and url. Both are trimmed; an empty title, a url that does not parse,
+   * or a url already used by another page of the collection is an error.
+   */
+  editPage(id: string, index: number, title: string, url: string): CollectionBook {
     const collection = this.get(id);
-    const page = collection.pages[index];
-    if (page === undefined) {
-      throw new Error(`collection ${id} has no page at index ${String(index)}`);
-    }
-    const trimmed = title.trim();
-    if (trimmed === "") {
+    this.pageAt(collection, index);
+    const newTitle = title.trim();
+    if (newTitle === "") {
       throw new Error("a link needs a title");
     }
-    const pages = collection.pages.map((p, i) => (i === index ? { ...p, title: trimmed } : p));
+    const newUrl = validUrl(url);
+    if (collection.pages.some((p, i) => i !== index && p.url === newUrl)) {
+      throw new Error(`already in ${collection.name}`);
+    }
+    const pages = collection.pages.map((p, i) => (i === index ? { ...p, title: newTitle, url: newUrl } : p));
     return this.replace(id, { ...collection, pages });
   }
 
   /**
-   * Moves one page to the end of another collection. A URL already in the target is an error;
-   * a move onto the page's own collection changes nothing.
+   * Moves the page at `from` so that it sits where index `to` was before the move (0 .. length,
+   * length meaning the end). Moving a page onto its own place changes nothing.
    */
-  movePage(fromId: string, index: number, toId: string): CollectionBook {
+  reorderPage(id: string, from: number, to: number): CollectionBook {
+    const collection = this.get(id);
+    const page = this.pageAt(collection, from);
+    if (!Number.isInteger(to) || to < 0 || to > collection.pages.length) {
+      throw new Error(`collection ${id} has no place at index ${String(to)}`);
+    }
+    const rest = collection.pages.filter((_, i) => i !== from);
+    const at = to > from ? to - 1 : to;
+    const pages = [...rest.slice(0, at), page, ...rest.slice(at)];
+    return this.replace(id, { ...collection, pages });
+  }
+
+  /**
+   * Moves one page into another collection, at `to` (0 .. length, default the end). A URL already
+   * in the target is an error; a move within the same collection is a reorder.
+   */
+  movePage(fromId: string, index: number, toId: string, to?: number): CollectionBook {
     if (fromId === toId) {
-      return this;
+      return to === undefined ? this : this.reorderPage(fromId, index, to);
     }
-    const page = this.get(fromId).pages[index];
+    const page = this.pageAt(this.get(fromId), index);
+    const added = this.addPage(toId, page).removePage(fromId, index);
+    if (to === undefined) {
+      return added;
+    }
+    const target = added.get(toId);
+    return added.reorderPage(toId, target.pages.length - 1, to);
+  }
+
+  private pageAt(collection: Collection, index: number): SavedPage {
+    const page = Number.isInteger(index) ? collection.pages[index] : undefined;
     if (page === undefined) {
-      throw new Error(`collection ${fromId} has no page at index ${String(index)}`);
+      throw new Error(`collection ${collection.id} has no page at index ${String(index)}`);
     }
-    return this.addPage(toId, page).removePage(fromId, index);
+    return page;
   }
 
   /** Collections whose name, or any page title or url, contains the query (case-insensitive). */
@@ -130,6 +160,17 @@ export function findMatch(text: string, query: string): TextMatch | undefined {
     return undefined;
   }
   return { before: text.slice(0, at), match: text.slice(at, at + needle.length), after: text.slice(at + needle.length) };
+}
+
+/** The trimmed url, if it parses as one. */
+function validUrl(url: string): string {
+  const trimmed = url.trim();
+  try {
+    new URL(trimmed);
+  } catch {
+    throw new Error(`not a valid url: ${trimmed}`);
+  }
+  return trimmed;
 }
 
 function validName(name: string): string {

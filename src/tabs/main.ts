@@ -307,15 +307,7 @@ class TabsPage {
     card.addEventListener("drop", (event) => {
       event.preventDefault();
       card.classList.remove("over");
-      const raw = event.dataTransfer?.getData(DRAG_TYPE) ?? "";
-      if (raw === "") {
-        return;
-      }
-      const { page, from } = JSON.parse(raw) as DragPayload;
-      this.justAdded = { collectionId: collection.id, url: page.url };
-      this.run(() => this.change(from === undefined
-        ? this.book.addPage(collection.id, page)
-        : this.book.movePage(from.collectionId, from.index, collection.id)));
+      this.dropInto(collection, event, undefined);
     });
 
     const header = el("header");
@@ -350,6 +342,22 @@ class TabsPage {
         startDrag(event, row, { page, from: { collectionId: collection.id, index } });
       });
       row.addEventListener("dragend", () => { row.classList.remove("dragging"); });
+      row.addEventListener("dragover", (event) => {
+        if (event.dataTransfer?.types.includes(DRAG_TYPE) === true) {
+          const after = isLowerHalf(row, event);
+          row.classList.toggle("drop-before", !after);
+          row.classList.toggle("drop-after", after);
+        }
+      });
+      row.addEventListener("dragleave", () => { row.classList.remove("drop-before", "drop-after"); });
+      row.addEventListener("drop", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        card.classList.remove("over");
+        const after = isLowerHalf(row, event);
+        row.classList.remove("drop-before", "drop-after");
+        this.dropInto(collection, event, after ? index + 1 : index);
+      });
       const remove = button(() => {
         this.run(() => this.change(this.book.removePage(collection.id, index)));
       }, "button", "icon remove");
@@ -362,7 +370,26 @@ class TabsPage {
     return card;
   }
 
-  /** The link with its host line and pen button, or an input while the title is being edited. */
+  /** Puts the dragged page into the collection at `to` (undefined: the end); a tab is added, a saved link is moved. */
+  private dropInto(collection: Collection, event: DragEvent, to: number | undefined): void {
+    const raw = event.dataTransfer?.getData(DRAG_TYPE) ?? "";
+    if (raw === "") {
+      return;
+    }
+    const { page, from } = JSON.parse(raw) as DragPayload;
+    this.justAdded = { collectionId: collection.id, url: page.url };
+    this.run(() => this.change(this.placed(collection.id, page, from, to)));
+  }
+
+  private placed(collectionId: string, page: SavedPage, from: PageRef | undefined, to: number | undefined): CollectionBook {
+    if (from !== undefined) {
+      return this.book.movePage(from.collectionId, from.index, collectionId, to);
+    }
+    const added = this.book.addPage(collectionId, page);
+    return to === undefined ? added : added.reorderPage(collectionId, added.get(collectionId).pages.length - 1, to);
+  }
+
+  /** The link with its host line and pen button, or a title + url form while it is being edited. */
   private pageTitle(collection: Collection, page: SavedPage, index: number): HTMLElement[] {
     const editing = this.editingPage;
     if (editing?.collectionId !== collection.id || editing.index !== index) {
@@ -384,20 +411,44 @@ class TabsPage {
         focusAndSelect(this.root.querySelector<HTMLInputElement>(".page input.title"));
       }, "button", "icon edit");
       edit.append(icon("pen"));
-      edit.title = "Edit the title";
+      edit.title = "Edit the title and the url";
       return [body, edit];
     }
-    const input = el("input", "title") as HTMLInputElement;
-    input.type = "text";
-    input.value = page.title;
-    this.editOnKeys(input, () => {
+    const form = el("form", "edit") as HTMLFormElement;
+    const title = el("input", "title") as HTMLInputElement;
+    title.type = "text";
+    title.value = page.title;
+    title.placeholder = "Title";
+    const url = el("input", "url") as HTMLInputElement;
+    url.type = "text";
+    url.value = page.url;
+    url.placeholder = "https://";
+    url.spellcheck = false;
+    form.append(title, url);
+    const save = (): void => {
       this.editingPage = undefined;
-      this.run(() => this.change(this.book.retitlePage(collection.id, index, input.value)));
-    }, () => {
+      this.run(() => this.change(this.book.editPage(collection.id, index, title.value, url.value)));
+    };
+    const cancel = (): void => {
       this.editingPage = undefined;
       this.renderCollections();
-    }, () => this.editingPage !== undefined);
-    return [input];
+    };
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      save();
+    });
+    form.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        cancel();
+      }
+    });
+    // leaving the form (not moving between its two fields) saves, like the single-field editors
+    form.addEventListener("focusout", (event) => {
+      if (this.editingPage !== undefined && !form.contains(event.relatedTarget as Node | null)) {
+        save();
+      }
+    });
+    return [form];
   }
 
   /** The collection name and its pen button, or an input while it is being renamed. */
@@ -488,6 +539,12 @@ function startDrag(event: DragEvent, row: HTMLElement, payload: DragPayload): vo
   event.dataTransfer.effectAllowed = payload.from === undefined ? "copy" : "move";
   // the class goes on after the browser took its drag image, so the ghost is the full row
   setTimeout(() => { row.classList.add("dragging"); }, 0);
+}
+
+/** Whether the pointer is in the lower half of the row: the drop goes after it. */
+function isLowerHalf(row: HTMLElement, event: DragEvent): boolean {
+  const box = row.getBoundingClientRect();
+  return event.clientY - box.top > box.height / 2;
 }
 
 function focusAndSelect(input: HTMLInputElement | null): void {

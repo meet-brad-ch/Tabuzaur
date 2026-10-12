@@ -579,8 +579,16 @@ button.remove:hover {
   background: #ffffff14;
 }
 
-.page input.title {
+.page form.edit {
+  display: flex;
   flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.page form.edit input {
+  width: 100%;
   min-width: 0;
   height: 28px;
   padding: 0 8px;
@@ -588,6 +596,19 @@ button.remove:hover {
   border-radius: 6px;
   background: var(--panel);
   outline: none;
+}
+
+.page form.edit input.url {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.page.drop-before {
+  box-shadow: 0 -2px 0 0 var(--accent);
+}
+
+.page.drop-after {
+  box-shadow: 0 2px 0 0 var(--accent);
 }
 
 .page.new {
