@@ -181,6 +181,41 @@ describe("CollectionBook.search", () => {
   });
 });
 
+describe("CollectionBook.merge", () => {
+  const pageC = { title: "C", url: "https://c.example/" };
+
+  it("joins by id, adding only the urls the collection lacks, and keeps the existing name and titles", () => {
+    const other = CollectionBook.empty().create("Renamed First", clock, new CountingIdSource())
+      .addPage("id-1", { ...pageA, title: "other title" }).addPage("id-1", pageC).toData();
+    const book = bookWithTwo().merge(other);
+    expect(book.get("id-1")).toEqual({ ...bookWithTwo().get("id-1"), pages: [pageA, pageC] });
+    expect(book.collections.length).toBe(2);
+  });
+
+  it("joins by name when the id is unknown", () => {
+    const ids = new CountingIdSource(); ids.next(); ids.next(); ids.next(); ids.next(); ids.next();
+    const other = CollectionBook.empty().create(" second ", clock, ids).addPage("id-6", pageC).toData();
+    const book = bookWithTwo().merge(other);
+    expect(book.collections.map((c) => c.id)).toEqual(["id-1", "id-2"]);
+    expect(book.get("id-2").pages).toEqual([pageA, pageB, pageC]);
+  });
+
+  it("appends a collection it does not know, as it is", () => {
+    const ids = new CountingIdSource(); ids.next(); ids.next(); ids.next(); ids.next(); ids.next();
+    const other = CollectionBook.empty().create("Third", clock, ids).addPage("id-6", pageC).toData();
+    const book = bookWithTwo().merge(other);
+    expect(book.collections.map((c) => c.id)).toEqual(["id-1", "id-2", "id-6"]);
+    expect(book.get("id-6").pages).toEqual([pageC]);
+  });
+
+  it("changes nothing for an empty document and does not touch the original", () => {
+    const book = bookWithTwo();
+    expect(book.merge({ schemaVersion: 1, collections: [] }).collections).toEqual(book.collections);
+    book.merge(bookWithTwo().toData());
+    expect(book.get("id-2").pages.length).toBe(2);
+  });
+});
+
 describe("findMatch", () => {
   it("splits the text around the first case-insensitive hit, keeping the original case", () => {
     expect(findMatch("Hello Docs world", "docs")).toEqual({ before: "Hello ", match: "Docs", after: " world" });

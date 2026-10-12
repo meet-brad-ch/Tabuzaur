@@ -164,42 +164,71 @@ class TabsPage {
     return header;
   }
 
-  /** Export downloads the document as JSON; import replaces it from such a file, after asking. */
+  /** Export downloads the document as JSON; import reads such a file and asks: replace or merge. */
   private backupButtons(): HTMLElement {
     const group = el("div", "backup");
     const exportButton = button(() => {
       const now = this.clock.now();
       download(backupFileName(now), serializeBackup(this.book.toData(), now));
-    }, "button", "icon");
-    exportButton.append(icon("download"));
-    exportButton.title = "Export a backup (JSON)";
+    }, "button", "ghost");
+    exportButton.append(icon("download"), text("Export"));
     const picker = el("input") as HTMLInputElement;
     picker.type = "file";
     picker.accept = ".json,application/json";
     picker.hidden = true;
     picker.addEventListener("change", () => {
       const file = picker.files?.[0];
+      picker.value = "";
       if (file === undefined) {
         return;
       }
       this.run(async () => {
         const data = parseBackup(await file.text());
-        const count = data.collections.length;
-        const current = this.book.collections.length;
-        const question = `Import ${String(count)} ${count === 1 ? "collection" : "collections"} from ${file.name}? `
-          + `This replaces the ${String(current)} ${current === 1 ? "collection" : "collections"} you have now.`;
-        if (!window.confirm(question)) {
+        const choice = await this.askImport(file.name, data.collections.length);
+        if (choice === "cancel") {
           return;
         }
-        await this.change(CollectionBook.fromData(data));
-        this.pendingNotice = `Imported ${String(count)} ${count === 1 ? "collection" : "collections"} from ${file.name}.`;
+        await this.change(choice === "replace" ? CollectionBook.fromData(data) : this.book.merge(data));
+        const count = data.collections.length;
+        this.pendingNotice = `${choice === "replace" ? "Replaced with" : "Merged"} ${String(count)} ${count === 1 ? "collection" : "collections"} from ${file.name}.`;
       });
     });
-    const importButton = button(() => { picker.click(); }, "button", "icon");
-    importButton.append(icon("upload"));
-    importButton.title = "Import a backup (replaces the current collections)";
+    const importButton = button(() => { picker.click(); }, "button", "ghost");
+    importButton.append(icon("upload"), text("Import"));
     group.append(exportButton, importButton, picker);
     return group;
+  }
+
+  /** A modal with the three ways to take an import; resolves with the one chosen. */
+  private askImport(fileName: string, count: number): Promise<"replace" | "merge" | "cancel"> {
+    const dialog = el("dialog", "import") as HTMLDialogElement;
+    const heading = el("h3");
+    heading.textContent = `Import ${String(count)} ${count === 1 ? "collection" : "collections"} from ${fileName}`;
+    const current = this.book.collections.length;
+    const replaceText = el("p");
+    replaceText.textContent = `Replace: the ${String(current)} ${current === 1 ? "collection" : "collections"} you have now ${current === 1 ? "is" : "are"} removed first.`;
+    const mergeText = el("p");
+    mergeText.textContent = "Merge: imported collections join yours by name, links you already have are kept, nothing is removed.";
+    const actions = el("div", "actions");
+    dialog.append(heading, replaceText, mergeText, actions);
+    return new Promise((resolve) => {
+      const choose = (choice: "replace" | "merge" | "cancel"): void => {
+        dialog.close();
+        dialog.remove();
+        resolve(choice);
+      };
+      actions.append(
+        button(() => { choose("replace"); }, "button", "danger-outline", "Replace"),
+        button(() => { choose("merge"); }, "button", "primary", "Merge"),
+        button(() => { choose("cancel"); }, "button", "ghost", "Cancel"),
+      );
+      dialog.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        choose("cancel");
+      });
+      document.body.append(dialog);
+      dialog.showModal();
+    });
   }
 
   /** The assigned key, or, when Chrome assigned none, a link to its shortcut settings. */
@@ -683,9 +712,12 @@ function el(tag: string, className?: string): HTMLElement {
   return node;
 }
 
-function button(onClick?: () => void, type: "button" | "submit" = "button", className?: string): HTMLButtonElement {
+function button(onClick?: () => void, type: "button" | "submit" = "button", className?: string, label?: string): HTMLButtonElement {
   const node = el("button", className) as HTMLButtonElement;
   node.type = type;
+  if (label !== undefined) {
+    node.textContent = label;
+  }
   if (onClick !== undefined) {
     node.addEventListener("click", onClick);
   }

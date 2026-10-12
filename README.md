@@ -36,10 +36,10 @@ time. Chrome assigns Alt+T at install only when no other extension or Chrome its
 the page's header shows the key that is in effect, or a red "No shortcut assigned" link that opens
 `chrome://extensions/shortcuts`, where any key can be set.
 
-Backup: the two arrow buttons in the page header export the collections as
-`tabuzaur-backup-YYYY-MM-DD.json` and import such a file, replacing the current collections after a
-confirmation. The file is the stored document itself, so it is also the way to carry collections to
-another machine.
+Backup: Export in the page header downloads the collections as `tabuzaur-backup-YYYY-MM-DD.json`;
+Import reads such a file and asks whether to replace the current collections or merge the file into
+them (by collection id or name; links already present are kept, nothing is removed). The file is
+the stored document itself, so it is also the way to carry collections to another machine.
 
 **Verify:** `npm run verify`
 

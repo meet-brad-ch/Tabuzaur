@@ -126,6 +126,26 @@ export class CollectionBook {
     return page;
   }
 
+  /**
+   * Adds another document's collections without removing anything. An imported collection joins
+   * the existing one with the same id, else the one with the same name (case-insensitive), and
+   * contributes the pages whose url that collection lacks; otherwise it is appended as it is.
+   */
+  merge(other: StoreData): CollectionBook {
+    return other.collections.reduce<CollectionBook>((book, incoming) => book.absorb(incoming), this);
+  }
+
+  private absorb(incoming: Collection): CollectionBook {
+    const target = this.collections.find((c) => c.id === incoming.id)
+      ?? this.collections.find((c) => sameName(c.name, incoming.name));
+    if (target === undefined) {
+      return new CollectionBook([...this.collections, incoming]);
+    }
+    const known = new Set(target.pages.map((p) => p.url));
+    const added = incoming.pages.filter((p) => !known.has(p.url));
+    return this.replace(target.id, { ...target, pages: [...target.pages, ...added] });
+  }
+
   /** Collections whose name, or any page title or url, contains the query (case-insensitive). */
   search(query: string): readonly Collection[] {
     const needle = query.trim().toLowerCase();
@@ -171,6 +191,10 @@ function validUrl(url: string): string {
     throw new Error(`not a valid url: ${trimmed}`);
   }
   return trimmed;
+}
+
+function sameName(a: string, b: string): boolean {
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
 }
 
 function validName(name: string): string {

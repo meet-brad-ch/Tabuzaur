@@ -305,13 +305,75 @@ button.theme {
 
 .backup {
   display: flex;
-  gap: 2px;
+  gap: 6px;
   margin-left: auto;
 }
 
-.backup button.icon {
-  width: 36px;
+button.ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   height: 36px;
+  padding: 0 12px 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  color: var(--fg);
+  font-weight: 600;
+}
+
+button.ghost:hover {
+  background: var(--hover);
+}
+
+button.danger-outline {
+  height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--danger);
+  border-radius: 8px;
+  background: none;
+  color: var(--danger);
+  font-weight: 600;
+}
+
+button.danger-outline:hover {
+  background: #d23b3b14;
+}
+
+dialog.import {
+  width: min(460px, 90vw);
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel);
+  color: var(--fg);
+  box-shadow: var(--shadow-lift);
+}
+
+dialog.import::backdrop {
+  background: #0f283d66;
+}
+
+dialog.import h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+dialog.import p {
+  margin: 0 0 8px;
+  color: var(--muted);
+}
+
+dialog.import .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+dialog.import .actions button.primary {
+  height: 36px;
+  padding: 0 14px;
 }
 
 .notice[hidden] {
