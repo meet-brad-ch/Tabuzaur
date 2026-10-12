@@ -1,4 +1,4 @@
-import type { Clock, IdSource, SavedTab } from "../src/lib/model.ts";
+import type { Clock, IdSource, SavedPage } from "../src/lib/model.ts";
 import type { KeyValueArea } from "../src/lib/storage.ts";
 
 export class FixedClock implements Clock {
@@ -38,8 +38,8 @@ export class MemoryArea implements KeyValueArea {
   }
 }
 
-export const tabA: SavedTab = { title: "Example", url: "https://example.com/" };
-export const tabB: SavedTab = {
+export const pageA: SavedPage = { title: "Example", url: "https://example.com/" };
+export const pageB: SavedPage = {
   title: "Docs",
   url: "https://docs.example.com/x",
   favIconUrl: "https://docs.example.com/i.png",

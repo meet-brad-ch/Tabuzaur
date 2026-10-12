@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { CollectionBook } from "../src/lib/collections.ts";
 import { STORAGE_KEY } from "../src/lib/model.ts";
 import { LocalPersistence, parseStoreData } from "../src/lib/storage.ts";
-import { CountingIdSource, FixedClock, MemoryArea, tabA, tabB } from "./fakes.ts";
+import { CountingIdSource, FixedClock, MemoryArea, pageA, pageB } from "./fakes.ts";
 
 const clock = new FixedClock("2026-10-12T10:00:00.000Z");
 
@@ -14,7 +14,10 @@ describe("LocalPersistence", () => {
   it("round-trips a book through the area under the storage key", async () => {
     const area = new MemoryArea();
     const persistence = new LocalPersistence(area);
-    const book = CollectionBook.empty().add("Work", [tabA, tabB], clock, new CountingIdSource());
+    const book = CollectionBook.empty()
+      .create("Work", clock, new CountingIdSource())
+      .addPage("id-1", pageA)
+      .addPage("id-1", pageB);
     await persistence.save(book.toData());
     expect(Object.keys(await area.get(STORAGE_KEY))).toEqual([STORAGE_KEY]);
     expect(await persistence.load()).toEqual(book.toData());
@@ -28,14 +31,14 @@ describe("LocalPersistence", () => {
 });
 
 describe("parseStoreData", () => {
-  const collection = { id: "a", name: "A", createdAt: "2026-10-12T10:00:00.000Z", tabs: [tabA, tabB] };
+  const collection = { id: "a", name: "A", createdAt: "2026-10-12T10:00:00.000Z", pages: [pageA, pageB] };
   const valid = { schemaVersion: 1, collections: [collection] };
 
   it("accepts a valid document and drops unknown fields", () => {
     const parsed = parseStoreData({ ...valid, extra: 1 });
     expect(parsed).toEqual(valid);
-    expect(parsed.collections[0]?.tabs[0]).toEqual(tabA);
-    expect("favIconUrl" in (parsed.collections[0]?.tabs[0] ?? {})).toBe(false);
+    expect(parsed.collections[0]?.pages[0]).toEqual(pageA);
+    expect("favIconUrl" in (parsed.collections[0]?.pages[0] ?? {})).toBe(false);
   });
 
   it.each([
@@ -44,9 +47,9 @@ describe("parseStoreData", () => {
     [{ schemaVersion: 1 }, "store.collections is not an array"],
     [{ schemaVersion: 1, collections: [1] }, "collections[0] is not an object"],
     [{ schemaVersion: 1, collections: [{ ...collection, id: 1 }] }, "collections[0].id is not a string"],
-    [{ schemaVersion: 1, collections: [{ ...collection, tabs: {} }] }, "collections[0].tabs is not an array"],
-    [{ schemaVersion: 1, collections: [{ ...collection, tabs: [{ title: "t" }] }] }, "collections[0].tabs[0].url is not a string"],
-    [{ schemaVersion: 1, collections: [{ ...collection, tabs: [{ ...tabA, favIconUrl: 3 }] }] }, "collections[0].tabs[0].favIconUrl is not a string"],
+    [{ schemaVersion: 1, collections: [{ ...collection, pages: {} }] }, "collections[0].pages is not an array"],
+    [{ schemaVersion: 1, collections: [{ ...collection, pages: [{ title: "t" }] }] }, "collections[0].pages[0].url is not a string"],
+    [{ schemaVersion: 1, collections: [{ ...collection, pages: [{ ...pageA, favIconUrl: 3 }] }] }, "collections[0].pages[0].favIconUrl is not a string"],
   ])("rejects %j", (raw, message) => {
     expect(() => parseStoreData(raw)).toThrow(message);
   });

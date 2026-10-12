@@ -1,4 +1,4 @@
-import type { Collection, SavedTab, StoreData } from "./model.ts";
+import type { Collection, SavedPage, StoreData } from "./model.ts";
 import { SCHEMA_VERSION, STORAGE_KEY } from "./model.ts";
 
 /** Where the store document lives. */
@@ -48,24 +48,24 @@ export function parseStoreData(raw: unknown): StoreData {
 function parseCollection(raw: unknown, index: number): Collection {
   const where = `collections[${String(index)}]`;
   const c = asRecord(raw, where);
-  if (!Array.isArray(c.tabs)) {
-    throw new Error(`${where}.tabs is not an array`);
+  if (!Array.isArray(c.pages)) {
+    throw new Error(`${where}.pages is not an array`);
   }
   return {
     id: asString(c.id, `${where}.id`),
     name: asString(c.name, `${where}.name`),
     createdAt: asString(c.createdAt, `${where}.createdAt`),
-    tabs: c.tabs.map((t: unknown, j) => parseTab(t, `${where}.tabs[${String(j)}]`)),
+    pages: c.pages.map((t: unknown, j) => parsePage(t, `${where}.pages[${String(j)}]`)),
   };
 }
 
-function parseTab(raw: unknown, where: string): SavedTab {
+function parsePage(raw: unknown, where: string): SavedPage {
   const t = asRecord(raw, where);
-  const tab: SavedTab = { title: asString(t.title, `${where}.title`), url: asString(t.url, `${where}.url`) };
+  const page: SavedPage = { title: asString(t.title, `${where}.title`), url: asString(t.url, `${where}.url`) };
   if (t.favIconUrl === undefined) {
-    return tab;
+    return page;
   }
-  return { ...tab, favIconUrl: asString(t.favIconUrl, `${where}.favIconUrl`) };
+  return { ...page, favIconUrl: asString(t.favIconUrl, `${where}.favIconUrl`) };
 }
 
 function asRecord(raw: unknown, where: string): Record<string, unknown> {

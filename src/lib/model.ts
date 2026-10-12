@@ -1,17 +1,17 @@
-/** One saved tab. */
-export interface SavedTab {
+/** One saved link. */
+export interface SavedPage {
   readonly title: string;
   readonly url: string;
   readonly favIconUrl?: string;
 }
 
-/** A named set of saved tabs. */
+/** A hand-made folder of saved links, in insertion order. May be empty. */
 export interface Collection {
   readonly id: string;
   readonly name: string;
   /** ISO 8601 timestamp. */
   readonly createdAt: string;
-  readonly tabs: readonly SavedTab[];
+  readonly pages: readonly SavedPage[];
 }
 
 /** The whole persisted document, as stored under {@link STORAGE_KEY}. */

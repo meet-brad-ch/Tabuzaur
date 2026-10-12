@@ -1,50 +1,44 @@
 import { describe, expect, it } from "vitest";
 import { CollectionBook } from "../src/lib/collections.ts";
 import { SCHEMA_VERSION } from "../src/lib/model.ts";
-import { CountingIdSource, FixedClock, tabA, tabB } from "./fakes.ts";
+import { CountingIdSource, FixedClock, pageA, pageB } from "./fakes.ts";
 
 const clock = new FixedClock("2026-10-12T10:00:00.000Z");
 
+/** "First" holds pageA; "Second" holds pageA and pageB. */
 function bookWithTwo(): CollectionBook {
   const ids = new CountingIdSource();
   return CollectionBook.empty()
-    .add("First", [tabA], clock, ids)
-    .add("Second", [tabA, tabB], clock, ids);
+    .create("First", clock, ids)
+    .create("Second", clock, ids)
+    .addPage("id-1", pageA)
+    .addPage("id-2", pageA)
+    .addPage("id-2", pageB);
 }
 
-describe("CollectionBook.add", () => {
-  it("puts the new collection on top with a trimmed name, id and timestamp", () => {
-    const book = bookWithTwo();
-    expect(book.collections.map((c) => c.name)).toEqual(["Second", "First"]);
-    expect(book.collections[0]).toEqual({
-      id: "id-2",
-      name: "Second",
-      createdAt: "2026-10-12T10:00:00.000Z",
-      tabs: [tabA, tabB],
-    });
+describe("CollectionBook.create", () => {
+  it("appends an empty collection with a trimmed name, id and timestamp", () => {
+    const book = CollectionBook.empty().create("  Work  ", clock, new CountingIdSource());
+    expect(book.collections).toEqual([
+      { id: "id-1", name: "Work", createdAt: "2026-10-12T10:00:00.000Z", pages: [] },
+    ]);
+    expect(bookWithTwo().collections.map((c) => c.name)).toEqual(["First", "Second"]);
   });
 
-  it("trims the name", () => {
-    const book = CollectionBook.empty().add("  Work  ", [tabA], clock, new CountingIdSource());
-    expect(book.collections[0]?.name).toBe("Work");
-  });
-
-  it("rejects an empty name and an empty tab list", () => {
-    const ids = new CountingIdSource();
-    expect(() => CollectionBook.empty().add("   ", [tabA], clock, ids)).toThrow("needs a name");
-    expect(() => CollectionBook.empty().add("Work", [], clock, ids)).toThrow("at least one tab");
+  it("rejects an empty name", () => {
+    expect(() => CollectionBook.empty().create("   ", clock, new CountingIdSource())).toThrow("needs a name");
   });
 
   it("does not change the original book", () => {
     const empty = CollectionBook.empty();
-    empty.add("Work", [tabA], clock, new CountingIdSource());
+    empty.create("Work", clock, new CountingIdSource());
     expect(empty.collections).toEqual([]);
   });
 });
 
 describe("CollectionBook.remove / rename / get", () => {
   it("removes by id and keeps the order of the rest", () => {
-    expect(bookWithTwo().remove("id-2").collections.map((c) => c.id)).toEqual(["id-1"]);
+    expect(bookWithTwo().remove("id-1").collections.map((c) => c.id)).toEqual(["id-2"]);
   });
 
   it("renames with trimming", () => {
@@ -58,19 +52,39 @@ describe("CollectionBook.remove / rename / get", () => {
   });
 });
 
-describe("CollectionBook.removeTab", () => {
-  it("removes one tab by index", () => {
-    expect(bookWithTwo().removeTab("id-2", 0).get("id-2").tabs).toEqual([tabB]);
+describe("CollectionBook.addPage", () => {
+  it("appends in insertion order", () => {
+    expect(bookWithTwo().get("id-2").pages).toEqual([pageA, pageB]);
   });
 
-  it("removes the collection when its last tab goes", () => {
-    expect(bookWithTwo().removeTab("id-1", 0).collections.map((c) => c.id)).toEqual(["id-2"]);
+  it("rejects a url already in that collection, naming the collection", () => {
+    expect(() => bookWithTwo().addPage("id-1", { ...pageA, title: "other title" })).toThrow("already in First");
+  });
+
+  it("allows the same url in another collection", () => {
+    expect(bookWithTwo().addPage("id-1", pageB).get("id-1").pages).toEqual([pageA, pageB]);
+  });
+
+  it("fails on an unknown id", () => {
+    expect(() => bookWithTwo().addPage("nope", pageA)).toThrow("no collection with id nope");
+  });
+});
+
+describe("CollectionBook.removePage", () => {
+  it("removes one page by index", () => {
+    expect(bookWithTwo().removePage("id-2", 0).get("id-2").pages).toEqual([pageB]);
+  });
+
+  it("keeps an emptied collection", () => {
+    const book = bookWithTwo().removePage("id-1", 0);
+    expect(book.get("id-1").pages).toEqual([]);
+    expect(book.collections.length).toBe(2);
   });
 
   it("rejects an index that is out of range or not an integer", () => {
-    expect(() => bookWithTwo().removeTab("id-1", 1)).toThrow("no tab at index 1");
-    expect(() => bookWithTwo().removeTab("id-1", -1)).toThrow("no tab at index -1");
-    expect(() => bookWithTwo().removeTab("id-1", 0.5)).toThrow("no tab at index 0.5");
+    expect(() => bookWithTwo().removePage("id-1", 1)).toThrow("no page at index 1");
+    expect(() => bookWithTwo().removePage("id-1", -1)).toThrow("no page at index -1");
+    expect(() => bookWithTwo().removePage("id-1", 0.5)).toThrow("no page at index 0.5");
   });
 });
 
@@ -79,11 +93,11 @@ describe("CollectionBook.search", () => {
     expect(bookWithTwo().search("  ").length).toBe(2);
   });
 
-  it("matches the name, a tab title and a tab url, case-insensitively", () => {
+  it("matches the name, a page title and a page url, case-insensitively", () => {
     const book = bookWithTwo();
     expect(book.search("FIRST").map((c) => c.id)).toEqual(["id-1"]);
     expect(book.search("docs").map((c) => c.id)).toEqual(["id-2"]);
-    expect(book.search("example.com").map((c) => c.id)).toEqual(["id-2", "id-1"]);
+    expect(book.search("example.com").map((c) => c.id)).toEqual(["id-1", "id-2"]);
     expect(book.search("nothing")).toEqual([]);
   });
 });
