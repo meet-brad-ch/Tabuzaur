@@ -2,11 +2,21 @@
   "manifest_version": 3,
   "name": "Tabuzaur",
   "version": "0.1.0",
-  "description": "Organize the pages you work with into collections, straight from your open tabs. Local only: no sync, no network.",
+  "description": "Tame your tabs: organize the pages you work with into collections, straight from your open tabs. Local only: no sync, no network.",
   "minimum_chrome_version": "116",
   "permissions": ["tabs", "storage"],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "action": {
-    "default_title": "Open Tabuzaur"
+    "default_title": "Open Tabuzaur",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png"
+    }
   },
   "background": {
     "service_worker": "background.js",

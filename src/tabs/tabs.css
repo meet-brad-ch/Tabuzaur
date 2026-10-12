@@ -2,16 +2,18 @@
 
 :root {
   color-scheme: light;
-  --bg: #f6f7f9;
+  /* brand: navy #0f283d, green #0a8d73 (wordmark) / #36b88f (mascot), mint #dbf5ec, tagline #506f85 */
+  --bg: #f7f8f9;
   --panel: #ffffff;
-  --fg: #1c2230;
-  --muted: #6b7382;
-  --line: #e2e5ea;
-  --hover: #eef1f5;
-  --accent: #3b6cf6;
-  --accent-soft: #3b6cf61f;
+  --fg: #0f283d;
+  --muted: #506f85;
+  --line: #e1e6eb;
+  --hover: #eef2f5;
+  --accent: #0a8d73;
+  --accent-soft: #dbf5ec;
+  --brand-green: #0a8d73;
   --danger: #d23b3b;
-  --mark: #ffe066;
+  --mark: #feb22d;
   --shadow: 0 1px 2px #0000000f, 0 4px 12px #0000000a;
   --shadow-lift: 0 2px 4px #00000014, 0 10px 24px #00000014;
   --radius: 10px;
@@ -29,16 +31,17 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #15181e;
-  --panel: #1d2129;
-  --fg: #e6e9ef;
-  --muted: #8d95a5;
-  --line: #2c313b;
-  --hover: #272c36;
-  --accent: #7aa2ff;
-  --accent-soft: #7aa2ff26;
+  --bg: #0b1f31;
+  --panel: #112b41;
+  --fg: #e6eef5;
+  --muted: #8fa6ba;
+  --line: #1f3d57;
+  --hover: #1a3650;
+  --accent: #36b88f;
+  --accent-soft: #36b88f29;
+  --brand-green: #36b88f;
   --danger: #ff6b6b;
-  --mark: #c9a400;
+  --mark: #feb22d;
   --shadow: 0 1px 2px #00000040, 0 4px 12px #00000033;
   --shadow-lift: 0 2px 4px #00000059, 0 10px 24px #00000059;
 
@@ -129,13 +132,9 @@ button {
 
 mark {
   background: var(--mark);
-  color: #000;
+  color: #0f283d;
   border-radius: 3px;
   padding: 0 2px;
-}
-
-:root[data-theme="dark"] mark {
-  color: #fff;
 }
 
 /* ---- header ------------------------------------------------------------------------------- */
@@ -157,21 +156,33 @@ header.top {
 }
 
 .logo {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, #f8cdd5, #c3d6f8);
-  color: #1c2230;
-  font-weight: 800;
-  font-size: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+}
+
+.brand .words {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
 }
 
 .brand h1 {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.brand .zaur {
+  color: var(--brand-green);
+}
+
+.brand .tagline {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .field {

@@ -103,11 +103,20 @@ class TabsPage {
   private header(): HTMLElement {
     const header = el("header", "top");
     const brand = el("div", "brand");
-    const logo = el("span", "logo");
-    logo.textContent = "T";
+    const logo = el("img", "logo") as HTMLImageElement;
+    logo.src = "icons/icon-128.png";
+    logo.alt = "";
+    const words = el("div", "words");
     const title = el("h1");
-    title.textContent = "Tabuzaur";
-    brand.append(logo, title);
+    const tabu = el("span", "tabu");
+    tabu.textContent = "Tabu";
+    const zaur = el("span", "zaur");
+    zaur.textContent = "zaur";
+    title.append(tabu, zaur);
+    const tagline = el("span", "tagline");
+    tagline.textContent = "Tame your tabs";
+    words.append(title, tagline);
+    brand.append(logo, words);
 
     const search = el("label", "field search");
     const input = el("input") as HTMLInputElement;

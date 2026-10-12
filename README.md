@@ -1,5 +1,7 @@
 # Tabuzaur
 
+*Tame your tabs.*
+
 **What:** A Chrome extension (Manifest V3) for organizing the pages you work with into
 collections, starting from the tabs that are open. Its page shows every open tab in a sidebar and
 your hand-made collections next to it; drag a tab onto a collection to keep it there as a link.
@@ -44,6 +46,8 @@ time; the key can be changed on `chrome://extensions/shortcuts`.
 - `src/lib/` — collection model and operations (`CollectionBook`), the local store and its parser, the Chrome tab adapter
 - `tests/` — Vitest unit tests of `src/lib/` with in-memory fakes (no browser needed)
 - `.github/workflows/build.yml` — CI: runs the verify gate, zips `dist/`, publishes a Release on a `v*` tag
+- `branding/` — the brand showcase (mascot, wordmark, app icons) and the icon tile the `public/icons/` set is resized from
+- `public/icons/` — the extension icons (16, 32, 48, 128), also the page's favicon and header logo
 
 ## Decisions
 
@@ -58,6 +62,8 @@ One line each: the choice, and the reason it was made. Append; do not rewrite hi
 - 2026-10-12 — Dropping a tab keeps it open; a link already in that collection is refused with a visible notice, never ignored.
 - 2026-10-12 — A saved link jumps to the open tab with exactly that URL, else opens a new tab: the collection stays a bookmark-like list.
 - 2026-10-12 — Welcome page by Chrome's startup setting, not `chrome_url_overrides.newtab`: the owner opts in, Ctrl+T stays Chrome's.
+- 2026-10-12 — Fonts come from the machine (Inter if installed, else Segoe UI / system): the page makes no network request, not even for a font.
+- 2026-10-12 — Brand from `branding/showcase.png`: navy `#0f283d`, green `#0a8d73` (wordmark) and `#36b88f` (mascot), mint `#dbf5ec`, tagline grey `#506f85`; the dark app-icon tile is the extension icon.
 
 ---
 
