@@ -1,13 +1,18 @@
 # Tabuzaur
 
-**What:** A Chrome extension (Manifest V3) that saves the open tabs of a window as a named
-collection, closes them if asked, and reopens the collection later. Everything is kept in
-`chrome.storage.local` on the machine; nothing is synced or sent anywhere.
+**What:** A Chrome extension (Manifest V3) for organizing the pages you work with into
+collections, starting from the tabs that are open. Its page shows every open tab in a sidebar and
+your hand-made collections next to it; drag a tab onto a collection to keep it there as a link.
+Clicking a saved link jumps to the tab when it is open and opens the page otherwise. Everything is
+kept in `chrome.storage.local` on the machine; nothing is synced or sent anywhere.
 
-**Why:** Privacy. Existing tab managers sync collections through their own cloud or a Google
-account. Tabuzaur keeps the saved tabs local only, with no network access and no account.
+**Why:** Privacy, and a mix that bookmarks and tab managers do not offer: organizing happens while
+the pages are open as tabs, and the saved links stay linked to those tabs. Existing managers sync
+collections through their own cloud or a Google account. Tabuzaur keeps everything local, with no
+network access and no account.
 
-**Status:** scaffold only — README, gitignore and git exist; no code yet.
+**Status:** partly working — the page and the popup are built and pass the gate; the owner's
+hands-on test in Chrome is the next step.
 
 ## How to run
 
@@ -22,28 +27,36 @@ npm run verify         # eslint + tsc --noEmit + vitest + vite build
 Load it in Chrome: `chrome://extensions` → Developer mode → Load unpacked → the `dist/` folder.
 After a rebuild, click the reload icon on the extension card.
 
+Make it the welcome page: copy the extension ID from its card on `chrome://extensions`, then in
+Chrome Settings → On startup → "Open a specific page or set of pages" add
+`chrome-extension://<id>/tabs.html`. The toolbar button opens the same page at any time.
+
 **Verify:** `npm run verify`
 
-**Prerequisites:** Node 24, npm 11, Chrome with Manifest V3 support (any current Chrome).
+**Prerequisites:** Node 24, npm 11, Chrome 116 or newer.
 
 ## Layout
 
 - `public/manifest.json` — the extension manifest, copied verbatim into `dist/`
-- `popup.html` — Vite entry for the toolbar popup
-- `src/popup/` — the popup UI (DOM only; calls the adapters in `src/lib/`)
-- `src/lib/` — collection model, pure operations, the local store and the Chrome tab adapters
-- `tests/` — Vitest unit tests with in-memory fakes (no browser needed)
+- `tabs.html`, `src/tabs/` — the Tabuzaur page: open-tab sidebar, collection cards, drag and drop
+- `popup.html`, `src/popup/` — the toolbar popup: one button that opens or jumps to the page
+- `src/lib/` — collection model and operations (`CollectionBook`), the local store and its parser, the Chrome tab adapter
+- `tests/` — Vitest unit tests of `src/lib/` with in-memory fakes (no browser needed)
 - `.github/workflows/build.yml` — CI: runs the verify gate, zips `dist/`, publishes a Release on a `v*` tag
 
 ## Decisions
 
 One line each: the choice, and the reason it was made. Append; do not rewrite history.
 
-- 2026-10-12 — Manifest V3 popup without a background service worker: nothing has to run while the popup is closed.
+- 2026-10-12 — Manifest V3 without a background service worker: nothing has to run while no Tabuzaur page is open.
 - 2026-10-12 — TypeScript + Vite + Vitest + ESLint, plain Vite with fixed entry names instead of a CRX plugin: fewer moving parts to maintain.
 - 2026-10-12 — Data stays in `chrome.storage.local`, permissions `tabs` and `storage` only: the reason the project exists.
 - 2026-10-12 — Pure logic in `src/lib/` behind adapter interfaces, Chrome API only in thin adapters: tests run in Node with fakes.
 - 2026-10-12 — The release zip is built only by CI from a `v<manifest version>` tag; a tag that does not match the manifest fails the build.
+- 2026-10-12 — Collections are hand-made folders of links, not window snapshots: the owner organizes pages one by one while they are open; the whole-window save was built first and dropped.
+- 2026-10-12 — Dropping a tab keeps it open; a link already in that collection is refused with a visible notice, never ignored.
+- 2026-10-12 — A saved link jumps to the open tab with exactly that URL, else opens a new tab: the collection stays a bookmark-like list.
+- 2026-10-12 — Welcome page by Chrome's startup setting, not `chrome_url_overrides.newtab`: the owner opts in, Ctrl+T stays Chrome's.
 
 ---
 
