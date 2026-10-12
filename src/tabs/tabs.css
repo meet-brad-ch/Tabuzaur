@@ -259,22 +259,6 @@ mark {
   white-space: nowrap;
 }
 
-.card .meta {
-  flex: none;
-  padding: 1px 8px;
-  border-radius: 10px;
-  background: #0002;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-@media (prefers-color-scheme: dark) {
-  .card .meta {
-    background: #fff2;
-  }
-}
-
 .card .empty-hint {
   margin: 0;
   padding: 10px;

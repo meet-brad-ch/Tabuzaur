@@ -202,11 +202,7 @@ class TabsPage {
     });
     const header = el("header");
     header.append(...this.nameField(collection));
-    const meta = el("span", "meta");
-    const count = collection.pages.length;
-    meta.textContent = `${String(count)} ${count === 1 ? "link" : "links"}`;
-    meta.title = `${String(count)} saved ${count === 1 ? "link" : "links"} in this collection`;
-    header.append(meta, this.deleteButton(collection));
+    header.append(this.deleteButton(collection));
     card.append(header);
     if (collection.pages.length === 0) {
       const hint = el("p", "empty-hint");
