@@ -101,3 +101,31 @@ function asString(raw: unknown, where: string): string {
   }
   return raw;
 }
+
+/** The page's colour theme: follow the system, or force one. */
+export type Theme = "system" | "light" | "dark";
+export const THEMES: readonly Theme[] = ["system", "light", "dark"];
+export const THEME_KEY = "tabuzaur-theme";
+
+/** The theme choice, in the same key-value area as the collections but under its own key. */
+export class ThemeStore {
+  constructor(private readonly area: KeyValueArea) {}
+
+  /** The stored choice; "system" when none was ever saved. Anything else stored there is an error. */
+  async load(): Promise<Theme> {
+    const items = await this.area.get(THEME_KEY);
+    const raw = items[THEME_KEY];
+    if (raw === undefined) {
+      return "system";
+    }
+    const theme = THEMES.find((t) => t === raw);
+    if (theme === undefined) {
+      throw new Error(`unknown theme ${JSON.stringify(raw)}`);
+    }
+    return theme;
+  }
+
+  async save(theme: Theme): Promise<void> {
+    await this.area.set({ [THEME_KEY]: theme });
+  }
+}

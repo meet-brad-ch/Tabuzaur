@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CollectionBook } from "../src/lib/collections.ts";
 import { STORAGE_KEY } from "../src/lib/model.ts";
-import { LocalPersistence, parseStoreData } from "../src/lib/storage.ts";
+import { LocalPersistence, parseStoreData, THEME_KEY, ThemeStore } from "../src/lib/storage.ts";
 import { CountingIdSource, FixedClock, MemoryArea, noChanges, pageA, pageB } from "./fakes.ts";
 
 const clock = new FixedClock("2026-10-12T10:00:00.000Z");
@@ -57,5 +57,22 @@ describe("parseStoreData", () => {
     [{ schemaVersion: 1, collections: [{ ...collection, pages: [{ ...pageA, favIconUrl: 3 }] }] }, "collections[0].pages[0].favIconUrl is not a string"],
   ])("rejects %j", (raw, message) => {
     expect(() => parseStoreData(raw)).toThrow(message);
+  });
+});
+
+describe("ThemeStore", () => {
+  it("is system until something is saved, then round-trips the choice", async () => {
+    const area = new MemoryArea();
+    const store = new ThemeStore(area);
+    expect(await store.load()).toBe("system");
+    await store.save("dark");
+    expect(await store.load()).toBe("dark");
+    expect(Object.keys(await area.get(STORAGE_KEY))).toEqual([]);
+  });
+
+  it("fails on a value it does not know", async () => {
+    const area = new MemoryArea();
+    area.seed(THEME_KEY, "sepia");
+    await expect(new ThemeStore(area).load()).rejects.toThrow('unknown theme "sepia"');
   });
 });
