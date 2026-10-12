@@ -49,21 +49,27 @@ time; the key can be changed on `chrome://extensions/shortcuts`.
 - `branding/` — the brand showcase (mascot, wordmark, app icons) and the mascot cut from it, which the `public/icons/` set is resized from
 - `public/icons/` — the extension icons (16, 32, 48, 128), also the page's favicon and header logo
 
-## Decisions
+## Design
 
-One line each: the choice, and the reason it was made. Append; do not rewrite history.
-
-- 2026-10-12 — Manifest V3 with a minimal service worker that only handles the toolbar click: there is one action, so no popup; nothing else runs while no Tabuzaur page is open.
-- 2026-10-12 — TypeScript + Vite + Vitest + ESLint, plain Vite with fixed entry names instead of a CRX plugin: fewer moving parts to maintain.
-- 2026-10-12 — Data stays in `chrome.storage.local`, permissions `tabs` and `storage` only: the reason the project exists.
-- 2026-10-12 — Pure logic in `src/lib/` behind adapter interfaces, Chrome API only in thin adapters: tests run in Node with fakes.
-- 2026-10-12 — The release zip is built only by CI from a `v<manifest version>` tag; a tag that does not match the manifest fails the build.
-- 2026-10-12 — Collections are hand-made folders of links, not window snapshots: the owner organizes pages one by one while they are open; the whole-window save was built first and dropped.
-- 2026-10-12 — Dropping a tab keeps it open; a link already in that collection is refused with a visible notice, never ignored.
-- 2026-10-12 — A saved link jumps to the open tab with exactly that URL, else opens a new tab: the collection stays a bookmark-like list.
-- 2026-10-12 — Welcome page by Chrome's startup setting, not `chrome_url_overrides.newtab`: the owner opts in, Ctrl+T stays Chrome's.
-- 2026-10-12 — Fonts come from the machine (Inter if installed, else Segoe UI / system): the page makes no network request, not even for a font.
-- 2026-10-12 — Brand from `branding/showcase.png`: navy `#0f283d`, green `#0a8d73` (wordmark) and `#36b88f` (mascot), mint `#dbf5ec`, tagline grey `#506f85`; the full mascot on a transparent background is the extension icon and header logo.
+- Manifest V3. The only background code is a module service worker that handles the toolbar
+  click and the Alt+T command; nothing runs while no Tabuzaur page is open.
+- Permissions are `tabs` and `storage`. All data lives in `chrome.storage.local`; there is no
+  sync, no account and no network request, not even for a font (Inter when installed, else
+  Segoe UI or the system font).
+- A collection is a hand-made folder of links. Dropping a tab keeps the tab open; a link already
+  in that collection is refused with a visible notice. Clicking a link activates the open tab with
+  exactly that URL, or opens a new tab.
+- The welcome page is Chrome's startup-page setting, not a new-tab override, so Ctrl+T stays
+  Chrome's and the owner opts in.
+- Pure logic (collections, store parser, URL helpers, theme store) sits in `src/lib/` behind
+  adapter interfaces and is unit-tested in Node with fakes; the Chrome API is touched only in thin
+  adapters, and the DOM code in `src/tabs/` is tested by hand in Chrome.
+- TypeScript + Vite + Vitest + ESLint, plain Vite with fixed entry names instead of a CRX plugin.
+- Releases are built only by CI from a `v<manifest version>` tag; a tag that does not match the
+  manifest, or a manifest that does not match `package.json`, fails the run before anything is built.
+- Brand, from `branding/showcase.png`: navy `#0f283d`, green `#0a8d73` (wordmark) and `#36b88f`
+  (mascot), mint `#dbf5ec`, tagline grey `#506f85`; the mascot on a transparent background is the
+  extension icon and the header logo.
 
 ---
 
