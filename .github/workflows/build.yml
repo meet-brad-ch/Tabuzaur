@@ -1,0 +1,109 @@
+# Every push to main, pull request and manual run installs the pinned toolchain, runs the gate
+# (npm run verify: eslint, tsc, vitest, vite build) and zips dist/ as the unpacked extension; the
+# zip is an artifact of every run. A push of a tag vX.Y.Z also publishes a GitHub Release with
+# the zip and its SHA256. The tag must equal the manifest version, else nothing is built.
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# one run per ref: a newer push cancels the older run of the same branch (never a tag's run)
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      zip: ${{ steps.version.outputs.zip }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      # The manifest version is the version. A tag that does not name it fails here, before
+      # anything is built, so a wrong tag never releases.
+      - name: Version
+        id: version
+        run: |
+          version=$(node -p "require('./public/manifest.json').version")
+          package=$(node -p "require('./package.json').version")
+          if [ "$version" != "$package" ]; then
+            echo "::error::public/manifest.json says $version but package.json says $package"
+            exit 1
+          fi
+          if [ "$GITHUB_REF_TYPE" = tag ] && [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::tag $GITHUB_REF_NAME is not the manifest version v$version"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "zip=Tabuzaur-v$version.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Install the pinned toolchain
+        run: npm ci
+
+      - name: Gate (lint, types, tests, build)
+        run: npm run verify
+
+      - name: Zip the extension
+        env:
+          ZIP: ${{ steps.version.outputs.zip }}
+        run: |
+          mkdir out
+          (cd dist && zip -r "../out/$ZIP" .)
+          (cd out && sha256sum "$ZIP" > SHA256SUMS && cat SHA256SUMS)
+          unzip -l "out/$ZIP"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.version.outputs.zip }}
+          path: out/
+          if-no-files-found: error
+
+  # Only a tag reaches here. The zip is the one the build job uploaded.
+  release:
+    needs: build
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write   # create the release and attach the zip
+      actions: read     # download this run's artifact
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      VERSION: ${{ needs.build.outputs.version }}
+      ZIP: ${{ needs.build.outputs.zip }}
+    steps:
+      - name: Download the zip built above
+        run: gh run download "$GITHUB_RUN_ID" --name "$ZIP" --dir dist
+
+      - name: Release notes
+        run: |
+          test -f "dist/$ZIP"
+          sha=$(cut -d' ' -f1 dist/SHA256SUMS)
+          {
+            echo "Tabuzaur $VERSION: tab collections for Chrome, stored locally only."
+            echo
+            echo "Install: unzip \`$ZIP\`, then chrome://extensions > Developer mode > Load unpacked > the unzipped folder."
+            echo
+            echo "- SHA256: \`$sha\`"
+            echo "- Built by GitHub Actions run $GITHUB_RUN_NUMBER from commit $GITHUB_SHA."
+          } > notes.md
+          cat notes.md
+
+      - name: Create the GitHub release
+        run: gh release create "$GITHUB_REF_NAME" "dist/$ZIP" dist/SHA256SUMS --verify-tag --title "Tabuzaur $VERSION" --notes-file notes.md
