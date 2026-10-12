@@ -534,12 +534,15 @@ class TabsPage {
       this.editingPage = undefined;
       this.renderCollections();
     };
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      save();
-    });
+    // Two text fields and no submit button: the form never submits on Enter by itself
+    // (HTML implicit submission), so both keys are handled here.
+    form.addEventListener("submit", (event) => { event.preventDefault(); });
     form.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        save();
+      } else if (event.key === "Escape") {
+        event.preventDefault();
         cancel();
       }
     });
