@@ -2,91 +2,130 @@
 
 *Tame your tabs.*
 
-**What:** A Chrome extension (Manifest V3) for organizing the pages you work with into
-collections, starting from the tabs that are open. Its page shows your hand-made collections, with every
-open tab in a panel that slides in from the left rail (or stays pinned); drag a tab onto a
-collection to keep it there as a link.
-Clicking a saved link jumps to the tab when it is open and opens the page otherwise. Everything is
-kept in `chrome.storage.local` on the machine; nothing is synced or sent anywhere.
+[![build](https://github.com/meet-brad-ch/Tabuzaur/actions/workflows/build.yml/badge.svg)](https://github.com/meet-brad-ch/Tabuzaur/actions/workflows/build.yml)
+[![release](https://img.shields.io/github/v/release/meet-brad-ch/Tabuzaur?label=release)](https://github.com/meet-brad-ch/Tabuzaur/releases/latest)
+[![license](https://img.shields.io/github/license/meet-brad-ch/Tabuzaur)](LICENSE)
+![Chrome Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-0a8d73)
 
-**Why:** Privacy, and a mix that bookmarks and tab managers do not offer: organizing happens while
-the pages are open as tabs, and the saved links stay linked to those tabs. Existing managers sync
-collections through their own cloud or a Google account. Tabuzaur keeps everything local, with no
-network access and no account.
+Tabuzaur is a Chrome extension that keeps the pages you work with in collections. You build a
+collection from the tabs that are open, by dragging. A saved link jumps to its tab when the tab is
+open, and opens the page when it is not. All data stays on your computer: there is no account, no
+sync and no network request.
 
-**Status:** working — the page, the toolbar button and Alt+T are tested by hand in Chrome;
-`npm run verify` is green; releases are built by CI from a `v*` tag.
+![The Tabuzaur page: collections in the middle, the open-tab rail on the left](public/help/img/page.png)
 
-## How to run
+![A tab dragged from the panel into a collection](public/help/img/demo.gif)
 
-Prerequisites: Node 24.19.0 and npm 11.17.0 (the versions this was built with), Chrome.
+## Install in two minutes
+
+1. Download `Tabuzaur-vX.Y.Z.zip` from the [latest release](https://github.com/meet-brad-ch/Tabuzaur/releases/latest).
+2. Unzip it into a folder that stays. Chrome loads the extension from that folder each time it starts.
+3. Open `chrome://extensions` and enable **Developer mode**, top right.
+4. Click **Load unpacked** and choose the unzipped folder.
+5. The Tabuzaur card appears, and the help page opens once.
+
+![The Chrome extensions page with Developer mode on and the Load unpacked button](public/help/img/chrome-extensions-devmode.png)
+
+To update: unzip the new release over the same folder, then click the reload icon on the card.
+
+## Open Tabuzaur
+
+- **The toolbar button.** Click the dinosaur next to the address bar.
+- **Alt+T.** Chrome assigns this key at install when no other extension uses it. The page header
+  shows the key in effect. If it shows "No shortcut assigned", click it and set a key on
+  `chrome://extensions/shortcuts`.
+- **Start page.** Copy the ID from the Tabuzaur card. In Chrome Settings, open **On startup**,
+  choose **Open a specific page or set of pages**, click **Add a new page** and enter
+  `chrome-extension://<id>/tabs.html`.
+
+![Chrome's On startup setting with the Tabuzaur page](public/help/img/chrome-startup.png)
+
+## Everyday use
+
+- **Open tabs.** The thin rail on the left shows how many tabs are open. Rest the pointer on it
+  and the panel opens with every open tab, grouped by window. The pin keeps it open as a column.
+- **Create a collection.** Type a name in the header field and click Create. Each collection gets
+  its own color, and keeps it.
+- **Add a link.** Drag a tab from the panel onto a collection. The tab stays open. Tabuzaur refuses a
+  link that is already in that collection, with a notice.
+- **Open a link.** Click the link row. Tabuzaur jumps to the open tab with that address, or opens
+  the page in a new tab.
+- **Arrange.** Drag a link up or down, or onto another collection. Drag a collection by its colored
+  band to another place. A green line shows where the drop lands.
+- **Edit.** Rest the pointer on a link and click the pen to change its title or address. The pen in
+  a band renames the collection. The cross removes a link. The trash icon deletes a collection
+  after a question.
+- **Find.** Type in the search field. Only collections with a match stay, and Tabuzaur marks the match.
+- **Theme.** The round button cycles through system, light and dark.
+- **Help.** The `?` button opens the help page, the same one that opens after install.
+
+![The open-tab panel slid out over the collections](public/help/img/flyout.png)
+
+## Backup
+
+**Export** downloads all collections as one JSON file, `tabuzaur-backup-YYYY-MM-DD.json`.
+**Import** reads such a file and asks what to do:
+
+- **Replace** removes the collections you have and loads the file.
+- **Merge** adds the file to what you have. Collections with the same name join, links you
+  already have stay, nothing is removed.
+
+The same file carries collections to another computer.
+
+## Privacy
+
+Tabuzaur asks for two permissions: `tabs`, to list and open tabs, and `storage`, to keep the
+collections. It stores everything in Chrome's local storage. It makes no network request, not
+even for a font.
+
+## Development
+
+Prerequisites: Node 24, npm 11, Chrome. Built with Node 24.19.0 and npm 11.17.0.
 
 ```
 npm ci                 # install the pinned toolchain
 npm run build          # vite build -> dist/ (the unpacked extension)
-npm run verify         # eslint + tsc --noEmit + vitest + vite build
+npm run verify         # eslint + tsc --noEmit + vitest + vite build: the gate
+npm run shots          # render the help pictures headless (needs Chrome and Python with Pillow)
 ```
 
-Load it in Chrome: `chrome://extensions` → Developer mode → Load unpacked → the `dist/` folder.
-After a rebuild, click the reload icon on the extension card.
+Load `dist/` with **Load unpacked** to run a development build. After a rebuild, click the reload
+icon on the card.
 
-Make it the welcome page: copy the extension ID from its card on `chrome://extensions`, then in
-Chrome Settings → On startup → "Open a specific page or set of pages" add
-`chrome-extension://<id>/tabs.html`. The toolbar button and **Alt+T** open the same page at any
-time. Chrome assigns Alt+T at install only when no other extension or Chrome itself uses it;
-the page's header shows the key that is in effect, or a red "No shortcut assigned" link that opens
-`chrome://extensions/shortcuts`, where any key can be set.
+Releases are built by CI from a tag `v<version>`. The tag must equal the version in
+`public/manifest.json`, which must equal the version in `package.json`. The build job runs the
+gate, zips `dist/` and publishes the zip with its SHA-256 as a GitHub Release.
 
-Backup: Export in the page header downloads the collections as `tabuzaur-backup-YYYY-MM-DD.json`;
-Import reads such a file and asks whether to replace the current collections or merge the file into
-them (by collection id or name; links already present are kept, nothing is removed). The file is
-the stored document itself, so it is also the way to carry collections to another machine.
-
-**Verify:** `npm run verify`
-
-**Prerequisites:** Node 24, npm 11, Chrome 116 or newer.
-
-## Layout
+### Layout
 
 - `public/manifest.json` — the extension manifest, copied verbatim into `dist/`
-- `tabs.html`, `src/tabs/` — the Tabuzaur page: open-tab panel (a flyout from the left rail, or pinned), collection cards, drag and drop
-- `src/background.ts` — the service worker: the toolbar button opens or jumps to the page
-- `src/lib/` — collection model and operations (`CollectionBook`), the local store and its parser, the backup file format, URL helpers, the Chrome tab adapter
-- `tests/` — Vitest unit tests of `src/lib/` with in-memory fakes (no browser needed)
-- `.github/workflows/build.yml` — CI: runs the verify gate, zips `dist/`, publishes a Release on a `v*` tag
-- `branding/` — the brand showcase (mascot, wordmark, app icons) and the mascot cut from it, which the `public/icons/` set is resized from
-- `public/icons/` — the extension icons (16, 32, 48, 128), also the page's favicon and header logo
+- `tabs.html`, `src/tabs/` — the Tabuzaur page: open-tab panel, collection cards, drag and drop
+- `help.html`, `src/help/` — the help page
+- `src/background.ts` — the service worker: toolbar button, Alt+T, help on first install
+- `src/lib/` — collection model and operations, the local store and its parser, the backup file format, URL helpers, the Chrome tab adapter
+- `src/shared/tokens.css` — colors and the dark theme, shared by both pages
+- `tests/` — Vitest unit tests of `src/lib/` with in-memory fakes
+- `tools/render/` — the headless render of the page for the help pictures, and a showcase backup to import
+- `public/help/img/` — the pictures the help page and this README use
+- `public/icons/`, `branding/` — the extension icons and the brand showcase they come from
+- `.github/workflows/build.yml` — CI
 
-## Design
+### Design
 
-- Manifest V3. The only background code is a module service worker that handles the toolbar
-  click and the Alt+T command; nothing runs while no Tabuzaur page is open.
-- Permissions are `tabs` and `storage`. All data lives in `chrome.storage.local`; there is no
-  sync, no account and no network request, not even for a font (Inter when installed, else
-  Segoe UI or the system font).
-- A collection is a hand-made folder of links. Dropping a tab keeps the tab open; a link already
-  in that collection is refused with a visible notice. Clicking a link activates the open tab with
-  exactly that URL, or opens a new tab. Links are reordered by drag within and across collections;
-  a collection is moved by dragging its header band onto the upper or lower half of another card.
-  Each collection keeps its color: a new one takes the least-used of the sixteen, and the hue is
-  stored with the collection and travels in backups.
+- Manifest V3. The only background code is a module service worker. It handles the toolbar click,
+  the Alt+T command and the first-install hook. Nothing runs while no Tabuzaur page is open.
+- Permissions are `tabs` and `storage`. All data lives in `chrome.storage.local`.
+- A collection is a hand-made folder of links. The stored document holds collections, each with
+  an id, a name, a color and its links. Older documents without colors get them on first load.
+- Pure logic sits in `src/lib/` behind adapter interfaces and is unit-tested in Node with fakes.
+  The Chrome API is touched only in thin adapters. The DOM code in `src/tabs/` is checked by the
+  headless render and by hand in Chrome.
 - The welcome page is Chrome's startup-page setting, not a new-tab override, so Ctrl+T stays
-  Chrome's and the owner opts in.
-- Pure logic (collections, store parser, URL helpers, theme store) sits in `src/lib/` behind
-  adapter interfaces and is unit-tested in Node with fakes; the Chrome API is touched only in thin
-  adapters, and the DOM code in `src/tabs/` is tested by hand in Chrome.
-- TypeScript + Vite + Vitest + ESLint, plain Vite with fixed entry names instead of a CRX plugin.
-- Releases are built only by CI from a `v<manifest version>` tag; a tag that does not match the
-  manifest, or a manifest that does not match `package.json`, fails the run before anything is built.
-- Brand, from `branding/showcase.png`: navy `#0f283d`, green `#0a8d73` (wordmark) and `#36b88f`
-  (mascot), mint `#dbf5ec`, tagline grey `#506f85`; the mascot on a transparent background is the
-  extension icon and the header logo.
+  Chrome's and the user opts in.
+- TypeScript, Vite, Vitest and ESLint. Plain Vite with fixed entry names and relative asset paths.
+- Brand, from `branding/showcase.png`: navy `#0f283d`, green `#0a8d73` and `#36b88f`, mint
+  `#dbf5ec`, tagline grey `#506f85`. The mascot on a transparent background is the icon.
 
 ## License
 
 MIT, see `LICENSE`.
-
----
-
-Keep this file honest: it is the only project document that is committed. `LOG.md` is
-gitignored, so anything that must survive a fresh clone belongs here, not in the log.

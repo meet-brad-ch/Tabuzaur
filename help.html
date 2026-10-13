@@ -46,7 +46,7 @@
             <p>Download <code>Tabuzaur-vX.Y.Z.zip</code> from the Releases page of the project and unzip it into a folder that stays. Chrome loads the extension from that folder every time it starts.</p>
           </li>
           <li>
-            <p>Open <code>chrome://extensions</code> and switch on <strong>Developer mode</strong>, top right.</p>
+            <p>Open <code>chrome://extensions</code> and enable <strong>Developer mode</strong>, top right.</p>
             <figure><img src="help/img/chrome-extensions-devmode.png" alt="The Chrome extensions page with the Developer mode switch on" /><figcaption>Developer mode, top right of the extensions page.</figcaption></figure>
           </li>
           <li>
@@ -77,11 +77,11 @@
         <figure><img src="help/img/page.png" alt="The Tabuzaur page with four collections" /><figcaption>Header on top, the open-tab rail on the left, collections in the middle.</figcaption></figure>
         <ul>
           <li><strong>Header.</strong> Search, a field to create a collection, Export, Import, the theme button and this help.</li>
-          <li><strong>Open tabs.</strong> The thin rail on the left shows how many tabs are open. Rest the pointer on it and the panel slides out with every open tab, grouped by window.</li>
-          <li><strong>Pin.</strong> The pin at the top of the panel keeps it open as a column. Click it again to let it slide away.</li>
+          <li><strong>Open tabs.</strong> The thin rail on the left shows how many tabs are open. Rest the pointer on it and the panel opens with every open tab, grouped by window.</li>
+          <li><strong>Pin.</strong> The pin at the top of the panel keeps it open as a column. Click it again and the panel closes when the pointer leaves it.</li>
         </ul>
         <div class="pair">
-          <figure><img src="help/img/flyout.png" alt="The open-tab panel slid out over the collections" /><figcaption>The panel slides out from the rail.</figcaption></figure>
+          <figure><img src="help/img/flyout.png" alt="The open-tab panel slid out over the collections" /><figcaption>The panel opens from the rail.</figcaption></figure>
           <figure><img src="help/img/pinned.png" alt="The open-tab panel pinned as a column" /><figcaption>Pinned, the panel is a column.</figcaption></figure>
         </div>
       </section>
@@ -91,7 +91,7 @@
         <figure class="demo"><img src="help/img/demo.gif" alt="A tab dragged from the panel into a collection" /><figcaption>Drag a tab from the panel onto a collection. The tab stays open.</figcaption></figure>
         <ul>
           <li><strong>Create.</strong> Type a name in the header field and click Create. The new collection gets its own color.</li>
-          <li><strong>Add a link.</strong> Drag a tab from the panel onto a collection. The link keeps the title, the address and the icon of the tab. A link that is already in that collection is refused with a notice.</li>
+          <li><strong>Add a link.</strong> Drag a tab from the panel onto a collection. The link keeps the title, the address and the icon of the tab. Tabuzaur refuses a link that is already in that collection, with a notice.</li>
           <li><strong>Open a link.</strong> Click anywhere on the link row. When the page is open in a tab, Tabuzaur jumps to that tab. Otherwise it opens the page in a new tab.</li>
           <li><strong>Reorder.</strong> Drag a link up or down inside its collection. A green line shows where it lands. Drag it onto another collection to move it there.</li>
           <li><strong>Edit a link.</strong> Rest the pointer on the link and click the pen. Change the title or the address. Enter saves, Escape cancels.</li>
@@ -108,7 +108,7 @@
 
       <section id="find">
         <h2>Find</h2>
-        <p>Type in the search field in the header. Only collections with a match stay on the page, and the match is marked in the names and the links. The panel has its own filter for open tabs.</p>
+        <p>Type in the search field in the header. Only collections with a match stay on the page, and Tabuzaur marks the match in the names and the links. The panel has its own filter for open tabs.</p>
         <figure><img src="help/img/search.png" alt="The page filtered by the word lisbon" /><figcaption>A search for "lisbon".</figcaption></figure>
       </section>
 

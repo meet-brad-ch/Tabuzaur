@@ -58,6 +58,24 @@ jobs:
       - name: Gate (lint, types, tests, build)
         run: npm run verify
 
+      # The tests badge in the README reads a small JSON file from a gist (shields.io endpoint
+      # format). Only a push to main updates it, and only when the gist secret exists, so forks
+      # and pull requests pass without it. One-time setup: a public gist holding
+      # tabuzaur-tests.json, a token with the gist scope as secret GIST_TOKEN, the gist id as
+      # variable TESTS_GIST_ID.
+      - name: Tests badge (gist)
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && env.GIST_TOKEN != ''
+        env:
+          GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
+          GIST_ID: ${{ vars.TESTS_GIST_ID }}
+        run: |
+          test -n "$GIST_ID" || { echo "::error::variable TESTS_GIST_ID is not set"; exit 1; }
+          passed=$(node -p "const r=require('./build/tests.json'); if(r.numFailedTests) throw new Error('failed tests'); r.numPassedTests")
+          printf '{"schemaVersion":1,"label":"tests","message":"%s passing","color":"brightgreen"}
+' "$passed" > tabuzaur-tests.json
+          GH_TOKEN="$GIST_TOKEN" gh gist edit "$GIST_ID" --add tabuzaur-tests.json 2>/dev/null             || GH_TOKEN="$GIST_TOKEN" gh gist edit "$GIST_ID" -f tabuzaur-tests.json tabuzaur-tests.json
+          echo "tests badge: $passed passing"
+
       # The variable is not called ZIP: Info-ZIP's zip reads $ZIP as extra options.
       - name: Zip the extension
         env:
