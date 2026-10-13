@@ -401,8 +401,14 @@ class TabsPage {
         ? { title: tab.title, url: tab.url }
         : { title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl };
       startDrag(event, row, { page });
+      // No mouse events arrive during a native drag, so :hover would keep the flyout open over
+      // the collections. Fold it away (after the drag image is taken) until the drag ends.
+      setTimeout(() => { this.must(".layout").classList.add("dragging-out"); }, 0);
     });
-    row.addEventListener("dragend", () => { row.classList.remove("dragging"); });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      this.must(".layout").classList.remove("dragging-out");
+    });
     return row;
   }
 

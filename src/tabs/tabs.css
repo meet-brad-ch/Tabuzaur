@@ -484,6 +484,11 @@ aside:hover {
   transform: none;
 }
 
+/* a drag that started in the panel: fold it away so the collections under it can take the drop */
+.layout.dragging-out:not(.pinned) aside {
+  transform: translateX(-100%);
+}
+
 .layout.pinned aside {
   position: static;
   transform: none;
