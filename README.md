@@ -4,6 +4,7 @@
 
 [![build](https://github.com/meet-brad-ch/Tabuzaur/actions/workflows/build.yml/badge.svg)](https://github.com/meet-brad-ch/Tabuzaur/actions/workflows/build.yml)
 [![release](https://img.shields.io/github/v/release/meet-brad-ch/Tabuzaur?label=release)](https://github.com/meet-brad-ch/Tabuzaur/releases/latest)
+[![tests](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/meet-brad-ch/d592e3203cc9772d91aa23455b013b45/raw/tabuzaur-tests.json)](https://github.com/meet-brad-ch/Tabuzaur/actions/workflows/build.yml)
 [![license](https://img.shields.io/github/license/meet-brad-ch/Tabuzaur)](LICENSE)
 ![Chrome Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-0a8d73)
 
