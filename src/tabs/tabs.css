@@ -109,8 +109,22 @@ body {
 
 #app {
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto minmax(0, 1fr);
   height: 100%;
+}
+
+/* explicit rows: the hidden notice is display:none and takes no row, so without these the
+   layout would land in the auto row at content height and the stretching row would stay empty */
+#app > header.top {
+  grid-row: 1;
+}
+
+#app > .notice {
+  grid-row: 2;
+}
+
+#app > .layout {
+  grid-row: 3;
 }
 
 h1,
