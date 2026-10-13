@@ -2,6 +2,7 @@
   "name": "tabuzaur",
   "version": "0.4.2",
   "private": true,
+  "license": "MIT",
   "description": "Chrome extension that saves a window's tabs as a named collection, locally only",
   "type": "module",
   "engines": {

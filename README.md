@@ -82,6 +82,10 @@ the stored document itself, so it is also the way to carry collections to anothe
   (mascot), mint `#dbf5ec`, tagline grey `#506f85`; the mascot on a transparent background is the
   extension icon and the header logo.
 
+## License
+
+MIT, see `LICENSE`.
+
 ---
 
 Keep this file honest: it is the only project document that is committed. `LOG.md` is
