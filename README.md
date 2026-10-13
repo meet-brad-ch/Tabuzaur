@@ -129,4 +129,4 @@ gate, zips `dist/` and publishes the zip with its SHA-256 as a GitHub Release.
 
 ## License
 
-MIT, see `LICENSE`.
+[MIT](LICENSE).
