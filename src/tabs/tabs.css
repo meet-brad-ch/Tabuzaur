@@ -1,92 +1,4 @@
-/* ---- tokens: light by default, dark when the page sets data-theme="dark" ---------------- */
-
-:root {
-  color-scheme: light;
-  /* brand: navy #0f283d, green #0a8d73 (wordmark) / #36b88f (mascot), mint #dbf5ec, tagline #506f85 */
-  --bg: #f7f8f9;
-  --panel: #ffffff;
-  --fg: #0f283d;
-  --muted: #506f85;
-  --line: #e1e6eb;
-  --hover: #eef2f5;
-  --accent: #0a8d73;
-  --accent-soft: #dbf5ec;
-  --brand-green: #0a8d73;
-  --danger: #d23b3b;
-  --mark: #feb22d;
-  --shadow: 0 1px 2px #0000000f, 0 4px 12px #0000000a;
-  --shadow-lift: 0 2px 4px #00000014, 0 10px 24px #00000014;
-  --radius: 10px;
-
-  /* card hues: a light body and a stronger band for the header; 16 hues cycle by position */
-  --hue-0-bg: #fce8ec; --hue-0-band: #f0c1c9;  /* rose */
-  --hue-1-bg: #fcece8; --hue-1-band: #f0c9c1;  /* coral */
-  --hue-2-bg: #fcf2e8; --hue-2-band: #f0d7c1;  /* peach */
-  --hue-3-bg: #fcf6e8; --hue-3-band: #f0e1c1;  /* apricot */
-  --hue-4-bg: #fcfae8; --hue-4-band: #f0ecc1;  /* lemon */
-  --hue-5-bg: #f6fce8; --hue-5-band: #e2f0c1;  /* lime */
-  --hue-6-bg: #e8fcef; --hue-6-band: #c1f0d1;  /* mint */
-  --hue-7-bg: #e8fcf8; --hue-7-band: #c1f0e7;  /* teal */
-  --hue-8-bg: #e8fafc; --hue-8-band: #c1eaf0;  /* aqua */
-  --hue-9-bg: #e8f4fc; --hue-9-band: #c1ddf0;  /* sky */
-  --hue-10-bg: #e8effc; --hue-10-band: #c1d1f0;  /* azure */
-  --hue-11-bg: #e8e9fc; --hue-11-band: #c1c3f0;  /* periwinkle */
-  --hue-12-bg: #f0e8fc; --hue-12-band: #d2c1f0;  /* lavender */
-  --hue-13-bg: #f6e8fc; --hue-13-band: #e1c1f0;  /* violet */
-  --hue-14-bg: #fce8fc; --hue-14-band: #f0c1f0;  /* orchid */
-  --hue-15-bg: #fce8f4; --hue-15-band: #f0c1dd;  /* pink */
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #0b1f31;
-  --panel: #112b41;
-  --fg: #e6eef5;
-  --muted: #8fa6ba;
-  --line: #1f3d57;
-  --hover: #1a3650;
-  --accent: #36b88f;
-  --accent-soft: #36b88f29;
-  --brand-green: #36b88f;
-  --danger: #ff6b6b;
-  --mark: #feb22d;
-  --shadow: 0 1px 2px #00000040, 0 4px 12px #00000033;
-  --shadow-lift: 0 2px 4px #00000059, 0 10px 24px #00000059;
-
-  --hue-0-bg: #3f272b; --hue-0-band: #5f353c;  /* rose */
-  --hue-1-bg: #3f2b27; --hue-1-band: #5f3c35;  /* coral */
-  --hue-2-bg: #3f3227; --hue-2-band: #5f4935;  /* peach */
-  --hue-3-bg: #3f3727; --hue-3-band: #5f5135;  /* apricot */
-  --hue-4-bg: #3b3a2b; --hue-4-band: #59563b;  /* lemon */
-  --hue-5-bg: #363b2b; --hue-5-band: #50593b;  /* lime */
-  --hue-6-bg: #273f2f; --hue-6-band: #355f43;  /* mint */
-  --hue-7-bg: #273f3a; --hue-7-band: #355f56;  /* teal */
-  --hue-8-bg: #273c3f; --hue-8-band: #35595f;  /* aqua */
-  --hue-9-bg: #27353f; --hue-9-band: #354d5f;  /* sky */
-  --hue-10-bg: #272f3f; --hue-10-band: #35435f;  /* azure */
-  --hue-11-bg: #27283f; --hue-11-band: #35375f;  /* periwinkle */
-  --hue-12-bg: #30273f; --hue-12-band: #44355f;  /* lavender */
-  --hue-13-bg: #37273f; --hue-13-band: #51355f;  /* violet */
-  --hue-14-bg: #3f273f; --hue-14-band: #5f355f;  /* orchid */
-  --hue-15-bg: #3f2735; --hue-15-band: #5f354d;  /* pink */
-}
-
-.hue-0 { --card-bg: var(--hue-0-bg); --card-band: var(--hue-0-band); }
-.hue-1 { --card-bg: var(--hue-1-bg); --card-band: var(--hue-1-band); }
-.hue-2 { --card-bg: var(--hue-2-bg); --card-band: var(--hue-2-band); }
-.hue-3 { --card-bg: var(--hue-3-bg); --card-band: var(--hue-3-band); }
-.hue-4 { --card-bg: var(--hue-4-bg); --card-band: var(--hue-4-band); }
-.hue-5 { --card-bg: var(--hue-5-bg); --card-band: var(--hue-5-band); }
-.hue-6 { --card-bg: var(--hue-6-bg); --card-band: var(--hue-6-band); }
-.hue-7 { --card-bg: var(--hue-7-bg); --card-band: var(--hue-7-band); }
-.hue-8 { --card-bg: var(--hue-8-bg); --card-band: var(--hue-8-band); }
-.hue-9 { --card-bg: var(--hue-9-bg); --card-band: var(--hue-9-band); }
-.hue-10 { --card-bg: var(--hue-10-bg); --card-band: var(--hue-10-band); }
-.hue-11 { --card-bg: var(--hue-11-bg); --card-band: var(--hue-11-band); }
-.hue-12 { --card-bg: var(--hue-12-bg); --card-band: var(--hue-12-band); }
-.hue-13 { --card-bg: var(--hue-13-bg); --card-band: var(--hue-13-band); }
-.hue-14 { --card-bg: var(--hue-14-bg); --card-band: var(--hue-14-band); }
-.hue-15 { --card-bg: var(--hue-15-bg); --card-band: var(--hue-15-band); }
+@import "../shared/tokens.css";
 
 /* ---- base --------------------------------------------------------------------------------- */
 
@@ -155,6 +67,14 @@ button {
   font: inherit;
   color: inherit;
   cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .icon {
@@ -321,7 +241,8 @@ button.icon:hover {
   color: var(--fg);
 }
 
-button.theme {
+button.theme,
+button.help {
   border: 1px solid var(--line);
   width: 36px;
   height: 36px;

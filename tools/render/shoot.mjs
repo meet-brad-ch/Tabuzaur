@@ -2,7 +2,7 @@
 // and the README use. Run after `npm run build`: `npm run shots`. Needs Chrome (CHROME env or a
 // default install path) and Python with Pillow for the GIF. Every failure is an error: no
 // picture is silently skipped.
-import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, statSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
@@ -78,6 +78,7 @@ function main() {
       }
       console.log(`${file.padEnd(12)} ${title}`);
     }
+    shootHelp(chrome, work);
     const gif = spawnSync("python", ["-I", join(here, "gif.py"), join(out, "demo.gif"), ...DEMO_FRAMES.map((f) => join(work, f))], { encoding: "utf8" });
     if (gif.status !== 0) {
       throw new Error(`gif.py failed: ${gif.stderr}${gif.stdout}`);
@@ -86,6 +87,26 @@ function main() {
   } finally {
     rmSync(work, { recursive: true, force: true });
   }
+}
+
+/** The help page itself, from the built copy: every picture it names must exist in dist/help/img. */
+function shootHelp(chrome, work) {
+  const html = readFileSync(join(work, "dist", "help.html"), "utf8");
+  const pictures = [...html.matchAll(/src="(help\/img\/[^"]+)"/g)].map((m) => m[1]);
+  const missing = pictures.filter((p) => !existsSync(join(work, "dist", p)));
+  if (missing.length > 0) {
+    throw new Error(`help.html names pictures that do not exist: ${missing.join(", ")}`);
+  }
+  const target = join(out, "help.png");
+  const result = spawnSync(chrome, [
+    "--headless=new", "--disable-gpu", "--no-first-run", "--hide-scrollbars",
+    "--allow-file-access-from-files", `--window-size=${WINDOW}`, "--virtual-time-budget=3000",
+    `--screenshot=${target}`, pathToFileURL(join(work, "dist", "help.html")).href,
+  ], { encoding: "utf8", timeout: 60000 });
+  if (result.status !== 0 || !existsSync(target)) {
+    throw new Error(`Chrome failed on help.html: ${result.stderr}`);
+  }
+  console.log(`help.png      ${pictures.length} pictures present`);
 }
 
 main();

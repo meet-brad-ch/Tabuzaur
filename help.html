@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tabuzaur help</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32.png" />
+    <link rel="stylesheet" href="/src/help/help.css" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="tabs.html">
+        <img class="logo" src="icons/icon-128.png" alt="" />
+        <span class="words">
+          <span class="name"><span class="tabu">Tabu</span><span class="zaur">zaur</span></span>
+          <span class="tagline">Tame your tabs</span>
+        </span>
+      </a>
+      <nav>
+        <a href="#install">Install</a>
+        <a href="#open">Open</a>
+        <a href="#page">The page</a>
+        <a href="#collections">Collections</a>
+        <a href="#find">Find</a>
+        <a href="#backup">Backup</a>
+        <a href="#keyboard">Keyboard</a>
+      </nav>
+      <a class="back" href="tabs.html">Back to Tabuzaur</a>
+    </header>
+
+    <main>
+      <section class="hero">
+        <h1>Help</h1>
+        <p class="lead">
+          Tabuzaur keeps the pages you work with in collections. You build a collection from the
+          tabs that are open, by dragging. A saved link jumps to its tab when the tab is open. All
+          data stays on this computer.
+        </p>
+        <p class="version">Version <span id="version">?</span></p>
+      </section>
+
+      <section id="install">
+        <h2>Install</h2>
+        <ol class="steps">
+          <li>
+            <p>Download <code>Tabuzaur-vX.Y.Z.zip</code> from the Releases page of the project and unzip it into a folder that stays. Chrome loads the extension from that folder every time it starts.</p>
+          </li>
+          <li>
+            <p>Open <code>chrome://extensions</code> and switch on <strong>Developer mode</strong>, top right.</p>
+            <figure><img src="help/img/chrome-extensions-devmode.png" alt="The Chrome extensions page with the Developer mode switch on" /><figcaption>Developer mode, top right of the extensions page.</figcaption></figure>
+          </li>
+          <li>
+            <p>Click <strong>Load unpacked</strong> and choose the unzipped folder.</p>
+            <figure><img src="help/img/chrome-load-unpacked.png" alt="The Load unpacked button on the extensions page" /><figcaption>Load unpacked appears when Developer mode is on.</figcaption></figure>
+          </li>
+          <li>
+            <p>The Tabuzaur card appears with its ID and version. This help page opens by itself once. To update later, unzip the new release over the same folder and click the reload icon on the card.</p>
+            <figure><img src="help/img/chrome-card.png" alt="The Tabuzaur card on the extensions page" /><figcaption>The card shows the ID that the start page setting needs.</figcaption></figure>
+          </li>
+        </ol>
+      </section>
+
+      <section id="open">
+        <h2>Open Tabuzaur</h2>
+        <p>There are three ways to open the page. Each one brings the page to the front when it is already open.</p>
+        <ul>
+          <li><strong>The toolbar button.</strong> Click the dinosaur next to the address bar. Pin it there with the puzzle-piece menu if Chrome hides it.</li>
+          <li><strong>Alt+T.</strong> Chrome assigns this key at install when no other extension uses it. The page header shows the key in effect. If it shows <em>No shortcut assigned</em>, click it and set a key on <code>chrome://extensions/shortcuts</code>.</li>
+          <li><strong>Start page.</strong> Copy the ID from the Tabuzaur card. In Chrome Settings, open <strong>On startup</strong>, choose <strong>Open a specific page or set of pages</strong>, click <strong>Add a new page</strong> and enter <code>chrome-extension://&lt;id&gt;/tabs.html</code>.</li>
+        </ul>
+        <figure><img src="help/img/chrome-startup.png" alt="Chrome's On startup setting with the Tabuzaur page added" /><figcaption>The On startup setting with the Tabuzaur page.</figcaption></figure>
+        <figure><img src="help/img/chrome-shortcuts.png" alt="Chrome's keyboard shortcuts page with the Tabuzaur row" /><figcaption>The shortcuts page: any key can be set here.</figcaption></figure>
+      </section>
+
+      <section id="page">
+        <h2>The page</h2>
+        <figure><img src="help/img/page.png" alt="The Tabuzaur page with four collections" /><figcaption>Header on top, the open-tab rail on the left, collections in the middle.</figcaption></figure>
+        <ul>
+          <li><strong>Header.</strong> Search, a field to create a collection, Export, Import, the theme button and this help.</li>
+          <li><strong>Open tabs.</strong> The thin rail on the left shows how many tabs are open. Rest the pointer on it and the panel slides out with every open tab, grouped by window.</li>
+          <li><strong>Pin.</strong> The pin at the top of the panel keeps it open as a column. Click it again to let it slide away.</li>
+        </ul>
+        <div class="pair">
+          <figure><img src="help/img/flyout.png" alt="The open-tab panel slid out over the collections" /><figcaption>The panel slides out from the rail.</figcaption></figure>
+          <figure><img src="help/img/pinned.png" alt="The open-tab panel pinned as a column" /><figcaption>Pinned, the panel is a column.</figcaption></figure>
+        </div>
+      </section>
+
+      <section id="collections">
+        <h2>Collections</h2>
+        <figure class="demo"><img src="help/img/demo.gif" alt="A tab dragged from the panel into a collection" /><figcaption>Drag a tab from the panel onto a collection. The tab stays open.</figcaption></figure>
+        <ul>
+          <li><strong>Create.</strong> Type a name in the header field and click Create. The new collection gets its own color.</li>
+          <li><strong>Add a link.</strong> Drag a tab from the panel onto a collection. The link keeps the title, the address and the icon of the tab. A link that is already in that collection is refused with a notice.</li>
+          <li><strong>Open a link.</strong> Click anywhere on the link row. When the page is open in a tab, Tabuzaur jumps to that tab. Otherwise it opens the page in a new tab.</li>
+          <li><strong>Reorder.</strong> Drag a link up or down inside its collection. A green line shows where it lands. Drag it onto another collection to move it there.</li>
+          <li><strong>Edit a link.</strong> Rest the pointer on the link and click the pen. Change the title or the address. Enter saves, Escape cancels.</li>
+          <li><strong>Remove a link.</strong> Rest the pointer on the link and click the cross.</li>
+          <li><strong>Rename a collection.</strong> Click the pen in the colored band.</li>
+          <li><strong>Move a collection.</strong> Drag the colored band onto another collection. A green line between the cards shows where it lands.</li>
+          <li><strong>Delete a collection.</strong> Click the trash icon in the band. Tabuzaur asks first.</li>
+        </ul>
+        <div class="pair">
+          <figure><img src="help/img/drop.png" alt="A tab held over a collection" /><figcaption>The target collection lifts while a tab is over it.</figcaption></figure>
+          <figure><img src="help/img/edit.png" alt="A link with its title and address open for editing" /><figcaption>The pen opens the title and the address.</figcaption></figure>
+        </div>
+      </section>
+
+      <section id="find">
+        <h2>Find</h2>
+        <p>Type in the search field in the header. Only collections with a match stay on the page, and the match is marked in the names and the links. The panel has its own filter for open tabs.</p>
+        <figure><img src="help/img/search.png" alt="The page filtered by the word lisbon" /><figcaption>A search for "lisbon".</figcaption></figure>
+      </section>
+
+      <section id="backup">
+        <h2>Backup</h2>
+        <p><strong>Export</strong> downloads all collections as one JSON file named <code>tabuzaur-backup-YYYY-MM-DD.json</code>. <strong>Import</strong> reads such a file and asks what to do with it.</p>
+        <ul>
+          <li><strong>Replace</strong> removes the collections you have and loads the file.</li>
+          <li><strong>Merge</strong> adds the file to what you have. Collections with the same name join. Links you already have stay as they are. Nothing is removed.</li>
+        </ul>
+        <p>The same file carries collections to another computer.</p>
+        <figure><img src="help/img/dialog.png" alt="The import question with Replace, Merge and Cancel" /><figcaption>Import asks before it changes anything.</figcaption></figure>
+      </section>
+
+      <section id="theme">
+        <h2>Theme</h2>
+        <p>The round button at the right of the header cycles through three settings: follow the system, light, dark.</p>
+        <figure><img src="help/img/dark.png" alt="The Tabuzaur page in the dark theme" /><figcaption>The dark theme.</figcaption></figure>
+      </section>
+
+      <section id="keyboard">
+        <h2>Keyboard</h2>
+        <table>
+          <tr><th>Alt+T</th><td>Open Tabuzaur from any tab, or bring it to the front.</td></tr>
+          <tr><th>Enter</th><td>Save a name or a link you are editing.</td></tr>
+          <tr><th>Escape</th><td>Leave the editor without a change. Close the import question.</td></tr>
+          <tr><th>Tab</th><td>Move through the fields and buttons. The pen, cross and trash buttons show when they have the focus.</td></tr>
+        </table>
+      </section>
+
+      <section id="privacy">
+        <h2>Privacy</h2>
+        <p>Tabuzaur asks for two permissions: <code>tabs</code>, to list and open tabs, and <code>storage</code>, to keep the collections. It stores everything in Chrome's local storage on this computer. It makes no network request, has no account and sends nothing anywhere. Your backup file is the only copy outside Chrome, and you make it.</p>
+      </section>
+    </main>
+
+    <footer>
+      <a href="tabs.html">Back to Tabuzaur</a>
+      <a href="https://github.com/meet-brad-ch/Tabuzaur">Project on GitHub</a>
+    </footer>
+    <script type="module" src="/src/help/main.ts"></script>
+  </body>
+</html>
