@@ -71,9 +71,9 @@ jobs:
         run: |
           test -n "$GIST_ID" || { echo "::error::variable TESTS_GIST_ID is not set"; exit 1; }
           passed=$(node -p "const r=require('./build/tests.json'); if(r.numFailedTests) throw new Error('failed tests'); r.numPassedTests")
-          printf '{"schemaVersion":1,"label":"tests","message":"%s passing","color":"brightgreen"}
-' "$passed" > tabuzaur-tests.json
-          GH_TOKEN="$GIST_TOKEN" gh gist edit "$GIST_ID" --add tabuzaur-tests.json 2>/dev/null             || GH_TOKEN="$GIST_TOKEN" gh gist edit "$GIST_ID" -f tabuzaur-tests.json tabuzaur-tests.json
+          echo "{\"schemaVersion\":1,\"label\":\"tests\",\"message\":\"$passed passing\",\"color\":\"brightgreen\"}" > tabuzaur-tests.json
+          export GH_TOKEN="$GIST_TOKEN"
+          gh gist edit "$GIST_ID" -f tabuzaur-tests.json tabuzaur-tests.json
           echo "tests badge: $passed passing"
 
       # The variable is not called ZIP: Info-ZIP's zip reads $ZIP as extra options.
