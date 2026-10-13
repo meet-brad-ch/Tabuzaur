@@ -26,6 +26,7 @@ const ICONS = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/>',
   upload: '<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 19h16"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.5"/><path d="M12 17h.01"/>',
 } as const;
 
 /** The empty-card drawing: a tab sliding into a folder. */
@@ -168,8 +169,17 @@ class TabsPage {
       this.run(() => this.change(this.book.create(name.value, this.clock, this.ids)));
     });
 
-    header.append(brand, search, form, this.backupButtons(), this.themeButton());
+    header.append(brand, search, form, this.backupButtons(), this.themeButton(), this.helpButton());
     return header;
+  }
+
+  private helpButton(): HTMLElement {
+    const help = button(() => {
+      this.run(() => this.browser.jumpTo(new URL("help.html", location.href).href));
+    }, "button", "icon help");
+    help.append(icon("help"));
+    labelled(help, "Help: how to install and use Tabuzaur");
+    return help;
   }
 
   /** Export downloads the document as JSON; import reads such a file and asks: replace or merge. */
@@ -251,7 +261,7 @@ class TabsPage {
       this.run(() => this.browser.openInNewTab("chrome://extensions/shortcuts"));
     }, "button", "shortcut unset");
     hint.textContent = "No shortcut assigned - set one";
-    hint.title = "Chrome assigns Alt+T only when no other extension uses it; pick a key on chrome://extensions/shortcuts";
+    labelled(hint, "Chrome assigns Alt+T only when no other extension uses it; pick a key on chrome://extensions/shortcuts");
     return hint;
   }
 
@@ -267,7 +277,7 @@ class TabsPage {
       });
     }, "button", "icon theme");
     toggle.append(icon(names[this.theme]));
-    toggle.title = `${labels[this.theme]} (click to change)`;
+    labelled(toggle, `${labels[this.theme]} (click to change)`);
     return toggle;
   }
 
@@ -302,7 +312,7 @@ class TabsPage {
       });
     }, "button", this.pinned ? "icon pin on" : "icon pin");
     pin.append(icon("pin"));
-    pin.title = this.pinned ? "Unpin: the panel slides in on hover" : "Pin the panel open";
+    labelled(pin, this.pinned ? "Unpin: the panel slides in on hover" : "Pin the panel open");
     return pin;
   }
 
@@ -536,7 +546,7 @@ class TabsPage {
         this.run(() => this.change(this.book.removePage(collection.id, index)));
       }, "button", "icon remove");
       remove.append(icon("close"));
-      remove.title = "Remove this link";
+      labelled(remove, "Remove this link");
       const { body, edit } = this.pageTitle(collection, page, index);
       row.append(favicon(page), body);
       if (edit !== undefined) {
@@ -595,7 +605,7 @@ class TabsPage {
         focusAndSelect(this.root.querySelector<HTMLInputElement>(".page input.title"));
       }, "button", "icon edit");
       edit.append(icon("pen"));
-      edit.title = "Edit the title and the url";
+      labelled(edit, "Edit the title and the url");
       return { body, edit };
     }
     const form = el("form", "edit") as HTMLFormElement;
@@ -649,7 +659,7 @@ class TabsPage {
         focusAndSelect(this.root.querySelector<HTMLInputElement>(".card input.name"));
       }, "button", "icon edit");
       edit.append(icon("pen"));
-      edit.title = "Rename this collection";
+      labelled(edit, "Rename this collection");
       return [name, edit];
     }
     const input = el("input", "name") as HTMLInputElement;
@@ -691,7 +701,7 @@ class TabsPage {
       }
     }, "button", "icon trash");
     trash.append(icon("trash"));
-    trash.title = "Delete this collection";
+    labelled(trash, "Delete this collection");
     return trash;
   }
 
@@ -741,6 +751,12 @@ function download(name: string, text: string): void {
   link.download = name;
   link.click();
   setTimeout(() => { URL.revokeObjectURL(url); }, 1000);
+}
+
+/** A tooltip for the pointer and the same text for a screen reader, on a button that shows only an icon. */
+function labelled(node: HTMLElement, label: string): void {
+  node.title = label;
+  node.setAttribute("aria-label", label);
 }
 
 function focusAndSelect(input: HTMLInputElement | null): void {

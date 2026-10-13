@@ -6,3 +6,13 @@ chrome.action.onClicked.addListener(() => {
     console.error("Tabuzaur could not open its page", error);
   });
 });
+
+/** The help page opens once, right after the first install; never on an update. */
+chrome.runtime.onInstalled.addListener((details) => {
+  if (details.reason !== "install") {
+    return;
+  }
+  new ChromeTabBrowser().openInNewTab(chrome.runtime.getURL("help.html")).catch((error: unknown) => {
+    console.error("Tabuzaur could not open its help page", error);
+  });
+});
