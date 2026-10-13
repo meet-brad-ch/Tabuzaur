@@ -4,6 +4,7 @@ LOG.md
 # Node / Vite
 node_modules/
 dist/
+build/
 .vite/
 coverage/
 *.zip

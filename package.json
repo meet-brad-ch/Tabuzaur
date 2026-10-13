@@ -14,6 +14,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
+    "shots": "node tools/render/shoot.mjs",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {

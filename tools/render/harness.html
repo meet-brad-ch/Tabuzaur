@@ -1,0 +1,108 @@
+<!doctype html>
+<!--
+  Copied next to the built page (into a copy of dist/) by shoot.mjs, so relative paths match the real page.
+  Renders the Tabuzaur page outside Chrome's extension runtime: a fake chrome.* API with seeded
+  collections and open tabs, so headless Chrome can screenshot it. The URL hash picks a state;
+  shoot.mjs drives it. The DOM code has no tests, so this is also the quickest layout check.
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tabuzaur harness</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="tabs.css" />
+    <script>
+      const state = location.hash.replace(/^#/, "") || "page";
+      const noEvent = { addListener() {} };
+      const page = (title, url) => ({ title, url });
+      const seeded = [
+        { id: "c1", name: "Work", createdAt: "2026-10-12T10:00:00.000Z", hue: 9, pages: [
+          page("Sprint board", "https://board.example-team.com/sprint/42"),
+          page("Design review notes", "https://docs.example-team.com/d/review-notes"),
+          page("CI dashboard", "https://ci.example-team.com/pipelines"),
+        ] },
+        { id: "c2", name: "Reading", createdAt: "2026-10-12T10:00:00.000Z", hue: 2, pages: [
+          page("How browsers handle drag and drop", "https://web.dev/articles/drag-and-drop"),
+          page("Manifest V3 overview", "https://developer.chrome.com/docs/extensions/mv3/intro"),
+        ] },
+        { id: "c3", name: "Trip to Lisbon", createdAt: "2026-10-12T10:00:00.000Z", hue: 6, pages: [
+          page("Flights LIS", "https://flights.example.com/search?to=LIS"),
+          page("Alfama walking map", "https://maps.example.com/alfama"),
+          page("Pastel de nata, the best ones", "https://food.example.com/lisbon/pastel"),
+          page("Tram 28 route", "https://transit.example.com/lisbon/28"),
+        ] },
+        { id: "c4", name: "Home", createdAt: "2026-10-12T10:00:00.000Z", hue: 12, pages: [] },
+      ];
+      const openTabs = [
+        [1, true, "Sprint board", "https://board.example-team.com/sprint/42"],
+        [1, false, "Pull request #318: flyout folds during drag", "https://git.example-team.com/tabuzaur/pull/318"],
+        [1, false, "Quarterly planning", "https://docs.example-team.com/d/q4-plan"],
+        [1, false, "Lisbon weather in October", "https://weather.example.com/lisbon"],
+        [1, false, "Manifest V3 overview", "https://developer.chrome.com/docs/extensions/mv3/intro"],
+        [1, false, "Inter font", "https://rsms.me/inter/"],
+        [2, true, "Recipe: pastel de nata", "https://food.example.com/recipes/pastel-de-nata"],
+        [2, false, "Hardware store opening hours", "https://store.example.com/hours"],
+      ].map(([windowId, active, title, url], i) => ({ id: 100 + i, windowId, active, title, url }));
+      const store = {
+        tabuzaur: { schemaVersion: 1, collections: state === "empty" ? [] : seeded },
+        "tabuzaur-sidebar-pinned": state === "pinned",
+        "tabuzaur-theme": state === "dark" ? "dark" : "light",
+      };
+      window.chrome = {
+        runtime: { getURL: (p) => "chrome-extension://tabuzaur/" + p, getManifest: () => ({ version: "0.0.0-harness" }) },
+        storage: {
+          local: { get: async (k) => (k in store ? { [k]: store[k] } : {}), set: async (o) => Object.assign(store, o) },
+          onChanged: noEvent,
+        },
+        tabs: {
+          query: async () => (state === "empty" ? [] : openTabs), update: async () => {}, create: async () => {},
+          onCreated: noEvent, onRemoved: noEvent, onUpdated: noEvent, onMoved: noEvent, onActivated: noEvent, onAttached: noEvent, onDetached: noEvent,
+        },
+        windows: { getCurrent: async () => ({ id: 1 }), update: async () => {} },
+        commands: { getAll: async () => [{ name: "_execute_action", shortcut: "Alt+T" }] },
+      };
+      // the flyout is opened by hover, which headless Chrome cannot do: these states force it out
+      if (["flyout", "drop", "demo1", "demo2", "demo3"].includes(state)) {
+        document.write('<style>.layout:not(.pinned) aside { transform: none !important; }</style>');
+      }
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="tabs.js"></script>
+    <script>
+      // after the page rendered: put it into the requested state, then report
+      setTimeout(() => {
+        const q = (s) => document.querySelector(s);
+        const DRAG_TYPE = "application/x-tabuzaur-page";
+        const tabRow = () => document.querySelectorAll("aside .tab")[3];  // "Lisbon weather in October"
+        if (state === "search") {
+          const input = q("header.top .search input");
+          input.value = "lisbon";
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+        } else if (state === "edit") {
+          q(".card .page button.edit").click();
+        } else if (state === "drop" || state === "demo2") {
+          tabRow().classList.add("dragging");
+          document.querySelectorAll(".card")[2].classList.add("over");
+        } else if (state === "demo3") {
+          const dt = new DataTransfer();
+          const tab = openTabs[3];
+          dt.setData(DRAG_TYPE, JSON.stringify({ page: { title: tab.title, url: tab.url } }));
+          document.querySelectorAll(".card")[2].dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }));
+        } else if (state === "dialog") {
+          const dt = new DataTransfer();
+          dt.items.add(new File([JSON.stringify(store.tabuzaur)], "tabuzaur-backup-2026-10-13.json", { type: "application/json" }));
+          const picker = q('header.top input[type="file"]');
+          picker.files = dt.files;
+          picker.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+        setTimeout(() => {
+          const images = [...document.images];
+          const broken = images.filter((i) => !i.complete || i.naturalWidth === 0).map((i) => i.getAttribute("src"));
+          document.title = `state ${state} | cards ${document.querySelectorAll(".card").length} | tabs ${document.querySelectorAll("aside .tab").length} | broken images ${broken.length}${broken.length ? ": " + broken.join(", ") : ""}`;
+        }, 400);
+      }, 300);
+    </script>
+  </body>
+</html>

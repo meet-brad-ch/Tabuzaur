@@ -15,7 +15,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ["eslint.config.js"],
+    files: ["eslint.config.js", "tools/**/*.mjs"],
     ...tseslint.configs.disableTypeChecked,
     languageOptions: { globals: globals.node },
   },

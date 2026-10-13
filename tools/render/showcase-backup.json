@@ -1,0 +1,47 @@
+{
+  "app": "tabuzaur",
+  "exportedAt": "2026-10-13T12:00:00.000Z",
+  "schemaVersion": 1,
+  "collections": [
+    {
+      "id": "showcase-work",
+      "name": "Work",
+      "createdAt": "2026-10-12T10:00:00.000Z",
+      "hue": 9,
+      "pages": [
+        { "title": "Sprint board", "url": "https://board.example-team.com/sprint/42" },
+        { "title": "Design review notes", "url": "https://docs.example-team.com/d/review-notes" },
+        { "title": "CI dashboard", "url": "https://ci.example-team.com/pipelines" }
+      ]
+    },
+    {
+      "id": "showcase-reading",
+      "name": "Reading",
+      "createdAt": "2026-10-12T10:00:00.000Z",
+      "hue": 2,
+      "pages": [
+        { "title": "How browsers handle drag and drop", "url": "https://web.dev/articles/drag-and-drop" },
+        { "title": "Manifest V3 overview", "url": "https://developer.chrome.com/docs/extensions/mv3/intro" }
+      ]
+    },
+    {
+      "id": "showcase-lisbon",
+      "name": "Trip to Lisbon",
+      "createdAt": "2026-10-12T10:00:00.000Z",
+      "hue": 6,
+      "pages": [
+        { "title": "Flights LIS", "url": "https://flights.example.com/search?to=LIS" },
+        { "title": "Alfama walking map", "url": "https://maps.example.com/alfama" },
+        { "title": "Pastel de nata, the best ones", "url": "https://food.example.com/lisbon/pastel" },
+        { "title": "Tram 28 route", "url": "https://transit.example.com/lisbon/28" }
+      ]
+    },
+    {
+      "id": "showcase-home",
+      "name": "Home",
+      "createdAt": "2026-10-12T10:00:00.000Z",
+      "hue": 12,
+      "pages": []
+    }
+  ]
+}
