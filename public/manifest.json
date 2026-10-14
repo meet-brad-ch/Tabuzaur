@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Tabuzaur",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "Tame your tabs: organize the pages you work with into collections, straight from your open tabs. Local only: no sync, no network.",
   "minimum_chrome_version": "116",
   "permissions": ["tabs", "storage"],
