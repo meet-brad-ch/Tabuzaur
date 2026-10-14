@@ -64,7 +64,7 @@ jobs:
       # tabuzaur-tests.json, a token with the gist scope as secret GIST_TOKEN, the gist id as
       # variable TESTS_GIST_ID.
       - name: Tests badge (gist)
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push' && env.GIST_TOKEN != ''
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && env.GIST_TOKEN != ''
         env:
           GIST_TOKEN: ${{ secrets.GIST_TOKEN }}
           GIST_ID: ${{ vars.TESTS_GIST_ID }}
