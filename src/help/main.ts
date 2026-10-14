@@ -19,6 +19,28 @@ async function applyTheme(): Promise<void> {
 }
 
 version.textContent = api === undefined ? "not installed (preview)" : api.runtime.getManifest().version;
+
+// A link cannot navigate to a chrome:// address, but an extension page may open one through the
+// tabs API: every chrome:// address shown in the text becomes a button that does so.
+if (api !== undefined) {
+  for (const code of document.querySelectorAll("code")) {
+    const address = code.textContent;
+    if (!address.startsWith("chrome://") || address.includes("<")) {
+      continue;
+    }
+    const open = document.createElement("button");
+    open.type = "button";
+    open.className = "chrome-link";
+    open.textContent = address;
+    open.title = `Open ${address} in a new tab`;
+    open.addEventListener("click", () => {
+      api.tabs.create({ url: address, active: true }).catch((error: unknown) => {
+        version.textContent = `could not open ${address}: ${error instanceof Error ? error.message : String(error)}`;
+      });
+    });
+    code.replaceWith(open);
+  }
+}
 dark.addEventListener("change", () => { void applyTheme(); });
 applyTheme().catch((error: unknown) => {
   version.textContent = `theme not loaded: ${error instanceof Error ? error.message : String(error)}`;
