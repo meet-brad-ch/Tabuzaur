@@ -26,6 +26,7 @@ const STATES = [
   ["edit", "edit.png"],
   ["drop", "drop.png"],
   ["dialog", "dialog.png"],
+  ["settings", "settings.png"],
   ["empty", "empty.png"],
   ["demo1", "demo-1.png"],
   ["demo2", "demo-2.png"],
@@ -93,6 +94,8 @@ function main() {
 function shootHelp(chrome, work) {
   const html = readFileSync(join(work, "dist", "help.html"), "utf8");
   const pictures = [...html.matchAll(/src="(help\/img\/[^"]+)"/g)].map((m) => m[1]);
+  // the pictures just rendered are newer than the dist copy taken at the start: refresh it first
+  cpSync(out, join(work, "dist", "help", "img"), { recursive: true });
   const missing = pictures.filter((p) => !existsSync(join(work, "dist", p)));
   if (missing.length > 0) {
     throw new Error(`help.html names pictures that do not exist: ${missing.join(", ")}`);

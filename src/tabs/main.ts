@@ -3,7 +3,7 @@ import { CollectionBook, findMatch } from "../lib/collections.ts";
 import type { Clock, Collection, IdSource, SavedPage } from "../lib/model.ts";
 import { HUE_COUNT, RandomIdSource, SystemClock } from "../lib/model.ts";
 import type { Persistence, Theme } from "../lib/storage.ts";
-import { FlagStore, LocalPersistence, SIDEBAR_PINNED_KEY, THEMES, ThemeStore } from "../lib/storage.ts";
+import { FlagStore, LocalPersistence, OPEN_IN_NEW_TAB_KEY, SIDEBAR_PINNED_KEY, THEMES, ThemeStore } from "../lib/storage.ts";
 import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
 import { ChromeTabBrowser } from "../lib/tabs.ts";
 import { hostnameOf, hueOf, initialOf } from "../lib/urls.ts";
@@ -26,6 +26,7 @@ const ICONS = {
   plus: '<path d="M12 5v14M5 12h14"/>',
   download: '<path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/>',
   upload: '<path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M4 19h16"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .8-1 1.5"/><path d="M12 17h.01"/>',
 } as const;
 
@@ -54,6 +55,7 @@ class TabsPage {
   private tabQuery = "";
   private theme: Theme = "system";
   private pinned = false;
+  private openInNewTab = false;
   private shortcut = "";
   private renaming: string | undefined;
   private editingPage: PageRef | undefined;
@@ -68,6 +70,7 @@ class TabsPage {
     private readonly persistence: Persistence,
     private readonly themes: ThemeStore,
     private readonly sidebarPinned: FlagStore,
+    private readonly newTabFlag: FlagStore,
     private readonly browser: TabBrowser,
     private readonly clock: Clock,
     private readonly ids: IdSource,
@@ -76,6 +79,7 @@ class TabsPage {
   async start(): Promise<void> {
     this.theme = await this.themes.load();
     this.pinned = await this.sidebarPinned.load();
+    this.openInNewTab = await this.newTabFlag.load();
     this.applyTheme();
     this.darkSystem.addEventListener("change", () => { this.applyTheme(); });
     await this.loadBook();
@@ -169,8 +173,45 @@ class TabsPage {
       this.run(() => this.change(this.book.create(name.value, this.clock, this.ids)));
     });
 
-    header.append(brand, search, form, this.backupButtons(), this.themeButton(), this.helpButton());
+    header.append(brand, search, form, this.backupButtons(), this.themeButton(), this.settingsButton(), this.helpButton());
     return header;
+  }
+
+  private settingsButton(): HTMLElement {
+    const gear = button(() => { this.openSettings(); }, "button", "icon settings");
+    gear.append(icon("gear"));
+    labelled(gear, "Settings");
+    return gear;
+  }
+
+  /** The settings dialog: one option so far, off by default. */
+  private openSettings(): void {
+    const dialog = el("dialog", "settings") as HTMLDialogElement;
+    const heading = el("h3");
+    heading.textContent = "Settings";
+    const option = el("label", "option");
+    const box = el("input") as HTMLInputElement;
+    box.type = "checkbox";
+    box.checked = this.openInNewTab;
+    const words = el("span");
+    const name = el("strong");
+    name.textContent = "Open Tabuzaur in every new tab";
+    const note = el("span", "note");
+    note.textContent = "A new blank tab (Ctrl+T or the + button) shows the Tabuzaur page instead of Chrome's new-tab page. Tabs opened on an address are not affected.";
+    words.append(name, note);
+    option.append(box, words);
+    box.addEventListener("change", () => {
+      this.run(async () => {
+        await this.newTabFlag.save(box.checked);
+        this.openInNewTab = box.checked;
+      }, () => undefined);
+    });
+    const actions = el("div", "actions");
+    actions.append(button(() => { dialog.close(); dialog.remove(); }, "button", "primary", "Close"));
+    dialog.append(heading, option, actions);
+    dialog.addEventListener("cancel", () => { dialog.remove(); });
+    document.body.append(dialog);
+    dialog.showModal();
   }
 
   private helpButton(): HTMLElement {
@@ -839,6 +880,7 @@ const page = new TabsPage(
   new LocalPersistence(chrome.storage.local, chrome.storage.onChanged),
   new ThemeStore(chrome.storage.local),
   new FlagStore(chrome.storage.local, SIDEBAR_PINNED_KEY),
+  new FlagStore(chrome.storage.local, OPEN_IN_NEW_TAB_KEY),
   new ChromeTabBrowser(),
   new SystemClock(),
   new RandomIdSource(),

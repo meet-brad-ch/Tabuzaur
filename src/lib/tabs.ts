@@ -13,6 +13,16 @@ export function findOpenTab(tabs: readonly OpenTab[], url: string): OpenTab | un
   return tabs.find((t) => t.url === url);
 }
 
+/**
+ * Whether a freshly created tab is Chrome's blank new-tab page (Ctrl+T, the + button), as opposed
+ * to a tab opened on an address. Chrome reports the page as pendingUrl while it loads and as url
+ * afterwards, with or without a trailing slash.
+ */
+export function isBlankNewTab(url: string | undefined, pendingUrl: string | undefined): boolean {
+  const blank = (u: string | undefined): boolean => u === "chrome://newtab/" || u === "chrome://newtab";
+  return blank(pendingUrl) || (pendingUrl === undefined && blank(url));
+}
+
 /** Reads and changes the browser's tabs. The Chrome adapter is the only implementation outside tests. */
 export interface TabBrowser {
   /** Every open tab of every window, in window and tab-strip order, without tabs that have no URL yet. */

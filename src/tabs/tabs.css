@@ -242,6 +242,7 @@ button.icon:hover {
 }
 
 button.theme,
+button.settings,
 button.help {
   border: 1px solid var(--line);
   width: 36px;
@@ -299,7 +300,33 @@ button.danger-outline:hover {
   background: #d23b3b14;
 }
 
-dialog.import {
+dialog.settings .option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+dialog.settings .option input {
+  margin-top: 4px;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+}
+
+dialog.settings .option span {
+  display: flex;
+  flex-direction: column;
+}
+
+dialog.settings .note {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+dialog.import,
+dialog.settings {
   width: min(460px, 90vw);
   padding: 20px 22px;
   border: 1px solid var(--line);
@@ -309,11 +336,13 @@ dialog.import {
   box-shadow: var(--shadow-lift);
 }
 
-dialog.import::backdrop {
+dialog.import::backdrop,
+dialog.settings::backdrop {
   background: #0f283d66;
 }
 
-dialog.import h3 {
+dialog.import h3,
+dialog.settings h3 {
   margin: 0 0 12px;
   font-size: 16px;
 }
@@ -323,14 +352,16 @@ dialog.import p {
   color: var(--muted);
 }
 
-dialog.import .actions {
+dialog.import .actions,
+dialog.settings .actions {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 16px;
 }
 
-dialog.import .actions button.primary {
+dialog.import .actions button.primary,
+dialog.settings .actions button.primary {
   height: 36px;
   padding: 0 14px;
 }

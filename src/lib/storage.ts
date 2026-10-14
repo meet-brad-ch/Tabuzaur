@@ -138,6 +138,8 @@ export class ThemeStore {
 }
 
 export const SIDEBAR_PINNED_KEY = "tabuzaur-sidebar-pinned";
+/** When true, a new blank tab opens the Tabuzaur page instead of Chrome's new-tab page. Off until saved. */
+export const OPEN_IN_NEW_TAB_KEY = "tabuzaur-open-in-new-tab";
 
 /** A boolean setting in the key-value area under its own key; false until saved. */
 export class FlagStore {

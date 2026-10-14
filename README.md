@@ -35,6 +35,8 @@ To update: unzip the new release over the same folder, then click the reload ico
 - **Alt+T.** Chrome assigns this key at install when no other extension uses it. The page header
   shows the key in effect. If it shows "No shortcut assigned", click it and set a key on
   `chrome://extensions/shortcuts`.
+- **Every new tab.** Off by default. Open Settings with the gear in the header and tick
+  **Open Tabuzaur in every new tab**. A new blank tab then shows the Tabuzaur page.
 - **Start page.** Copy the ID from the Tabuzaur card. In Chrome Settings, open **On startup**,
   choose **Open a specific page or set of pages**, click **Add a new page** and enter
   `chrome-extension://<id>/tabs.html`.
@@ -122,7 +124,8 @@ gate, zips `dist/` and publishes the zip with its SHA-256 as a GitHub Release.
   The Chrome API is touched only in thin adapters. The DOM code in `src/tabs/` is checked by the
   headless render and by hand in Chrome.
 - The welcome page is Chrome's startup-page setting, not a new-tab override, so Ctrl+T stays
-  Chrome's and the user opts in.
+  Chrome's unless the user turns on the new-tab option. That option works through the tabs API
+  on freshly created blank tabs and can be turned off again.
 - TypeScript, Vite, Vitest and ESLint. Plain Vite with fixed entry names and relative asset paths.
 - Brand, from `branding/showcase.png`: navy `#0f283d`, green `#0a8d73` and `#36b88f`, mint
   `#dbf5ec`, tagline grey `#506f85`. The mascot on a transparent background is the icon.
