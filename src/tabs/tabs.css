@@ -97,10 +97,13 @@ mark {
 
 /* ---- header ------------------------------------------------------------------------------- */
 
+/* brand, search, tools: the tools wrap under the first two when the window is narrow, so the
+   header never forces the page wider than the window (the cards then lose columns, down to one) */
 header.top {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 10px 16px;
   padding: 12px 24px;
   background: var(--panel);
   border-bottom: 1px solid var(--line);
@@ -183,6 +186,7 @@ button.shortcut.unset {
 
 .field input {
   flex: 1;
+  width: 0;        /* no intrinsic width: the field shrinks to its own min-width */
   min-width: 0;
   border: none;
   background: none;
@@ -194,16 +198,32 @@ button.shortcut.unset {
 }
 
 header.top .search {
-  flex: 1;
+  flex: 1 1 200px;
+  min-width: 160px;
   max-width: 480px;
 }
 
+header.top .tools,
+header.top .icons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
+header.top .icons {
+  flex-wrap: nowrap;   /* the three round buttons stay together */
+}
+
 .field.create {
+  flex: 0 1 auto;
+  min-width: 230px;    /* shrinks this far before the tools wrap */
   padding-right: 4px;
 }
 
 .field.create input {
-  width: 180px;
+  flex: 1 1 auto;
+  width: 180px;        /* its natural width; the field shrinks to its min-width when the row is tight */
 }
 
 button.primary {
@@ -867,18 +887,19 @@ button.remove:hover {
   color: var(--accent);
 }
 
+/* narrow window: a pinned panel becomes a strip above the collections; the rail stays at the left */
 @media (max-width: 760px) {
-  .layout {
+  .layout.pinned {
     grid-template-columns: 1fr;
+  }
+
+  .field.create input {
+    width: 120px;      /* the tools row fits a 640px window without a third header row */
   }
 
   .layout.pinned aside {
     max-height: 40vh;
     border-right: none;
     border-bottom: 1px solid var(--line);
-  }
-
-  header.top {
-    flex-wrap: wrap;
   }
 }

@@ -180,7 +180,12 @@ class TabsPage {
       this.run(() => this.change(this.book.create(name.value, this.clock, this.ids)));
     });
 
-    header.append(brand, search, form, this.backupButtons(), this.themeButton(), this.settingsButton(), this.helpButton());
+    // the tools wrap as one group under the brand and the search when the window is narrow
+    const tools = el("div", "tools");
+    const icons = el("div", "icons");
+    icons.append(this.themeButton(), this.settingsButton(), this.helpButton());
+    tools.append(form, this.backupButtons(), icons);
+    header.append(brand, search, tools);
     return header;
   }
 
