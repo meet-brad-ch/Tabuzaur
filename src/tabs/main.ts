@@ -116,7 +116,13 @@ class TabsPage {
   // ---- rendering --------------------------------------------------------------------------
 
   private render(): void {
+    // the page is rebuilt from scratch: the two scrolling areas keep their position, or the drop
+    // of a link into a collection below the fold would throw the viewer back to the top
+    const mainTop = this.root.querySelector("main")?.scrollTop ?? 0;
+    const asideTop = this.root.querySelector("aside")?.scrollTop ?? 0;
     this.root.replaceChildren(this.header(), el("p", "notice"), this.layout());
+    this.must("main").scrollTop = mainTop;
+    this.must("aside").scrollTop = asideTop;
     if (this.pendingNotice === undefined) {
       this.must(".notice").setAttribute("hidden", "");
     } else {
