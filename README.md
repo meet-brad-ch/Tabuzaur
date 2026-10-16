@@ -61,6 +61,8 @@ To update: unzip the new release over the same folder, then click the reload ico
   after a question.
 - **Find.** Type in the search field. Only collections with a match stay, and Tabuzaur marks the match.
 - **Theme.** The round button cycles through system, light and dark.
+- **Settings.** The gear opens the settings: a bar with three steps for the collection width
+  (Small, Medium, Large) and the new-tab option.
 - **Help.** The `?` button opens the help page, the same one that opens after install.
 
 ![The open-tab panel slid out over the collections](public/help/img/flyout.png)

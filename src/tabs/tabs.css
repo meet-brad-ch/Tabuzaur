@@ -345,6 +345,47 @@ dialog.settings .note {
   font-size: 14px;
 }
 
+dialog.settings .option.size {
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+  cursor: default;
+}
+
+/* a bar of three steps; the chosen one is filled */
+.segments {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.segments .segment {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segments .segment:hover {
+  color: var(--fg);
+}
+
+.segments .segment[aria-checked="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+
+.segments .segment:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 dialog.import,
 dialog.settings {
   width: min(460px, 90vw);
@@ -671,9 +712,22 @@ details.window > summary .count {
 
 /* ---- cards -------------------------------------------------------------------------------- */
 
+/* the least width of a card comes from the collection width setting (html[data-size]) */
+:root {
+  --card-min: 320px;
+}
+
+:root[data-size="small"] {
+  --card-min: 260px;
+}
+
+:root[data-size="large"] {
+  --card-min: 420px;
+}
+
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-min), 1fr));
   gap: 8px;
   align-items: start;
 }

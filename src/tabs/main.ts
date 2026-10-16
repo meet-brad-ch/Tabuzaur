@@ -3,8 +3,8 @@ import { backupFileName, parseBackup, serializeBackup } from "../lib/backup.ts";
 import { CollectionBook, findMatch } from "../lib/collections.ts";
 import type { Clock, Collection, IdSource, SavedPage } from "../lib/model.ts";
 import { HUE_COUNT, RandomIdSource, SystemClock } from "../lib/model.ts";
-import type { Persistence, Theme } from "../lib/storage.ts";
-import { FlagStore, LocalPersistence, OPEN_IN_NEW_TAB_KEY, SIDEBAR_PINNED_KEY, THEMES, ThemeStore } from "../lib/storage.ts";
+import type { CardSize, Persistence, Theme } from "../lib/storage.ts";
+import { CARD_SIZES, CardSizeStore, FlagStore, LocalPersistence, OPEN_IN_NEW_TAB_KEY, SIDEBAR_PINNED_KEY, THEMES, ThemeStore } from "../lib/storage.ts";
 import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
 import { ChromeTabBrowser } from "../lib/tabs.ts";
 import { hostnameOf, hueOf, initialOf } from "../lib/urls.ts";
@@ -57,6 +57,7 @@ class TabsPage {
   private theme: Theme = "system";
   private pinned = false;
   private openInNewTab = false;
+  private cardSize: CardSize = "medium";
   private shortcut = "";
   private renaming: string | undefined;
   private editingPage: PageRef | undefined;
@@ -72,6 +73,7 @@ class TabsPage {
     private readonly themes: ThemeStore,
     private readonly sidebarPinned: FlagStore,
     private readonly newTabFlag: FlagStore,
+    private readonly cardSizes: CardSizeStore,
     private readonly browser: TabBrowser,
     private readonly clock: Clock,
     private readonly ids: IdSource,
@@ -81,7 +83,9 @@ class TabsPage {
     this.theme = await this.themes.load();
     this.pinned = await this.sidebarPinned.load();
     this.openInNewTab = await this.newTabFlag.load();
+    this.cardSize = await this.cardSizes.load();
     this.applyTheme();
+    this.applyCardSize();
     this.darkSystem.addEventListener("change", () => { this.applyTheme(); });
     await this.loadBook();
     this.ownWindowId = await this.browser.currentWindowId();
@@ -105,6 +109,11 @@ class TabsPage {
     if (this.book !== loaded) {
       await this.persistence.save(this.book.toData());  // a pre-0.3.0 document: colors are stamped once
     }
+  }
+
+  /** The stylesheet reads the collection width from this attribute (the least width of a card). */
+  private applyCardSize(): void {
+    document.documentElement.dataset.size = this.cardSize;
   }
 
   /** Resolves "system" to the OS choice, so the stylesheet only knows light and dark. */
@@ -196,11 +205,42 @@ class TabsPage {
     return gear;
   }
 
-  /** The settings dialog: one option so far, off by default. */
+  /** The settings dialog: the collection width bar and the new-tab option (off by default). */
   private openSettings(): void {
     const dialog = el("dialog", "settings") as HTMLDialogElement;
     const heading = el("h3");
     heading.textContent = "Settings";
+
+    const sizeRow = el("div", "option size");
+    const sizeWords = el("span");
+    const sizeName = el("strong");
+    sizeName.textContent = "Collection width";
+    const sizeNote = el("span", "note");
+    sizeNote.textContent = "The least width of a collection. Narrower collections give more columns.";
+    sizeWords.append(sizeName, sizeNote);
+    const bar = el("div", "segments");
+    bar.setAttribute("role", "radiogroup");
+    bar.setAttribute("aria-label", "Collection width");
+    const labels: Record<CardSize, string> = { small: "Small", medium: "Medium", large: "Large" };
+    const segments = CARD_SIZES.map((size) => {
+      const segment = button(() => {
+        this.run(async () => {
+          await this.cardSizes.save(size);
+          this.cardSize = size;
+          this.applyCardSize();
+          for (const [other, otherSize] of segments) {
+            other.setAttribute("aria-checked", String(otherSize === size));
+          }
+        }, () => undefined);
+      }, "button", "segment", labels[size]);
+      segment.setAttribute("role", "radio");
+      segment.setAttribute("aria-checked", String(size === this.cardSize));
+      segment.autofocus = size === this.cardSize;  // the dialog opens with the focus on the current step
+      bar.append(segment);
+      return [segment, size] as const;
+    });
+    sizeRow.append(sizeWords, bar);
+
     const option = el("label", "option");
     const box = el("input") as HTMLInputElement;
     box.type = "checkbox";
@@ -220,7 +260,7 @@ class TabsPage {
     });
     const actions = el("div", "actions");
     actions.append(button(() => { dialog.close(); dialog.remove(); }, "button", "primary", "Close"));
-    dialog.append(heading, option, actions);
+    dialog.append(heading, sizeRow, option, actions);
     dialog.addEventListener("cancel", () => { dialog.remove(); });
     document.body.append(dialog);
     dialog.showModal();
@@ -942,6 +982,7 @@ const page = new TabsPage(
   new ThemeStore(chrome.storage.local),
   new FlagStore(chrome.storage.local, SIDEBAR_PINNED_KEY),
   new FlagStore(chrome.storage.local, OPEN_IN_NEW_TAB_KEY),
+  new CardSizeStore(chrome.storage.local),
   new ChromeTabBrowser(),
   new SystemClock(),
   new RandomIdSource(),

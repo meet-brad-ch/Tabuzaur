@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CollectionBook } from "../src/lib/collections.ts";
 import { STORAGE_KEY } from "../src/lib/model.ts";
-import { FlagStore, LocalPersistence, parseStoreData, SIDEBAR_PINNED_KEY, THEME_KEY, ThemeStore } from "../src/lib/storage.ts";
+import { CARD_SIZE_KEY, CardSizeStore, FlagStore, LocalPersistence, parseStoreData, SIDEBAR_PINNED_KEY, THEME_KEY, ThemeStore } from "../src/lib/storage.ts";
 import { CountingIdSource, FixedClock, MemoryArea, noChanges, pageA, pageB } from "./fakes.ts";
 
 const clock = new FixedClock("2026-10-12T10:00:00.000Z");
@@ -81,6 +81,23 @@ describe("ThemeStore", () => {
     const area = new MemoryArea();
     area.seed(THEME_KEY, "sepia");
     await expect(new ThemeStore(area).load()).rejects.toThrow('unknown theme "sepia"');
+  });
+});
+
+describe("CardSizeStore", () => {
+  it("is medium until saved, then round-trips, under its own key", async () => {
+    const area = new MemoryArea();
+    const store = new CardSizeStore(area);
+    expect(await store.load()).toBe("medium");
+    await store.save("large");
+    expect(await store.load()).toBe("large");
+    expect(await area.get(CARD_SIZE_KEY)).toEqual({ [CARD_SIZE_KEY]: "large" });
+  });
+
+  it("rejects a value that is not one of the three steps", async () => {
+    const area = new MemoryArea();
+    await area.set({ [CARD_SIZE_KEY]: 320 });
+    await expect(new CardSizeStore(area).load()).rejects.toThrow("unknown collection width 320");
   });
 });
 
