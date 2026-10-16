@@ -1,3 +1,4 @@
+import { edgeScrollStep } from "../lib/autoscroll.ts";
 import { backupFileName, parseBackup, serializeBackup } from "../lib/backup.ts";
 import { CollectionBook, findMatch } from "../lib/collections.ts";
 import type { Clock, Collection, IdSource, SavedPage } from "../lib/model.ts";
@@ -329,6 +330,7 @@ class TabsPage {
     const aside = el("aside");
     const main = el("main");
     layout.append(rail, aside, main);
+    new DragScroller(main, layout);
     this.fillSidebar(aside);
     this.fillRail(rail);
     this.fillCollections(main);
@@ -782,6 +784,54 @@ function isLowerHalf(row: HTMLElement, event: DragEvent): boolean {
   const box = row.getBoundingClientRect();
   return event.clientY - box.top > box.height / 2;
 }
+
+/**
+ * Scrolls the collections while a drag rests near their top or bottom edge, so a collection
+ * below the fold can take the drop. The wheel does not reach the page during a native drag, and
+ * Chrome's own drag autoscroll only acts in a 20px belt after a delay, which is easy to miss.
+ * Each dragover over the area records the pointer; a frame loop scrolls by the edge step until
+ * the drag ends, drops, or the dragover events stop (the pointer left the area).
+ */
+class DragScroller {
+  private pointerY = Number.NaN;
+  private lastOver = 0;
+  private frame = 0;
+
+  constructor(private readonly area: HTMLElement, sources: HTMLElement) {
+    area.addEventListener("dragover", (event) => {
+      this.pointerY = event.clientY;
+      this.lastOver = performance.now();
+      if (this.frame === 0) {
+        this.frame = requestAnimationFrame(this.tick);
+      }
+    });
+    area.addEventListener("drop", () => { this.stop(); });
+    sources.addEventListener("dragend", () => { this.stop(); });
+  }
+
+  private readonly tick = (now: number): void => {
+    this.frame = 0;
+    if (now - this.lastOver > DRAG_OVER_SILENCE_MS) {
+      return;
+    }
+    const box = this.area.getBoundingClientRect();
+    const step = edgeScrollStep(this.pointerY, box.top, box.bottom);
+    if (step !== 0) {
+      this.area.scrollTop += step;
+    }
+    this.frame = requestAnimationFrame(this.tick);
+  };
+
+  private stop(): void {
+    if (this.frame !== 0) {
+      cancelAnimationFrame(this.frame);
+      this.frame = 0;
+    }
+  }
+}
+
+/** Chrome repeats dragover at least every 350ms while the pointer rests; longer silence means it left the area. */
+const DRAG_OVER_SILENCE_MS = 500;
 
 
 /** Hands the viewer a text file to save. */

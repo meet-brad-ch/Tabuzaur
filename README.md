@@ -54,7 +54,8 @@ To update: unzip the new release over the same folder, then click the reload ico
 - **Open a link.** Click the link row. Tabuzaur jumps to the open tab with that address, or opens
   the page in a new tab.
 - **Arrange.** Drag a link up or down, or onto another collection. Drag a collection by its colored
-  band to another place. A green line shows where the drop lands.
+  band to another place. A green line shows where the drop lands. To reach a collection below the
+  fold, hold the drag near the top or the bottom edge of the collections and the page scrolls.
 - **Edit.** Rest the pointer on a link and click the pen to change its title or address. The pen in
   a band renames the collection. The cross removes a link. The trash icon deletes a collection
   after a question.
