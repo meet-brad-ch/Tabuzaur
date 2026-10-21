@@ -9,6 +9,7 @@ import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
 import { ChromeTabBrowser } from "../lib/tabs.ts";
 import { hostnameOf, hueOf, initialOf } from "../lib/urls.ts";
 
+const REPO_URL = "https://github.com/meet-brad-ch/Tabuzaur";
 const DRAG_TYPE = "application/x-tabuzaur-page";
 const CARD_DRAG_TYPE = "application/x-tabuzaur-collection";
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -163,7 +164,14 @@ class TabsPage {
     const tagline = el("span", "tagline");
     tagline.textContent = "Tame your tabs";
     words.append(title, tagline);
-    brand.append(logo, words, this.shortcutBadge());
+    // the logo and the name lead to the project; the shortcut badge is a button, so it stays outside the link
+    const home = el("a", "home") as HTMLAnchorElement;
+    home.href = REPO_URL;
+    home.target = "_blank";
+    home.rel = "noopener";
+    home.title = "Tabuzaur on GitHub";
+    home.append(logo, words);
+    brand.append(home, this.shortcutBadge());
 
     const search = el("label", "field search");
     const input = el("input") as HTMLInputElement;
