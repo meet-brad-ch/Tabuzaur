@@ -29,8 +29,21 @@ export function isBlankNewTab(url: string | undefined, pendingUrl: string | unde
  * becoming a second copy. Undefined when the window has none.
  */
 export function homeTab(tabs: readonly OpenTab[], pageUrl: string, windowId: number): OpenTab | undefined {
-  const page = pageUrl.replace(/[?#].*$/, "");
-  return tabs.find((t) => t.windowId === windowId && t.url.replace(/[?#].*$/, "") === page);
+  return pageTabsIn(tabs, pageUrl, windowId)[0];
+}
+
+/** The Tabuzaur tabs of a window other than `keptTabId`: the copies that close when that one is active. */
+export function extraPageTabs(tabs: readonly OpenTab[], pageUrl: string, windowId: number, keptTabId: number): OpenTab[] {
+  return pageTabsIn(tabs, pageUrl, windowId).filter((t) => t.tabId !== keptTabId);
+}
+
+/** Whether the URL shows the page, with or without a query or a fragment. */
+export function isPageUrl(url: string, pageUrl: string): boolean {
+  return url.replace(/[?#].*$/, "") === pageUrl.replace(/[?#].*$/, "");
+}
+
+function pageTabsIn(tabs: readonly OpenTab[], pageUrl: string, windowId: number): OpenTab[] {
+  return tabs.filter((t) => t.windowId === windowId && isPageUrl(t.url, pageUrl));
 }
 
 /** Reads and changes the browser's tabs. The Chrome adapter is the only implementation outside tests. */

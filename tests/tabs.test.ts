@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { OpenTab } from "../src/lib/tabs.ts";
-import { findOpenTab, homeTab, isBlankNewTab } from "../src/lib/tabs.ts";
+import { extraPageTabs, findOpenTab, homeTab, isBlankNewTab, isPageUrl } from "../src/lib/tabs.ts";
 
 const first: OpenTab = { tabId: 1, windowId: 10, active: false, title: "A", url: "https://a.example/" };
 const second: OpenTab = { tabId: 2, windowId: 20, active: true, title: "B", url: "https://b.example/x?y=1" };
@@ -36,6 +36,24 @@ describe("homeTab", () => {
     expect(homeTab([first, second], PAGE, 10)).toBeUndefined();
     expect(homeTab([{ ...home10, url: "chrome-extension://abc/help.html" }], PAGE, 10)).toBeUndefined();
     expect(homeTab([], PAGE, 10)).toBeUndefined();
+  });
+});
+
+describe("extraPageTabs", () => {
+  it("lists the window's other Tabuzaur tabs, in strip order, and nothing from other windows", () => {
+    expect(extraPageTabs([first, home10, home10b, home20], PAGE, 10, 6)).toEqual([home10]);
+    expect(extraPageTabs([first, home10, home10b, home20], PAGE, 10, 5)).toEqual([home10b]);
+    expect(extraPageTabs([home10, home20], PAGE, 20, 7)).toEqual([]);
+    expect(extraPageTabs([home10], PAGE, 10, 5)).toEqual([]);
+  });
+});
+
+describe("isPageUrl", () => {
+  it("matches the page with or without a query or a fragment, and nothing else", () => {
+    expect(isPageUrl(PAGE, PAGE)).toBe(true);
+    expect(isPageUrl(`${PAGE}?q=1#top`, PAGE)).toBe(true);
+    expect(isPageUrl("chrome-extension://abc/help.html", PAGE)).toBe(false);
+    expect(isPageUrl(`${PAGE}x`, PAGE)).toBe(false);
   });
 });
 

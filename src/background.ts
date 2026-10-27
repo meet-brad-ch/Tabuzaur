@@ -1,5 +1,5 @@
 import { FlagStore, OPEN_IN_NEW_TAB_KEY } from "./lib/storage.ts";
-import { ChromeTabBrowser, homeTab, isBlankNewTab } from "./lib/tabs.ts";
+import { ChromeTabBrowser, extraPageTabs, homeTab, isBlankNewTab, isPageUrl } from "./lib/tabs.ts";
 
 /** The toolbar button opens the Tabuzaur page, or jumps to it when it is already open. */
 chrome.action.onClicked.addListener(() => {
@@ -16,6 +16,36 @@ chrome.runtime.onInstalled.addListener((details) => {
   new ChromeTabBrowser().openInNewTab(chrome.runtime.getURL("help.html")).catch((error: unknown) => {
     console.error("Tabuzaur could not open its help page", error);
   });
+});
+
+/**
+ * One Tabuzaur tab per window: when a Tabuzaur tab is active, the window's other Tabuzaur tabs
+ * close. Runs when a tab gains focus and when a tab navigates to the page (the help page's link,
+ * a typed address). The page keeps no state in its tab, so closing a copy loses nothing.
+ */
+function closeCopies(tabId: number): void {
+  const pageUrl = chrome.runtime.getURL("tabs.html");
+  const browser = new ChromeTabBrowser();
+  chrome.tabs.get(tabId)
+    .then(async (tab) => {
+      if (!tab.active || tab.url === undefined || !isPageUrl(tab.url, pageUrl)) {
+        return;
+      }
+      const copies = extraPageTabs(await browser.openTabs(), pageUrl, tab.windowId, tabId);
+      if (copies.length > 0) {
+        await chrome.tabs.remove(copies.map((t) => t.tabId));
+      }
+    })
+    .catch((error: unknown) => {
+      console.error("Tabuzaur could not close its other tabs", error);
+    });
+}
+
+chrome.tabs.onActivated.addListener((info) => { closeCopies(info.tabId); });
+chrome.tabs.onUpdated.addListener((tabId, change) => {
+  if (change.url !== undefined) {
+    closeCopies(tabId);
+  }
 });
 
 /**
@@ -41,8 +71,8 @@ chrome.tabs.onCreated.addListener((tab) => {
       if (home === undefined) {
         await chrome.tabs.update(created, { url: pageUrl });
       } else {
-        await browser.activate(home);
         await chrome.tabs.remove(created);
+        await browser.activate(home);  // closeCopies then removes any further copy in the window
       }
     })
     .catch((error: unknown) => {
