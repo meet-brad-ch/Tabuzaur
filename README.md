@@ -37,6 +37,7 @@ To update: unzip the new release over the same folder, then click the reload ico
   `chrome://extensions/shortcuts`.
 - **Every new tab.** Off by default. Open Settings with the gear in the header and tick
   **Open Tabuzaur in every new tab**. A new blank tab then shows the Tabuzaur page.
+  When the window already has a Tabuzaur tab, Ctrl+T lands on that one instead of opening a copy.
 - **Start page.** Copy the ID from the Tabuzaur card. In Chrome Settings, open **On startup**,
   choose **Open a specific page or set of pages**, click **Add a new page** and enter
   `chrome-extension://<id>/tabs.html`.

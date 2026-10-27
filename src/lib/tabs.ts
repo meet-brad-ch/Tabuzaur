@@ -23,6 +23,16 @@ export function isBlankNewTab(url: string | undefined, pendingUrl: string | unde
   return blank(pendingUrl) || (pendingUrl === undefined && blank(url));
 }
 
+/**
+ * The Tabuzaur tab already open in a window: the first one in tab-strip order showing the page,
+ * with or without a query or a fragment. A new blank tab in that window jumps to it instead of
+ * becoming a second copy. Undefined when the window has none.
+ */
+export function homeTab(tabs: readonly OpenTab[], pageUrl: string, windowId: number): OpenTab | undefined {
+  const page = pageUrl.replace(/[?#].*$/, "");
+  return tabs.find((t) => t.windowId === windowId && t.url.replace(/[?#].*$/, "") === page);
+}
+
 /** Reads and changes the browser's tabs. The Chrome adapter is the only implementation outside tests. */
 export interface TabBrowser {
   /** Every open tab of every window, in window and tab-strip order, without tabs that have no URL yet. */
