@@ -1,4 +1,4 @@
-import type { CardSize, Theme } from "../lib/storage.ts";
+import type { CardWidth, Theme } from "../lib/settings.ts";
 
 /** Puts the theme and the card width on the document element, where the stylesheet reads them. */
 export class PageLook {
@@ -18,10 +18,10 @@ export class PageLook {
 
   /**
    * Sets the least width of a card.
-   * @param size the choice
+   * @param width the choice
    */
-  applyCardSize(size: CardSize): void {
-    document.documentElement.dataset.size = size;
+  applyCardWidth(width: CardWidth): void {
+    document.documentElement.dataset.size = width;
   }
 
   /**

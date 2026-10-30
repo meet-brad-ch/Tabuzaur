@@ -14,6 +14,7 @@ export interface Persistence {
 export interface KeyValueArea {
   get(key: string): Promise<Record<string, unknown>>;
   set(items: Record<string, unknown>): Promise<void>;
+  remove(keys: string[]): Promise<void>;
 }
 
 /** The part of chrome.storage.onChanged this module uses. */
@@ -107,87 +108,4 @@ function asString(raw: unknown, where: string): string {
     throw new Error(`${where} is not a string`);
   }
   return raw;
-}
-
-/** The page's colour theme: follow the system, or force one. */
-export type Theme = "system" | "light" | "dark";
-export const THEMES: readonly Theme[] = ["system", "light", "dark"];
-export const THEME_KEY = "tabuzaur-theme";
-
-/** The theme choice, in the same key-value area as the collections but under its own key. */
-export class ThemeStore {
-  constructor(private readonly area: KeyValueArea) {}
-
-  /** The stored choice; "system" when none was ever saved. Anything else stored there is an error. */
-  async load(): Promise<Theme> {
-    const items = await this.area.get(THEME_KEY);
-    const raw = items[THEME_KEY];
-    if (raw === undefined) {
-      return "system";
-    }
-    const theme = THEMES.find((t) => t === raw);
-    if (theme === undefined) {
-      throw new Error(`unknown theme ${JSON.stringify(raw)}`);
-    }
-    return theme;
-  }
-
-  async save(theme: Theme): Promise<void> {
-    await this.area.set({ [THEME_KEY]: theme });
-  }
-}
-
-/** The least width of a collection card, as a step; the stylesheet maps each step to pixels. */
-export type CardSize = "small" | "medium" | "large";
-export const CARD_SIZES: readonly CardSize[] = ["small", "medium", "large"];
-export const CARD_SIZE_KEY = "tabuzaur-card-size";
-
-/** The collection width choice under its own key; "medium" when none was ever saved. */
-export class CardSizeStore {
-  constructor(private readonly area: KeyValueArea) {}
-
-  async load(): Promise<CardSize> {
-    const items = await this.area.get(CARD_SIZE_KEY);
-    const raw = items[CARD_SIZE_KEY];
-    if (raw === undefined) {
-      return "medium";
-    }
-    const size = CARD_SIZES.find((s) => s === raw);
-    if (size === undefined) {
-      throw new Error(`unknown collection width ${JSON.stringify(raw)}`);
-    }
-    return size;
-  }
-
-  async save(size: CardSize): Promise<void> {
-    await this.area.set({ [CARD_SIZE_KEY]: size });
-  }
-}
-
-export const SIDEBAR_PINNED_KEY = "tabuzaur-sidebar-pinned";
-/** When true, a new blank tab opens the Tabuzaur page instead of Chrome's new-tab page. Off until saved. */
-export const OPEN_IN_NEW_TAB_KEY = "tabuzaur-open-in-new-tab";
-
-/** A boolean setting in the key-value area under its own key; false until saved. */
-export class FlagStore {
-  constructor(
-    private readonly area: KeyValueArea,
-    private readonly key: string,
-  ) {}
-
-  async load(): Promise<boolean> {
-    const items = await this.area.get(this.key);
-    const raw = items[this.key];
-    if (raw === undefined) {
-      return false;
-    }
-    if (typeof raw !== "boolean") {
-      throw new Error(`${this.key} is not a boolean: ${JSON.stringify(raw)}`);
-    }
-    return raw;
-  }
-
-  async save(value: boolean): Promise<void> {
-    await this.area.set({ [this.key]: value });
-  }
 }

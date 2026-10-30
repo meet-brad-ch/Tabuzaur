@@ -1,7 +1,8 @@
 import { BackupFile } from "../lib/backup.ts";
 import { CollectionBook } from "../lib/collections.ts";
 import type { Clock, IdSource } from "../lib/model.ts";
-import type { CardSize, CardSizeStore, FlagStore, Persistence, ThemeStore } from "../lib/storage.ts";
+import type { CardWidth, Settings, SettingsStore } from "../lib/settings.ts";
+import type { Persistence } from "../lib/storage.ts";
 import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
 import { Dom } from "./dom.ts";
 import type { LinkDrag, LinkSource } from "./drag.ts";
@@ -16,10 +17,7 @@ import { Renderer } from "./renderer.ts";
 export interface PageServices {
   readonly root: HTMLElement;
   readonly persistence: Persistence;
-  readonly themes: ThemeStore;
-  readonly pinnedFlag: FlagStore;
-  readonly newTabFlag: FlagStore;
-  readonly cardSizes: CardSizeStore;
+  readonly settings: SettingsStore;
   readonly browser: TabBrowser;
   readonly clock: Clock;
   readonly ids: IdSource;
@@ -48,14 +46,11 @@ export class PageController implements PageActions {
   /** Loads the settings, the cards and the open tabs, shows the page, and follows later changes. */
   async start(): Promise<void> {
     const services = this.services;
-    this.state.theme = await services.themes.load();
-    this.state.pinned = await services.pinnedFlag.load();
-    this.state.newTabPage = await services.newTabFlag.load();
-    this.state.cardSize = await services.cardSizes.load();
-    this.look.applyTheme(this.state.theme);
-    this.look.applyCardSize(this.state.cardSize);
+    this.state.settings = await services.settings.load();
+    this.look.applyTheme(this.state.settings.theme);
+    this.look.applyCardWidth(this.state.settings.cardWidth);
     this.look.onSystemChange(() => {
-      this.look.applyTheme(this.state.theme);
+      this.look.applyTheme(this.state.settings.theme);
     });
     await this.loadBook();
     this.state.ownWindowId = await services.browser.currentWindowId();
@@ -103,28 +98,24 @@ export class PageController implements PageActions {
 
   /** @inheritdoc */
   cycleTheme(): void {
-    const next = HeaderView.nextTheme(this.state.theme);
+    const next = HeaderView.nextTheme(this.state.settings.theme);
     this.run(async () => {
-      await this.services.themes.save(next);
-      this.state.theme = next;
+      await this.saveSettings({ ...this.state.settings, theme: next });
       this.look.applyTheme(next);
     }, "all");
   }
 
   /** @inheritdoc */
   togglePin(): void {
-    this.run(async () => {
-      this.state.pinned = !this.state.pinned;
-      await this.services.pinnedFlag.save(this.state.pinned);
-    }, "all");
+    const pinned = !this.state.settings.panelPinned;
+    this.run(() => this.saveSettings({ ...this.state.settings, panelPinned: pinned }), "all");
   }
 
   /** @inheritdoc */
-  async setCardSize(size: CardSize): Promise<void> {
+  async setCardWidth(width: CardWidth): Promise<void> {
     try {
-      await this.services.cardSizes.save(size);
-      this.state.cardSize = size;
-      this.look.applyCardSize(size);
+      await this.saveSettings({ ...this.state.settings, cardWidth: width });
+      this.look.applyCardWidth(width);
     } catch (error: unknown) {
       this.renderer.notify(PageController.message(error), "error");
     }
@@ -132,10 +123,7 @@ export class PageController implements PageActions {
 
   /** @inheritdoc */
   setNewTabPage(on: boolean): void {
-    this.run(async () => {
-      await this.services.newTabFlag.save(on);
-      this.state.newTabPage = on;
-    }, "none");
+    this.run(() => this.saveSettings({ ...this.state.settings, newTabPage: on }), "none");
   }
 
   /** @inheritdoc */
@@ -257,6 +245,15 @@ export class PageController implements PageActions {
     await this.change(next);
     const verb = replace ? "Replaced with" : "Merged";
     this.state.pendingNotice = `${verb} ${ImportDialog.cards(incoming)} from ${file.name}.`;
+  }
+
+  /**
+   * Saves the settings, then takes them; a failed save leaves the state as it was.
+   * @param next the new record
+   */
+  private async saveSettings(next: Settings): Promise<void> {
+    await this.services.settings.save(next);
+    this.state.settings = next;
   }
 
   /** Reads the open tabs again. */

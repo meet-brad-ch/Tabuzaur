@@ -1,4 +1,5 @@
-import { ThemeStore } from "../lib/storage.ts";
+import { SettingsStore } from "../lib/settings.ts";
+import type { Theme } from "../lib/settings.ts";
 
 /**
  * The help page is static HTML. This script fills the version line and applies the theme the
@@ -14,8 +15,13 @@ const api = (globalThis as { chrome?: typeof chrome }).chrome;
 const dark = window.matchMedia("(prefers-color-scheme: dark)");
 
 async function applyTheme(): Promise<void> {
-  const theme = api === undefined ? "system" : await new ThemeStore(api.storage.local).load();
-  document.documentElement.dataset.theme = theme === "system" ? (dark.matches ? "dark" : "light") : theme;
+  let theme: Theme = "system";
+  if (api !== undefined) {
+    const settings = await new SettingsStore(api.storage.local).load();
+    theme = settings.theme;
+  }
+  const system = dark.matches ? "dark" : "light";
+  document.documentElement.dataset.theme = theme === "system" ? system : theme;
 }
 
 version.textContent = api === undefined ? "not installed (preview)" : api.runtime.getManifest().version;

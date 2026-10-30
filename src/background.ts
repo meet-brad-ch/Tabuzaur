@@ -1,4 +1,4 @@
-import { FlagStore, OPEN_IN_NEW_TAB_KEY } from "./lib/storage.ts";
+import { SettingsStore } from "./lib/settings.ts";
 import { ChromeTabBrowser, OpenTabs } from "./lib/tabs.ts";
 
 /** The toolbar button opens the Tabuzaur page, or jumps to it when it is already open. */
@@ -61,9 +61,9 @@ chrome.tabs.onCreated.addListener((tab) => {
   const created = tab.id;
   const windowId = tab.windowId;
   const browser = new ChromeTabBrowser();
-  new FlagStore(chrome.storage.local, OPEN_IN_NEW_TAB_KEY).load()
-    .then(async (on) => {
-      if (!on) {
+  new SettingsStore(chrome.storage.local).load()
+    .then(async (settings) => {
+      if (!settings.newTabPage) {
         return;
       }
       const pageUrl = chrome.runtime.getURL("tabs.html");

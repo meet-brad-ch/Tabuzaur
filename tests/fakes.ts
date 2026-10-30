@@ -32,6 +32,18 @@ export class MemoryArea implements KeyValueArea {
     return Promise.resolve();
   }
 
+  remove(keys: string[]): Promise<void> {
+    for (const key of keys) {
+      this.items.delete(key);
+    }
+    return Promise.resolve();
+  }
+
+  /** Whether a key holds a value. */
+  has(key: string): boolean {
+    return this.items.has(key);
+  }
+
   /** Puts an arbitrary value under a key, for tests of corrupt data. */
   seed(key: string, value: unknown): void {
     this.items.set(key, JSON.stringify(value));

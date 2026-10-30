@@ -76,7 +76,7 @@ export class PanelView {
    * @returns the button
    */
   private pinButton(): HTMLElement {
-    const pinned = this.state.pinned;
+    const pinned = this.state.settings.panelPinned;
     const pin = Dom.button(pinned ? "icon pin on" : "icon pin", () => {
       this.actions.togglePin();
     });

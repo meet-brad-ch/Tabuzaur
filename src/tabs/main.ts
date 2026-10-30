@@ -1,5 +1,6 @@
 import { RandomIdSource, SystemClock } from "../lib/model.ts";
-import { CardSizeStore, FlagStore, LocalPersistence, OPEN_IN_NEW_TAB_KEY, SIDEBAR_PINNED_KEY, ThemeStore } from "../lib/storage.ts";
+import { SettingsStore } from "../lib/settings.ts";
+import { LocalPersistence } from "../lib/storage.ts";
 import { ChromeTabBrowser } from "../lib/tabs.ts";
 import { PageController } from "./page-controller.ts";
 import { PageState } from "./page-state.ts";
@@ -20,10 +21,7 @@ class TabsApp {
     const controller = new PageController(state, {
       root,
       persistence: new LocalPersistence(area, chrome.storage.onChanged),
-      themes: new ThemeStore(area),
-      pinnedFlag: new FlagStore(area, SIDEBAR_PINNED_KEY),
-      newTabFlag: new FlagStore(area, OPEN_IN_NEW_TAB_KEY),
-      cardSizes: new CardSizeStore(area),
+      settings: new SettingsStore(area),
       browser: new ChromeTabBrowser(),
       clock: new SystemClock(),
       ids: new RandomIdSource(),

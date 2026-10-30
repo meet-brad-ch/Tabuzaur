@@ -1,4 +1,4 @@
-import type { CardSize } from "../lib/storage.ts";
+import type { CardWidth } from "../lib/settings.ts";
 import type { OpenTab } from "../lib/tabs.ts";
 import type { LinkDrag, LinkSource } from "./drag.ts";
 
@@ -19,7 +19,7 @@ export interface PageActions {
   /** Pins or unpins the open-tab panel. */
   togglePin(): void;
   /** Saves the card width; resolves when saved or when the failure is shown. */
-  setCardSize(size: CardSize): Promise<void>;
+  setCardWidth(width: CardWidth): Promise<void>;
   /** Saves the new-tab option. */
   setNewTabPage(on: boolean): void;
   /** Opens the help page, or brings it to the front. */

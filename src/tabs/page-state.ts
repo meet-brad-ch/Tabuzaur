@@ -1,5 +1,6 @@
 import { CollectionBook } from "../lib/collections.ts";
-import type { CardSize, Theme } from "../lib/storage.ts";
+import { SettingsStore } from "../lib/settings.ts";
+import type { Settings } from "../lib/settings.ts";
 import type { OpenTab } from "../lib/tabs.ts";
 import type { LinkSource } from "./drag.ts";
 
@@ -21,14 +22,8 @@ export class PageState {
   query = "";
   /** The filter over the open tabs in the panel. */
   tabQuery = "";
-  /** The theme choice. */
-  theme: Theme = "system";
-  /** Whether the panel is pinned open as a column. */
-  pinned = false;
-  /** Whether a new blank tab shows the Tabuzaur page. */
-  newTabPage = false;
-  /** The least width of a card. */
-  cardSize: CardSize = "medium";
+  /** The viewer's choices: theme, card width, pinned panel, new-tab page. */
+  settings: Settings = SettingsStore.DEFAULTS;
   /** The key Chrome assigned to open Tabuzaur; empty when none. */
   shortcut = "";
   /** The card whose name is being edited. */

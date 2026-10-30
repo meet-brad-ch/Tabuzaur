@@ -1,12 +1,12 @@
-import { CARD_SIZES } from "../lib/storage.ts";
-import type { CardSize } from "../lib/storage.ts";
+import { CARD_WIDTHS } from "../lib/settings.ts";
+import type { CardWidth } from "../lib/settings.ts";
 import { Dom } from "./dom.ts";
 import type { PageActions } from "./page-actions.ts";
 import type { PageState } from "./page-state.ts";
 
 /** The settings dialog: the card width bar and the new-tab option (off by default). */
 export class SettingsDialog {
-  private static readonly SIZE_LABELS: Record<CardSize, string> = { small: "Small", medium: "Medium", large: "Large" };
+  private static readonly SIZE_LABELS: Record<CardWidth, string> = { small: "Small", medium: "Medium", large: "Large" };
 
   /**
    * Creates the dialog.
@@ -49,7 +49,7 @@ export class SettingsDialog {
     const bar = Dom.el("div", "segments");
     bar.setAttribute("role", "radiogroup");
     bar.setAttribute("aria-label", "Collection width");
-    const segments = CARD_SIZES.map((size) => this.segment(size, bar));
+    const segments = CARD_WIDTHS.map((size) => this.segment(size, bar));
     bar.append(...segments);
     row.append(words, bar);
     return row;
@@ -61,11 +61,11 @@ export class SettingsDialog {
    * @param bar the bar, whose steps it marks after a save
    * @returns the button
    */
-  private segment(size: CardSize, bar: HTMLElement): HTMLButtonElement {
+  private segment(size: CardWidth, bar: HTMLElement): HTMLButtonElement {
     const segment = Dom.textButton("segment", SettingsDialog.SIZE_LABELS[size], () => {
       void this.choose(size, bar);
     });
-    const chosen = size === this.state.cardSize;
+    const chosen = size === this.state.settings.cardWidth;
     segment.setAttribute("role", "radio");
     segment.setAttribute("aria-checked", String(chosen));
     segment.dataset.size = size;
@@ -78,10 +78,10 @@ export class SettingsDialog {
    * @param size the chosen width
    * @param bar the bar of steps
    */
-  private async choose(size: CardSize, bar: HTMLElement): Promise<void> {
-    await this.actions.setCardSize(size);
+  private async choose(size: CardWidth, bar: HTMLElement): Promise<void> {
+    await this.actions.setCardWidth(size);
     for (const step of bar.querySelectorAll<HTMLElement>(".segment")) {
-      const inEffect = step.dataset.size === this.state.cardSize;
+      const inEffect = step.dataset.size === this.state.settings.cardWidth;
       step.setAttribute("aria-checked", String(inEffect));
     }
   }
@@ -93,7 +93,7 @@ export class SettingsDialog {
   private newTabOption(): HTMLElement {
     const option = Dom.el("label", "option");
     const box = Dom.input("checkbox");
-    box.checked = this.state.newTabPage;
+    box.checked = this.state.settings.newTabPage;
     const words = Dom.el("span");
     const name = Dom.el("strong");
     name.textContent = "Open Tabuzaur in every new tab";

@@ -92,7 +92,7 @@ export class Renderer {
    * @returns the layout element
    */
   private layout(): HTMLElement {
-    const layout = Dom.el("div", this.state.pinned ? "layout pinned" : "layout");
+    const layout = Dom.el("div", this.state.settings.panelPinned ? "layout pinned" : "layout");
     const rail = Dom.el("div", "rail");
     const aside = Dom.el("aside");
     const main = Dom.el("main");

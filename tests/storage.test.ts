@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CollectionBook } from "../src/lib/collections.ts";
 import { STORAGE_KEY } from "../src/lib/model.ts";
-import { CARD_SIZE_KEY, CardSizeStore, FlagStore, LocalPersistence, parseStoreData, SIDEBAR_PINNED_KEY, THEME_KEY, ThemeStore } from "../src/lib/storage.ts";
+import { LocalPersistence, parseStoreData } from "../src/lib/storage.ts";
 import { CountingIdSource, FixedClock, MemoryArea, noChanges, pageA, pageB } from "./fakes.ts";
 
 const clock = new FixedClock("2026-10-12T10:00:00.000Z");
@@ -64,56 +64,5 @@ describe("parseStoreData", () => {
     [{ schemaVersion: 1, collections: [{ ...collection, pages: [{ ...pageA, favIconUrl: 3 }] }] }, "collections[0].pages[0].favIconUrl is not a string"],
   ])("rejects %j", (raw, message) => {
     expect(() => parseStoreData(raw)).toThrow(message);
-  });
-});
-
-describe("ThemeStore", () => {
-  it("is system until something is saved, then round-trips the choice", async () => {
-    const area = new MemoryArea();
-    const store = new ThemeStore(area);
-    expect(await store.load()).toBe("system");
-    await store.save("dark");
-    expect(await store.load()).toBe("dark");
-    expect(Object.keys(await area.get(STORAGE_KEY))).toEqual([]);
-  });
-
-  it("fails on a value it does not know", async () => {
-    const area = new MemoryArea();
-    area.seed(THEME_KEY, "sepia");
-    await expect(new ThemeStore(area).load()).rejects.toThrow('unknown theme "sepia"');
-  });
-});
-
-describe("CardSizeStore", () => {
-  it("is medium until saved, then round-trips, under its own key", async () => {
-    const area = new MemoryArea();
-    const store = new CardSizeStore(area);
-    expect(await store.load()).toBe("medium");
-    await store.save("large");
-    expect(await store.load()).toBe("large");
-    expect(await area.get(CARD_SIZE_KEY)).toEqual({ [CARD_SIZE_KEY]: "large" });
-  });
-
-  it("rejects a value that is not one of the three steps", async () => {
-    const area = new MemoryArea();
-    await area.set({ [CARD_SIZE_KEY]: 320 });
-    await expect(new CardSizeStore(area).load()).rejects.toThrow("unknown collection width 320");
-  });
-});
-
-describe("FlagStore", () => {
-  it("is false until saved, then round-trips, under its own key", async () => {
-    const area = new MemoryArea();
-    const store = new FlagStore(area, SIDEBAR_PINNED_KEY);
-    expect(await store.load()).toBe(false);
-    await store.save(true);
-    expect(await store.load()).toBe(true);
-    expect(Object.keys(await area.get(STORAGE_KEY))).toEqual([]);
-  });
-
-  it("fails on a value that is not a boolean", async () => {
-    const area = new MemoryArea();
-    area.seed(SIDEBAR_PINNED_KEY, "yes");
-    await expect(new FlagStore(area, SIDEBAR_PINNED_KEY).load()).rejects.toThrow('tabuzaur-sidebar-pinned is not a boolean: "yes"');
   });
 });

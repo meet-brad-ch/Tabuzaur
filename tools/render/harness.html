@@ -45,13 +45,12 @@
       ].map(([windowId, active, title, url], i) => ({ id: 100 + i, windowId, active, title, url }));
       const store = {
         tabuzaur: { schemaVersion: 1, collections: state === "empty" ? [] : seeded },
-        "tabuzaur-sidebar-pinned": state === "pinned",
-        "tabuzaur-theme": state === "dark" ? "dark" : "light",
+        "tabuzaur-settings": { theme: state === "dark" ? "dark" : "light", cardWidth: "medium", panelPinned: state === "pinned", newTabPage: false },
       };
       window.chrome = {
         runtime: { getURL: (p) => "chrome-extension://tabuzaur/" + p, getManifest: () => ({ version: "0.0.0-harness" }) },
         storage: {
-          local: { get: async (k) => (k in store ? { [k]: store[k] } : {}), set: async (o) => Object.assign(store, o) },
+          local: { get: async (k) => (k in store ? { [k]: store[k] } : {}), set: async (o) => Object.assign(store, o), remove: async (keys) => { for (const k of keys) delete store[k]; } },
           onChanged: noEvent,
         },
         tabs: {

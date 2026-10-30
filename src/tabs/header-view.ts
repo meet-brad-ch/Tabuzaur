@@ -1,5 +1,5 @@
-import { THEMES } from "../lib/storage.ts";
-import type { Theme } from "../lib/storage.ts";
+import { THEMES } from "../lib/settings.ts";
+import type { Theme } from "../lib/settings.ts";
 import { Dom, Icons } from "./dom.ts";
 import type { IconName } from "./dom.ts";
 import type { PageActions } from "./page-actions.ts";
@@ -154,8 +154,8 @@ export class HeaderView {
     const toggle = Dom.button("icon theme", () => {
       this.actions.cycleTheme();
     });
-    toggle.append(Icons.icon(icons[this.state.theme]));
-    Dom.labelled(toggle, `${labels[this.state.theme]} (click to change)`);
+    toggle.append(Icons.icon(icons[this.state.settings.theme]));
+    Dom.labelled(toggle, `${labels[this.state.settings.theme]} (click to change)`);
     return toggle;
   }
 
