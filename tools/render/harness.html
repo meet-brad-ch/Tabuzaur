@@ -87,7 +87,7 @@
         } else if (state === "demo3") {
           const dt = new DataTransfer();
           const tab = openTabs[3];
-          dt.setData(DRAG_TYPE, JSON.stringify({ page: { title: tab.title, url: tab.url } }));
+          dt.setData(DRAG_TYPE, JSON.stringify({ link: { title: tab.title, url: tab.url } }));
           document.querySelectorAll(".card")[2].dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }));
         } else if (state === "settings") {
           q("header.top button.settings").click();

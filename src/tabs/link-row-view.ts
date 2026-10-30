@@ -1,4 +1,4 @@
-import type { Collection, SavedPage } from "../lib/model.ts";
+import type { Card, Link } from "../lib/model.ts";
 import { TextSearch } from "../lib/text-search.ts";
 import { UrlText } from "../lib/urls.ts";
 import { Dom, Icons } from "./dom.ts";
@@ -24,7 +24,7 @@ export class LinkRowView {
    * @param index its place in the card, from 0
    * @returns the list item
    */
-  build(card: Collection, page: SavedPage, index: number): HTMLElement {
+  build(card: Card, page: Link, index: number): HTMLElement {
     const source: LinkSource = { cardId: card.id, index };
     const row = Dom.el("li", this.rowClasses(card, page));
     row.draggable = true;
@@ -54,7 +54,7 @@ export class LinkRowView {
    * @param page the link
    * @returns the class attribute
    */
-  private rowClasses(card: Collection, page: SavedPage): string {
+  private rowClasses(card: Card, page: Link): string {
     const classes = ["page"];
     const query = this.state.query;
     if (TextSearch.contains(page.title, query) || TextSearch.contains(page.url, query)) {
@@ -74,9 +74,9 @@ export class LinkRowView {
    * @param page the link
    * @param source its card and place
    */
-  private wireDrag(row: HTMLElement, card: Collection, page: SavedPage, source: LinkSource): void {
+  private wireDrag(row: HTMLElement, card: Card, page: Link, source: LinkSource): void {
     row.addEventListener("dragstart", (event) => {
-      DragKinds.startLink(event, row, { page, from: source });
+      DragKinds.startLink(event, row, { link: page, from: source });
     });
     row.addEventListener("dragend", () => {
       row.classList.remove("dragging");
@@ -103,7 +103,7 @@ export class LinkRowView {
    * @param card the card
    * @param index the row's place
    */
-  private onDrop(event: DragEvent, row: HTMLElement, card: Collection, index: number): void {
+  private onDrop(event: DragEvent, row: HTMLElement, card: Card, index: number): void {
     const drag = DragKinds.readLink(event);
     if (drag === undefined) {
       return;
@@ -122,7 +122,7 @@ export class LinkRowView {
    * @param page the link
    * @returns the text block
    */
-  private text(page: SavedPage): HTMLElement {
+  private text(page: Link): HTMLElement {
     const body = Dom.el("span", "text");
     const link = Dom.el("a") as HTMLAnchorElement;
     link.href = page.url;
@@ -171,7 +171,7 @@ export class LinkRowView {
    * @param source its card and place
    * @returns the form
    */
-  private editor(page: SavedPage, source: LinkSource): HTMLElement {
+  private editor(page: Link, source: LinkSource): HTMLElement {
     const form = Dom.el("form", "edit") as HTMLFormElement;
     const title = Dom.input("text", "title");
     title.value = page.title;

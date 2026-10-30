@@ -1,4 +1,4 @@
-import type { SavedPage } from "../lib/model.ts";
+import type { Link } from "../lib/model.ts";
 
 /** Where a dragged link comes from when it is already saved in a card. */
 export interface LinkSource {
@@ -8,7 +8,7 @@ export interface LinkSource {
 
 /** What a link drag carries: the link, and its card and place when it is already saved. */
 export interface LinkDrag {
-  readonly page: SavedPage;
+  readonly link: Link;
   readonly from?: LinkSource;
 }
 
@@ -20,7 +20,7 @@ export class DragKinds {
   /** A link: an open tab from the panel, or a saved link. */
   static readonly LINK = "application/x-tabuzaur-page";
   /** A card, dragged by its colored band; the data is the card id. */
-  static readonly CARD = "application/x-tabuzaur-collection";
+  static readonly CARD = "application/x-tabuzaur-card";
 
   /**
    * Whether the drag carries a link.

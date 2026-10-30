@@ -1,5 +1,6 @@
-import type { StoreData } from "./model.ts";
-import { parseStoreData } from "./storage.ts";
+import { DocumentReader } from "./document-reader.ts";
+import type { DocumentContent } from "./document-reader.ts";
+import type { LibraryData } from "./model.ts";
 
 /**
  * A backup file is the stored document with a stamp; reading it uses the same parser as storage.
@@ -12,21 +13,21 @@ export class BackupFile {
    * @param exportedAt the moment of the export, written as an ISO 8601 stamp
    * @returns JSON text ending with a newline
    */
-  static serialize(data: StoreData, exportedAt: Date): string {
+  static serialize(data: LibraryData, exportedAt: Date): string {
     const file = { app: "tabuzaur", exportedAt: exportedAt.toISOString(), ...data };
     const text = JSON.stringify(file, null, 2);
     return text + "\n";
   }
 
   /**
-   * The document in a backup file.
+   * The content of a backup file: a library (schema 2), or the cards of a file from 0.8 or earlier.
    * @param text the file text
-   * @returns the parsed document
-   * @throws Error "the file is not JSON", or the parser's error when it is not the schema
+   * @returns the content
+   * @throws Error "the file is not JSON", or the reader's error when it is not the schema
    */
-  static parse(text: string): StoreData {
+  static parse(text: string): DocumentContent {
     const raw = BackupFile.json(text);
-    return parseStoreData(raw);
+    return DocumentReader.read(raw);
   }
 
   /**

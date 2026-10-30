@@ -1,4 +1,4 @@
-import type { Collection } from "../lib/model.ts";
+import type { Card } from "../lib/model.ts";
 import { Dom, Icons } from "./dom.ts";
 import { DragKinds } from "./drag.ts";
 import { InlineEditor } from "./inline-editor.ts";
@@ -25,16 +25,16 @@ export class CardView {
    * @param hue its color, 0 to HUE_COUNT - 1
    * @returns the section element
    */
-  build(card: Collection, hue: number): HTMLElement {
+  build(card: Card, hue: number): HTMLElement {
     const section = Dom.el("section", `card hue-${String(hue)}`);
     this.wireDrop(section, card);
     section.append(this.band(section, card));
-    if (card.pages.length === 0) {
+    if (card.links.length === 0) {
       section.append(CardView.emptyHint());
       return section;
     }
     const list = Dom.el("ul");
-    const rows = card.pages.map((page, index) => this.rows.build(card, page, index));
+    const rows = card.links.map((page, index) => this.rows.build(card, page, index));
     list.append(...rows);
     section.append(list);
     return section;
@@ -45,7 +45,7 @@ export class CardView {
    * @param section the card element
    * @param card the card
    */
-  private wireDrop(section: HTMLElement, card: Collection): void {
+  private wireDrop(section: HTMLElement, card: Card): void {
     section.addEventListener("dragover", (event) => {
       CardView.onDragOver(event, section);
     });
@@ -91,13 +91,13 @@ export class CardView {
    * @param section the card element
    * @param card the card
    */
-  private onDrop(event: DragEvent, section: HTMLElement, card: Collection): void {
+  private onDrop(event: DragEvent, section: HTMLElement, card: Card): void {
     event.preventDefault();
     section.classList.remove("over", "insert-before", "insert-after");
     const movedId = DragKinds.readCard(event);
     if (movedId !== "") {
       const after = DragKinds.isLowerHalf(section, event) ? 1 : 0;
-      const place = this.state.book.collections.indexOf(card) + after;
+      const place = this.state.library.locate(card.id).cardIndex + after;
       this.actions.reorderCard(movedId, place);
       return;
     }
@@ -113,12 +113,12 @@ export class CardView {
    * @param card the card
    * @returns the header element
    */
-  private band(section: HTMLElement, card: Collection): HTMLElement {
+  private band(section: HTMLElement, card: Card): HTMLElement {
     const header = Dom.el("header");
     header.append(...this.nameField(card), this.deleteButton(card));
     const renaming = this.state.renaming === card.id;
     header.draggable = !renaming;
-    header.title = renaming ? "" : "Drag to move this collection";
+    header.title = renaming ? "" : "Drag to move this card";
     header.addEventListener("dragstart", (event) => {
       DragKinds.startCard(event, section, card.id);
     });
@@ -133,7 +133,7 @@ export class CardView {
    * @param card the card
    * @returns the elements for the band
    */
-  private nameField(card: Collection): HTMLElement[] {
+  private nameField(card: Card): HTMLElement[] {
     if (this.state.renaming !== card.id) {
       const name = Dom.el("span", "name");
       name.replaceChildren(...Dom.marked(card.name, this.state.query));
@@ -141,7 +141,7 @@ export class CardView {
         this.actions.startRename(card.id);
       });
       edit.append(Icons.icon("pen"));
-      Dom.labelled(edit, "Rename this collection");
+      Dom.labelled(edit, "Rename this card");
       return [name, edit];
     }
     const input = Dom.input("text", "name");
@@ -163,17 +163,17 @@ export class CardView {
    * @param card the card
    * @returns the button
    */
-  private deleteButton(card: Collection): HTMLElement {
+  private deleteButton(card: Card): HTMLElement {
     const trash = Dom.button("icon trash", () => {
-      const count = card.pages.length;
+      const count = card.links.length;
       const links = count === 1 ? "link" : "links";
-      const question = `Delete the collection "${card.name}" with ${String(count)} ${links}?`;
+      const question = `Delete the card "${card.name}" with ${String(count)} ${links}?`;
       if (window.confirm(question)) {
         this.actions.deleteCard(card.id);
       }
     });
     trash.append(Icons.icon("trash"));
-    Dom.labelled(trash, "Delete this collection");
+    Dom.labelled(trash, "Delete this card");
     return trash;
   }
 

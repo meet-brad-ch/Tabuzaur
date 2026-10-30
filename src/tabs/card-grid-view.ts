@@ -1,4 +1,4 @@
-import { HUE_COUNT } from "../lib/model.ts";
+import { LibrarySearch } from "../lib/library-search.ts";
 import { CardView } from "./card-view.ts";
 import { Dom } from "./dom.ts";
 import type { PageActions } from "./page-actions.ts";
@@ -25,19 +25,18 @@ export class CardGridView {
     const heading = Dom.el("h2");
     heading.textContent = "Collections";
     main.replaceChildren(heading);
-    const book = this.state.book;
-    const shown = book.search(this.state.query);
+    const open = this.state.openCollection();
+    const shown = LibrarySearch.matchingCards(open, this.state.query);
     if (shown.length === 0) {
       const empty = Dom.el("p", "empty");
-      const none = book.collections.length === 0;
-      empty.textContent = none ? "No collections yet. Create one above, then drag tabs into it." : "Nothing matches.";
+      const none = open.cards.length === 0;
+      empty.textContent = none ? "No cards yet. Create one above, then drag tabs into it." : "Nothing matches.";
       main.append(empty);
       return;
     }
     const grid = Dom.el("div", "cards");
     for (const card of shown) {
-      const hue = card.hue ?? book.collections.indexOf(card) % HUE_COUNT;
-      grid.append(this.cards.build(card, hue));
+      grid.append(this.cards.build(card, card.hue));
     }
     main.append(grid);
   }

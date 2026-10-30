@@ -1,4 +1,5 @@
-import { CollectionBook } from "../lib/collections.ts";
+import { Library } from "../lib/library.ts";
+import type { Collection } from "../lib/model.ts";
 import { SettingsStore } from "../lib/settings.ts";
 import type { Settings } from "../lib/settings.ts";
 import type { OpenTab } from "../lib/tabs.ts";
@@ -12,8 +13,10 @@ export interface AddedLink {
 
 /** Everything the page shows, in one place. Views read it; only the controller changes it. */
 export class PageState {
-  /** The saved cards and links. */
-  book = CollectionBook.empty();
+  /** The collections, their cards and links. */
+  library = Library.empty();
+  /** The collection shown on the page; the first one when it no longer exists. */
+  openCollectionId = "main";
   /** The tabs open in every window. */
   openTabs: readonly OpenTab[] = [];
   /** The window this page lives in, -1 until known. */
@@ -42,4 +45,20 @@ export class PageState {
    * @param ownUrl the address of the Tabuzaur page; its own tabs are left out of the panel
    */
   constructor(readonly ownUrl: string) {}
+
+  /**
+   * The collection shown on the page.
+   * @returns the open collection, or the first one when the open one no longer exists
+   */
+  openCollection(): Collection {
+    const library = this.library;
+    if (library.hasCollection(this.openCollectionId)) {
+      return library.collection(this.openCollectionId);
+    }
+    const first = library.collections[0];
+    if (first === undefined) {
+      throw new Error("the library has no collection");
+    }
+    return first;
+  }
 }

@@ -87,7 +87,7 @@ export class HeaderView {
   private searchField(): HTMLElement {
     const search = Dom.el("label", "field search");
     const input = Dom.input("search");
-    input.placeholder = "Search collections and links";
+    input.placeholder = "Search cards and links";
     input.value = this.state.query;
     input.addEventListener("input", () => {
       this.actions.search(input.value);
@@ -103,7 +103,7 @@ export class HeaderView {
   private createForm(): HTMLElement {
     const form = Dom.el("form", "field create") as HTMLFormElement;
     const name = Dom.input("text");
-    name.placeholder = "New collection";
+    name.placeholder = "New card";
     name.required = true;
     const create = Dom.el("button", "primary") as HTMLButtonElement;
     create.type = "submit";

@@ -42,13 +42,13 @@ export class SettingsDialog {
     const row = Dom.el("div", "option size");
     const words = Dom.el("span");
     const name = Dom.el("strong");
-    name.textContent = "Collection width";
+    name.textContent = "Card width";
     const note = Dom.el("span", "note");
-    note.textContent = "The least width of a collection. Narrower collections give more columns.";
+    note.textContent = "The least width of a card. Narrower cards give more columns.";
     words.append(name, note);
     const bar = Dom.el("div", "segments");
     bar.setAttribute("role", "radiogroup");
-    bar.setAttribute("aria-label", "Collection width");
+    bar.setAttribute("aria-label", "Card width");
     const segments = CARD_WIDTHS.map((size) => this.segment(size, bar));
     bar.append(...segments);
     row.append(words, bar);

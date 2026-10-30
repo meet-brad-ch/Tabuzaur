@@ -1,4 +1,4 @@
-import type { SavedPage } from "../lib/model.ts";
+import type { Link } from "../lib/model.ts";
 import { TextSearch } from "../lib/text-search.ts";
 import { UrlText } from "../lib/urls.ts";
 
@@ -130,7 +130,7 @@ export class Dom {
    * @param page the link or tab
    * @returns an img or a span
    */
-  static favicon(page: SavedPage): HTMLElement {
+  static favicon(page: Link): HTMLElement {
     if (page.favIconUrl === undefined) {
       return Dom.letterTile(page.url);
     }

@@ -1,5 +1,6 @@
 import { BackupFile } from "../lib/backup.ts";
-import { CollectionBook } from "../lib/collections.ts";
+import { ImportPlan } from "../lib/import-plan.ts";
+import { Library } from "../lib/library.ts";
 import type { Clock, IdSource } from "../lib/model.ts";
 import type { CardWidth, Settings, SettingsStore } from "../lib/settings.ts";
 import type { Persistence } from "../lib/storage.ts";
@@ -52,7 +53,7 @@ export class PageController implements PageActions {
     this.look.onSystemChange(() => {
       this.look.applyTheme(this.state.settings.theme);
     });
-    await this.loadBook();
+    await this.loadLibrary();
     this.state.ownWindowId = await services.browser.currentWindowId();
     this.state.openTabs = await services.browser.openTabs();
     this.state.shortcut = await services.browser.actionShortcut();
@@ -61,7 +62,7 @@ export class PageController implements PageActions {
       this.run(() => this.loadTabs(), "panel");
     });
     services.persistence.onChange(() => {
-      this.run(() => this.loadBook(), "all");
+      this.run(() => this.loadLibrary(), "all");
     });
   }
 
@@ -81,13 +82,14 @@ export class PageController implements PageActions {
   /** @inheritdoc */
   createCard(name: string): void {
     const services = this.services;
-    this.run(() => this.change(this.state.book.create(name, services.clock, services.ids)), "all");
+    const open = this.state.openCollection().id;
+    this.run(() => this.change(this.state.library.createCard(open, name, services.clock, services.ids)), "all");
   }
 
   /** @inheritdoc */
   exportBackup(): void {
     const now = this.services.clock.now();
-    const text = BackupFile.serialize(this.state.book.toData(), now);
+    const text = BackupFile.serialize(this.state.library.toData(), now);
     Dom.download(BackupFile.fileName(now), text);
   }
 
@@ -157,7 +159,7 @@ export class PageController implements PageActions {
   /** @inheritdoc */
   renameCard(cardId: string, name: string): void {
     this.state.renaming = undefined;
-    this.run(() => this.change(this.state.book.rename(cardId, name)), "all");
+    this.run(() => this.change(this.state.library.renameCard(cardId, name)), "all");
   }
 
   /** @inheritdoc */
@@ -176,7 +178,7 @@ export class PageController implements PageActions {
   /** @inheritdoc */
   editLink(source: LinkSource, title: string, url: string): void {
     this.state.editingLink = undefined;
-    this.run(() => this.change(this.state.book.editPage(source.cardId, source.index, title, url)), "all");
+    this.run(() => this.change(this.state.library.editLink(source.cardId, source.index, title, url)), "all");
   }
 
   /** @inheritdoc */
@@ -187,44 +189,39 @@ export class PageController implements PageActions {
 
   /** @inheritdoc */
   removeLink(source: LinkSource): void {
-    this.run(() => this.change(this.state.book.removePage(source.cardId, source.index)), "all");
+    this.run(() => this.change(this.state.library.removeLink(source.cardId, source.index)), "all");
   }
 
   /** @inheritdoc */
   deleteCard(cardId: string): void {
-    this.run(() => this.change(this.state.book.remove(cardId)), "all");
+    this.run(() => this.change(this.state.library.removeCard(cardId)), "all");
   }
 
   /** @inheritdoc */
   reorderCard(cardId: string, place: number): void {
-    this.run(() => this.change(this.state.book.reorderCollection(cardId, place)), "all");
+    this.run(() => this.change(this.state.library.reorderCard(cardId, place)), "all");
   }
 
   /** @inheritdoc */
   dropLink(cardId: string, drag: LinkDrag, to: number | undefined): void {
-    this.state.justAdded = { cardId, url: drag.page.url };
+    this.state.justAdded = { cardId, url: drag.link.url };
     this.run(() => this.change(this.placed(cardId, drag, to)), "all");
   }
 
   /**
-   * The book after a drop: a saved link moves, an open tab is added (at a place, or at the end).
+   * The library after a drop: a saved link moves, an open tab is added (at a place, or at the end).
    * @param cardId the target card
    * @param drag the dragged link
    * @param to the place in the target card, undefined for the end
-   * @returns the new book
-   * @throws Error from the book, for example when the card already holds the address
+   * @returns the new library
+   * @throws Error from the library, for example when the card already holds the address
    */
-  private placed(cardId: string, drag: LinkDrag, to: number | undefined): CollectionBook {
-    const book = this.state.book;
+  private placed(cardId: string, drag: LinkDrag, to: number | undefined): Library {
+    const library = this.state.library;
     if (drag.from !== undefined) {
-      return book.movePage(drag.from.cardId, drag.from.index, cardId, to);
+      return library.moveLink(drag.from.cardId, drag.from.index, cardId, to);
     }
-    const added = book.addPage(cardId, drag.page);
-    if (to === undefined) {
-      return added;
-    }
-    const last = added.get(cardId).pages.length - 1;
-    return added.reorderPage(cardId, last, to);
+    return library.addLink(cardId, drag.link, to);
   }
 
   /**
@@ -233,18 +230,24 @@ export class PageController implements PageActions {
    * @throws Error when the file is not a backup, or when saving fails
    */
   private async importText(file: File): Promise<void> {
-    const data = BackupFile.parse(await file.text());
-    const incoming = data.collections.length;
-    const current = this.state.book.collections.length;
-    const choice = await ImportDialog.ask({ fileName: file.name, incoming, current });
+    const content = BackupFile.parse(await file.text());
+    const library = this.state.library;
+    const open = this.state.openCollection();
+    const choice = await ImportDialog.ask({
+      fileName: file.name,
+      summary: ImportPlan.summary(content),
+      openName: open.name,
+      openCards: open.cards.length,
+      collections: library.collections.length,
+      cards: library.allCards().length,
+    });
     if (choice === "cancel") {
       return;
     }
-    const replace = choice === "replace";
-    const next = replace ? CollectionBook.fromData(data) : this.state.book.merge(data);
-    await this.change(next);
-    const verb = replace ? "Replaced with" : "Merged";
-    this.state.pendingNotice = `${verb} ${ImportDialog.cards(incoming)} from ${file.name}.`;
+    const target = { library, openCollectionId: open.id, fileName: file.name, ids: this.services.ids };
+    const outcome = ImportPlan.apply(content, choice, target);
+    await this.change(outcome.library);
+    this.state.pendingNotice = outcome.notice;
   }
 
   /**
@@ -261,24 +264,19 @@ export class PageController implements PageActions {
     this.state.openTabs = await this.services.browser.openTabs();
   }
 
-  /** Loads the cards; a document from before 0.3.0 gets its colors stamped once. */
-  private async loadBook(): Promise<void> {
-    const persistence = this.services.persistence;
-    const data = await persistence.load();
-    const loaded = data === undefined ? CollectionBook.empty() : CollectionBook.fromData(data);
-    this.state.book = loaded.assignHues();
-    if (this.state.book !== loaded) {
-      await persistence.save(this.state.book.toData());
-    }
+  /** Loads the library; an old document is upgraded by the store. */
+  private async loadLibrary(): Promise<void> {
+    const data = await this.services.persistence.load();
+    this.state.library = data === undefined ? Library.empty() : Library.fromData(data);
   }
 
   /**
-   * Takes a new book and saves it; an imported document may lack colors.
-   * @param next the new book
+   * Takes a new library and saves it.
+   * @param next the new library
    */
-  private async change(next: CollectionBook): Promise<void> {
-    this.state.book = next.assignHues();
-    await this.services.persistence.save(this.state.book.toData());
+  private async change(next: Library): Promise<void> {
+    this.state.library = next;
+    await this.services.persistence.save(next.toData());
   }
 
   /**

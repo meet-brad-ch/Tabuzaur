@@ -1,7 +1,7 @@
-import type { SavedPage } from "./model.ts";
+import type { Link } from "./model.ts";
 
 /** A tab that is open right now. */
-export interface OpenTab extends SavedPage {
+export interface OpenTab extends Link {
   readonly tabId: number;
   readonly windowId: number;
   /** The active tab of its window. */

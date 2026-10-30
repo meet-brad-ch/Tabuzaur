@@ -1,4 +1,4 @@
-import type { Clock, IdSource, SavedPage } from "../src/lib/model.ts";
+import type { Clock, IdSource, Link } from "../src/lib/model.ts";
 import type { ChangeEvent, KeyValueArea } from "../src/lib/storage.ts";
 
 export class FixedClock implements Clock {
@@ -50,8 +50,8 @@ export class MemoryArea implements KeyValueArea {
   }
 }
 
-export const pageA: SavedPage = { title: "Example", url: "https://example.com/" };
-export const pageB: SavedPage = {
+export const pageA: Link = { title: "Example", url: "https://example.com/" };
+export const pageB: Link = {
   title: "Docs",
   url: "https://docs.example.com/x",
   favIconUrl: "https://docs.example.com/i.png",

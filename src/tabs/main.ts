@@ -1,6 +1,6 @@
 import { RandomIdSource, SystemClock } from "../lib/model.ts";
 import { SettingsStore } from "../lib/settings.ts";
-import { LocalPersistence } from "../lib/storage.ts";
+import { LibraryStore } from "../lib/storage.ts";
 import { ChromeTabBrowser } from "../lib/tabs.ts";
 import { PageController } from "./page-controller.ts";
 import { PageState } from "./page-state.ts";
@@ -20,7 +20,7 @@ class TabsApp {
     const state = new PageState(chrome.runtime.getURL("tabs.html"));
     const controller = new PageController(state, {
       root,
-      persistence: new LocalPersistence(area, chrome.storage.onChanged),
+      persistence: new LibraryStore(area, chrome.storage.onChanged),
       settings: new SettingsStore(area),
       browser: new ChromeTabBrowser(),
       clock: new SystemClock(),

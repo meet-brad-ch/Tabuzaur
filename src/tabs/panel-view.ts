@@ -1,4 +1,4 @@
-import type { SavedPage } from "../lib/model.ts";
+import type { Link } from "../lib/model.ts";
 import type { OpenTab } from "../lib/tabs.ts";
 import { TextSearch } from "../lib/text-search.ts";
 import { UrlText } from "../lib/urls.ts";
@@ -151,10 +151,10 @@ export class PanelView {
    * @param tab the open tab
    */
   private static startTabDrag(event: DragEvent, row: HTMLElement, tab: OpenTab): void {
-    const page: SavedPage = tab.favIconUrl === undefined
+    const link: Link = tab.favIconUrl === undefined
       ? { title: tab.title, url: tab.url }
       : { title: tab.title, url: tab.url, favIconUrl: tab.favIconUrl };
-    DragKinds.startLink(event, row, { page });
+    DragKinds.startLink(event, row, { link });
     // after the browser took the drag image
     setTimeout(() => {
       row.closest(".layout")?.classList.add("dragging-out");

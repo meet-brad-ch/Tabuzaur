@@ -29,9 +29,6 @@ export default tseslint.config(
   {
     // The application code: small functions, low complexity, every member documented, no free functions.
     files: ["src/**/*.ts"],
-    // The book and the store parser are replaced in the next step (schema 2); these rules cover
-    // their successors from that commit on. Remove this line with that step.
-    ignores: ["src/lib/collections.ts", "src/lib/storage.ts"],
     plugins: { jsdoc, sonarjs },
     rules: {
       "complexity": ["error", 9],

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { CollectionBook } from "../../src/lib/collections.ts";
-import type { Collection } from "../../src/lib/model.ts";
+import { Library } from "../../src/lib/library.ts";
+import type { Card } from "../../src/lib/model.ts";
 import { CardView } from "../../src/tabs/card-view.ts";
 import { DragKinds } from "../../src/tabs/drag.ts";
 import { PageState } from "../../src/tabs/page-state.ts";
@@ -13,16 +13,16 @@ const clock = new FixedClock("2026-10-29T10:00:00.000Z");
 /** A page state with two cards: "Work" with two links, "Empty" without links. */
 function seeded(): PageState {
   const state = new PageState("chrome-extension://abc/tabs.html");
-  state.book = CollectionBook.empty()
-    .create("Work", clock, new CountingIdSource())
-    .addPage("id-1", pageA)
-    .addPage("id-1", pageB);
-  state.book = state.book.create("Empty", clock, { next: () => "id-2" });
+  state.library = Library.empty()
+    .createCard("main", "Work", clock, new CountingIdSource())
+    .addLink("id-1", pageA, undefined)
+    .addLink("id-1", pageB, undefined)
+    .createCard("main", "Empty", clock, { next: () => "id-2" });
   return state;
 }
 
-function card(state: PageState, id: string): Collection {
-  return state.book.get(id);
+function card(state: PageState, id: string): Card {
+  return state.library.card(id);
 }
 
 function key(target: Element, name: string): void {
@@ -57,7 +57,7 @@ describe("CardView", () => {
     const section = view.build(card(state, "id-1"), 3);
     expect(section.className).toBe("card hue-3");
     expect(section.querySelector("header .name")?.textContent).toBe("Work");
-    expect(section.querySelector("header button.edit")?.getAttribute("aria-label")).toBe("Rename this collection");
+    expect(section.querySelector("header button.edit")?.getAttribute("aria-label")).toBe("Rename this card");
     expect(section.querySelector("header button.trash")).not.toBeNull();
     const rows = [...section.querySelectorAll("li.page")];
     expect(rows.map((r) => r.querySelector("a")?.textContent)).toEqual(["Example", "Docs"]);
@@ -101,7 +101,7 @@ describe("CardView", () => {
     confirm.mockReturnValueOnce(false);
     const trash = view.build(card(state, "id-1"), 0).querySelector<HTMLButtonElement>("header button.trash");
     trash?.click();
-    expect(confirm).toHaveBeenCalledWith('Delete the collection "Work" with 2 links?');
+    expect(confirm).toHaveBeenCalledWith('Delete the card "Work" with 2 links?');
     expect(actions.calls).toEqual([]);
     confirm.mockReturnValueOnce(true);
     trash?.click();
@@ -135,7 +135,7 @@ describe("CardView", () => {
     const section = view.build(card(state, "id-2"), 0);
     drop(section, DragKinds.CARD, "id-1");
     expect(actions.last()).toEqual({ name: "reorderCard", args: ["id-1", 1] });
-    const drag = { page: pageA };
+    const drag = { link: pageA };
     drop(section, DragKinds.LINK, JSON.stringify(drag));
     expect(actions.last()).toEqual({ name: "dropLink", args: ["id-2", drag, undefined] });
   });
@@ -145,7 +145,7 @@ describe("CardView", () => {
     if (row === undefined) {
       throw new Error("no second row");
     }
-    const drag = { page: { title: "New", url: "https://new.example/" } };
+    const drag = { link: { title: "New", url: "https://new.example/" } };
     drop(row, DragKinds.LINK, JSON.stringify(drag));
     expect(actions.names()).toEqual(["dropLink"]);
     expect(actions.last().args).toEqual(["id-1", drag, 1]);
