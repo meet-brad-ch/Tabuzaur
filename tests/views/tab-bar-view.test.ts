@@ -17,9 +17,9 @@ function card(id: string, name: string, links: Card["links"]): Card {
 function seeded(): PageState {
   const state = new PageState("chrome-extension://abc/tabs.html");
   state.library = Library.fromData({ schemaVersion: 2, collections: [
-    { id: "main", name: "Main", cards: [card("w", "Work", [pageA]), card("r", "Reading", [pageB])] },
-    { id: "later", name: "Later", cards: [card("t", "Trip", [pageB])] },
-    { id: "empty", name: "Empty", cards: [] },
+    { id: "main", name: "Main", hue: 0, cards: [card("w", "Work", [pageA]), card("r", "Reading", [pageB])] },
+    { id: "later", name: "Later", hue: 0, cards: [card("t", "Trip", [pageB])] },
+    { id: "empty", name: "Empty", hue: 0, cards: [] },
   ] });
   state.settings = { ...state.settings, openCollectionId: "later" };
   return state;
@@ -54,6 +54,7 @@ describe("TabBarView", () => {
     expect(tabs(bar).map((t) => t.querySelector(".name")?.textContent)).toEqual(["Main", "Later", "Empty"]);
     expect(tabs(bar).map((t) => t.getAttribute("aria-selected"))).toEqual(["false", "true", "false"]);
     expect(tabs(bar).map((t) => t.querySelectorAll("button").length)).toEqual([0, 2, 0]);
+    expect(tabs(bar).map((t) => t.classList.contains("hue-0"))).toEqual([true, true, true]);
     expect(bar.querySelector("li.add button")?.getAttribute("aria-label")).toBe("New collection");
   });
 

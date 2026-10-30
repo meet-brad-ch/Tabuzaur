@@ -587,11 +587,11 @@ nav.tabbar {
   align-items: center;
   gap: 6px;
   height: 36px;
-  margin-bottom: -1px;
   padding: 0 10px 0 14px;
-  border: 1px solid transparent;
+  border: 1px solid var(--line);
   border-bottom: none;
   border-radius: 8px 8px 0 0;
+  background: var(--card-bg);
   color: var(--muted);
   font-weight: 600;
   white-space: nowrap;
@@ -599,14 +599,18 @@ nav.tabbar {
   user-select: none;
 }
 
+/* a tab has its collection's color (hue-N): a closed tab the light shade, the open tab the band shade.
+   A closed tab keeps the bar's bottom line under it; the open tab covers the line. */
 .ctab:hover {
-  background: var(--hover);
+  border-color: var(--muted);
   color: var(--fg);
 }
 
 .ctab.open {
-  background: var(--bg);
+  margin-bottom: -1px;
   border-color: var(--line);
+  background: var(--card-band);
+  box-shadow: inset 0 3px 0 var(--accent);
   color: var(--fg);
   cursor: default;
 }

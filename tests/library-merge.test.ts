@@ -16,20 +16,20 @@ function doc(...collections: Collection[]): LibraryData {
 
 /** Main: "Work" (w, pageA); Later (later): "Reading" (r, pageB). */
 const library = Library.fromData(doc(
-  { id: "main", name: "Main", cards: [card("w", "Work", [pageA])] },
-  { id: "later", name: "Later", cards: [card("r", "Reading", [pageB])] },
+  { id: "main", name: "Main", hue: 0, cards: [card("w", "Work", [pageA])] },
+  { id: "later", name: "Later", hue: 0, cards: [card("r", "Reading", [pageB])] },
 ));
 
 describe("LibraryMerge.mergeLibrary", () => {
   it("joins a collection by id, then a card by id, adding only links it lacks and keeping its name", () => {
-    const incoming = doc({ id: "main", name: "Renamed", cards: [card("w", "Other name", [{ ...pageA, title: "x" }, pageC])] });
+    const incoming = doc({ id: "main", name: "Renamed", hue: 0, cards: [card("w", "Other name", [{ ...pageA, title: "x" }, pageC])] });
     const merged = LibraryMerge.mergeLibrary(library, incoming);
     expect(merged.collection("main").name).toBe("Main");
     expect(merged.card("w")).toEqual(card("w", "Work", [pageA, pageC]));
   });
 
   it("joins a collection by name, a card by name inside it, and appends what it does not know", () => {
-    const incoming = doc({ id: "elsewhere", name: " later ", cards: [card("r2", "reading", [pageC]), card("n", "New", [pageA])] });
+    const incoming = doc({ id: "elsewhere", name: " later ", hue: 0, cards: [card("r2", "reading", [pageC]), card("n", "New", [pageA])] });
     const merged = LibraryMerge.mergeLibrary(library, incoming);
     expect(merged.collections.map((c) => c.id)).toEqual(["main", "later"]);
     expect(merged.card("r").links).toEqual([pageB, pageC]);
@@ -37,14 +37,14 @@ describe("LibraryMerge.mergeLibrary", () => {
   });
 
   it("appends an unknown collection with its cards", () => {
-    const incoming = doc({ id: "new", name: "Trip", cards: [card("t", "Lisbon", [pageC])] });
+    const incoming = doc({ id: "new", name: "Trip", hue: 0, cards: [card("t", "Lisbon", [pageC])] });
     const merged = LibraryMerge.mergeLibrary(library, incoming);
-    expect(merged.collection("new")).toEqual({ id: "new", name: "Trip", cards: [card("t", "Lisbon", [pageC])] });
+    expect(merged.collection("new")).toEqual({ id: "new", name: "Trip", hue: 5, cards: [card("t", "Lisbon", [pageC])] });
   });
 
   it("joins a card by id in whatever collection it sits now, so it never appears twice", () => {
     const moved = library.moveCard("w", "later");
-    const incoming = doc({ id: "main", name: "Main", cards: [card("w", "Work", [pageA, pageC])] });
+    const incoming = doc({ id: "main", name: "Main", hue: 0, cards: [card("w", "Work", [pageA, pageC])] });
     const merged = LibraryMerge.mergeLibrary(moved, incoming);
     expect(merged.collection("main").cards).toEqual([]);
     expect(merged.card("w").links).toEqual([pageA, pageC]);
@@ -53,7 +53,7 @@ describe("LibraryMerge.mergeLibrary", () => {
 
   it("changes nothing for an empty document and leaves the original library as it was", () => {
     expect(LibraryMerge.mergeLibrary(library, doc()).toData()).toEqual(library.toData());
-    LibraryMerge.mergeLibrary(library, doc({ id: "new", name: "Trip", cards: [] }));
+    LibraryMerge.mergeLibrary(library, doc({ id: "new", name: "Trip", hue: 0, cards: [] }));
     expect(library.collections).toHaveLength(2);
   });
 });

@@ -129,7 +129,8 @@ export class Library {
    * @throws Error "a collection needs a name"
    */
   createCollection(name: string, ids: IdSource): Library {
-    const created: Collection = { id: ids.next(), name: Library.validName(name, "collection"), cards: [] };
+    const hue = Palette.nextTab(this.collections.map((c) => c.hue));
+    const created: Collection = { id: ids.next(), name: Library.validName(name, "collection"), hue, cards: [] };
     return new Library([...this.collections, created]);
   }
 

@@ -12,8 +12,8 @@ function card(id: string, name: string, links: Card["links"]): Card {
 
 /** Main: "Work" (w, pageA); Later: "Reading" (r, pageB). */
 const library = Library.fromData({ schemaVersion: 2, collections: [
-  { id: "main", name: "Main", cards: [card("w", "Work", [pageA])] },
-  { id: "later", name: "Later", cards: [card("r", "Reading", [pageB])] },
+  { id: "main", name: "Main", hue: 0, cards: [card("w", "Work", [pageA])] },
+  { id: "later", name: "Later", hue: 0, cards: [card("r", "Reading", [pageB])] },
 ] });
 
 function target(openCollectionId: string): ImportTarget {
@@ -22,8 +22,8 @@ function target(openCollectionId: string): ImportTarget {
 
 const oldFile: DocumentContent = { kind: "cards", cards: [card("w", "Work", [pageB]), card("n", "New", [])] };
 const newFile: DocumentContent = { kind: "library", data: { schemaVersion: 2, collections: [
-  { id: "trip", name: "Trip", cards: [card("t", "Lisbon", [])] },
-  { id: "later", name: "Later", cards: [card("r", "Reading", [pageA])] },
+  { id: "trip", name: "Trip", hue: 0, cards: [card("t", "Lisbon", [])] },
+  { id: "later", name: "Later", hue: 0, cards: [card("r", "Reading", [pageA])] },
 ] } };
 
 describe("ImportPlan.summary", () => {

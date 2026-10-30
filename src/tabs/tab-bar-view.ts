@@ -70,12 +70,12 @@ export class TabBarView {
   }
 
   /**
-   * The tab's classes: open, and the one-time flash after a card was dropped on it.
+   * The tab's classes: its color, open, and the one-time flash after a card was dropped on it.
    * @param tab its model
    * @returns the class attribute
    */
   private tabClasses(tab: TabModel): string {
-    const classes = ["ctab"];
+    const classes = ["ctab", `hue-${String(tab.hue)}`];
     if (tab.open) {
       classes.push("open");
     }

@@ -1,5 +1,6 @@
 import type { Card, Collection, LibraryData, Link } from "./model.ts";
 import { HUE_COUNT, SCHEMA_VERSION } from "./model.ts";
+import { Palette } from "./palette.ts";
 
 /** What a stored or imported document holds. */
 export type DocumentContent =
@@ -32,7 +33,7 @@ export class DocumentReader {
       return { kind: "cards", cards };
     }
     DocumentReader.checkVersion(doc.schemaVersion);
-    const collections = items.map((c, i) => DocumentReader.collection(c, `collections[${String(i)}]`));
+    const collections = items.map((c, i) => DocumentReader.collection(c, i, `collections[${String(i)}]`));
     return { kind: "library", data: { schemaVersion: SCHEMA_VERSION, collections } };
   }
 
@@ -50,11 +51,12 @@ export class DocumentReader {
   /**
    * A schema-2 collection.
    * @param raw the stored value
+   * @param place its place in the document, from 0
    * @param where its path for the error
    * @returns the collection
    * @throws Error naming the field
    */
-  private static collection(raw: unknown, where: string): Collection {
+  private static collection(raw: unknown, place: number, where: string): Collection {
     const c = DocumentReader.record(raw, where);
     if (!Array.isArray(c.cards)) {
       throw new Error(`${where}.cards is not an array`);
@@ -63,6 +65,7 @@ export class DocumentReader {
     return {
       id: DocumentReader.text(c.id, `${where}.id`),
       name: DocumentReader.text(c.name, `${where}.name`),
+      hue: DocumentReader.tabHue(c.hue, place, where),
       cards: items.map((k, j) => DocumentReader.card(k, j, `${where}.cards[${String(j)}]`, "links")),
     };
   }
@@ -111,6 +114,21 @@ export class DocumentReader {
       throw new Error(`${where}.hue is not an integer in 0..${String(HUE_COUNT - 1)}`);
     }
     return raw;
+  }
+
+  /**
+   * A collection's hue. A collection from Tabuzaur 0.9.0 has none and gets the hue of its place.
+   * @param raw the stored value
+   * @param place its place in the document, from 0
+   * @param where its path for the error
+   * @returns the hue
+   * @throws Error "<where>.hue is not an integer in 0..15"
+   */
+  private static tabHue(raw: unknown, place: number, where: string): number {
+    if (raw === undefined) {
+      return Palette.tabAt(place);
+    }
+    return DocumentReader.hue(raw, place, where, "links");
   }
 
   /**

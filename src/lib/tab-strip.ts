@@ -5,6 +5,8 @@ import { LibrarySearch } from "./library-search.ts";
 export interface TabModel {
   readonly id: string;
   readonly name: string;
+  /** Its color, 0 to HUE_COUNT - 1. */
+  readonly hue: number;
   /** The tab whose cards the page shows. */
   readonly open: boolean;
   /** How many of its cards match the search; undefined while no search is typed. */
@@ -33,6 +35,7 @@ export class TabStrip {
       return {
         id: c.id,
         name: c.name,
+        hue: c.hue,
         open: c.id === open,
         count: searching ? LibrarySearch.matchCount(c, query) : undefined,
         deletable: empty && !last,

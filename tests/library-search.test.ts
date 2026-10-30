@@ -5,7 +5,7 @@ import { pageA, pageB } from "./fakes.ts";
 
 const work: Card = { id: "w", name: "Work", createdAt: "x", hue: 0, links: [pageA] };
 const docs: Card = { id: "d", name: "Reading", createdAt: "x", hue: 1, links: [pageB] };
-const collection: Collection = { id: "c", name: "Main", cards: [work, docs] };
+const collection: Collection = { id: "c", name: "Main", hue: 0, cards: [work, docs] };
 
 describe("LibrarySearch", () => {
   it("matches every card for a blank query", () => {

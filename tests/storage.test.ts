@@ -31,7 +31,7 @@ describe("LibraryStore", () => {
     const store = new LibraryStore(area, noChanges);
     const upgraded = {
       schemaVersion: 2,
-      collections: [{ id: "main", name: "Main", cards: [{ id: "a", name: "Work", createdAt: "x", hue: 0, links: [pageA] }] }],
+      collections: [{ id: "main", name: "Main", hue: 0, cards: [{ id: "a", name: "Work", createdAt: "x", hue: 0, links: [pageA] }] }],
     };
     expect(await store.load()).toEqual(upgraded);
     expect(await area.get(STORAGE_KEY)).toEqual({ [STORAGE_KEY]: upgraded });

@@ -1,5 +1,6 @@
 import type { Card, Collection, IdSource, LibraryData } from "./model.ts";
 import { Library } from "./library.ts";
+import { Palette } from "./palette.ts";
 
 /**
  * Takes imported cards into a library without removing anything. A card joins the library's card
@@ -20,7 +21,8 @@ export class LibraryMerge {
     for (const collection of incoming.collections) {
       const targetId = LibraryMerge.targetCollection(merged, collection);
       if (!merged.hasCollection(targetId)) {
-        merged = merged.withCollection({ id: targetId, name: collection.name, cards: [] });
+        const hue = Palette.nextTab(merged.collections.map((c) => c.hue));
+        merged = merged.withCollection({ id: targetId, name: collection.name, hue, cards: [] });
       }
       merged = LibraryMerge.mergeCards(merged, targetId, collection.cards);
     }

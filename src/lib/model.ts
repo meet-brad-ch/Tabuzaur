@@ -21,6 +21,8 @@ export interface Card {
 export interface Collection {
   readonly id: string;
   readonly name: string;
+  /** The color of its tab: an index into the stylesheet's palette, 0 .. HUE_COUNT - 1. */
+  readonly hue: number;
   readonly cards: readonly Card[];
 }
 
@@ -40,7 +42,7 @@ export const SCHEMA_VERSION = 2;
 export const STORAGE_KEY = "tabuzaur";
 
 /** The collection an empty library starts with, and the one a schema-1 document becomes. */
-export const MAIN_COLLECTION: Collection = { id: "main", name: "Main", cards: [] };
+export const MAIN_COLLECTION: Collection = { id: "main", name: "Main", hue: 0, cards: [] };
 
 /** A source of the current time; injected so tests are deterministic. */
 export interface Clock {

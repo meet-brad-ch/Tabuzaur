@@ -23,7 +23,7 @@ function card(id: string, hue: number): Card {
 
 describe("Library.empty and fromData", () => {
   it("always holds a collection: Main when empty, also for a document without collections", () => {
-    expect(Library.empty().collections).toEqual([{ id: "main", name: "Main", cards: [] }]);
+    expect(Library.empty().collections).toEqual([{ id: "main", name: "Main", hue: 0, cards: [] }]);
     expect(Library.fromData({ schemaVersion: 2, collections: [] }).collections).toEqual(Library.empty().collections);
   });
 
@@ -38,6 +38,7 @@ describe("Library collections", () => {
   it("appends a collection with a trimmed name and finds it", () => {
     const library = Library.empty().createCollection("  Later  ", new CountingIdSource());
     expect(library.collections.map((c) => c.name)).toEqual(["Main", "Later"]);
+    expect(library.collections.map((c) => c.hue)).toEqual([0, 5]);
     expect(library.collection("id-1").cards).toEqual([]);
     expect(library.hasCollection("id-1")).toBe(true);
     expect(library.hasCollection("nope")).toBe(false);
@@ -115,8 +116,8 @@ describe("Library cards", () => {
 
   it("takes the next hue from all cards, so a moved card does not repeat a color", () => {
     const data: LibraryData = { schemaVersion: 2, collections: [
-      { id: "a", name: "A", cards: [card("x", 0), card("y", 1)] },
-      { id: "b", name: "B", cards: [card("z", 2)] },
+      { id: "a", name: "A", hue: 0, cards: [card("x", 0), card("y", 1)] },
+      { id: "b", name: "B", hue: 0, cards: [card("z", 2)] },
     ] };
     const library = Library.fromData(data).createCard("a", "New", clock, { next: () => "n" });
     expect(library.card("n").hue).toBe(3);

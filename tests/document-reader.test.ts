@@ -5,7 +5,7 @@ import { pageA, pageB } from "./fakes.ts";
 const oldCard = { id: "a", name: "A", createdAt: "2026-10-12T10:00:00.000Z", pages: [pageA, pageB], hue: 4 };
 const oldDoc = { schemaVersion: 1, collections: [oldCard] };
 const newCard = { id: "a", name: "A", createdAt: "2026-10-12T10:00:00.000Z", hue: 4, links: [pageA, pageB] };
-const newDoc = { schemaVersion: 2, collections: [{ id: "main", name: "Main", cards: [newCard] }] };
+const newDoc = { schemaVersion: 2, collections: [{ id: "main", name: "Main", hue: 0, cards: [newCard] }] };
 
 describe("DocumentReader, schema 1 (0.8 and earlier)", () => {
   it("reads the cards, with their links from pages, and drops unknown fields", () => {
@@ -45,6 +45,15 @@ describe("DocumentReader, schema 2", () => {
     expect("favIconUrl" in (data?.collections[0]?.cards[0]?.links[0] ?? {})).toBe(false);
   });
 
+  it("gives a collection of 0.9.0 without a hue the hue of its place", () => {
+    const old = { schemaVersion: 2, collections: [{ id: "a", name: "A", cards: [] }, { id: "b", name: "B", cards: [] }] };
+    const content = DocumentReader.read(old);
+    const hues = content.kind === "library" ? content.data.collections.map((c) => c.hue) : [];
+    expect(hues).toEqual([0, 5]);
+    const bad = { schemaVersion: 2, collections: [{ id: "a", name: "A", hue: 16, cards: [] }] };
+    expect(() => DocumentReader.read(bad)).toThrow("collections[0].hue is not an integer in 0..15");
+  });
+
   it.each([
     [null, "store is not an object"],
     [[], "store is not an object"],
@@ -52,10 +61,10 @@ describe("DocumentReader, schema 2", () => {
     [{ schemaVersion: 3 }, "unsupported schemaVersion 3"],
     [{ schemaVersion: 2 }, "store.collections is not an array"],
     [{ schemaVersion: 2, collections: [{ id: "c", name: "C" }] }, "collections[0].cards is not an array"],
-    [{ schemaVersion: 2, collections: [{ id: "c", name: 5, cards: [] }] }, "collections[0].name is not a string"],
-    [{ schemaVersion: 2, collections: [{ id: "c", name: "C", cards: [{ ...newCard, links: {} }] }] }, "collections[0].cards[0].links is not an array"],
-    [{ schemaVersion: 2, collections: [{ id: "c", name: "C", cards: [{ ...newCard, hue: undefined }] }] }, "collections[0].cards[0].hue is not an integer in 0..15"],
-    [{ schemaVersion: 2, collections: [{ id: "c", name: "C", cards: [newCard, { ...newCard, links: [{ url: "u" }] }] }] }, "collections[0].cards[1].links[0].title is not a string"],
+    [{ schemaVersion: 2, collections: [{ id: "c", name: 5, hue: 0, cards: [] }] }, "collections[0].name is not a string"],
+    [{ schemaVersion: 2, collections: [{ id: "c", name: "C", hue: 0, cards: [{ ...newCard, links: {} }] }] }, "collections[0].cards[0].links is not an array"],
+    [{ schemaVersion: 2, collections: [{ id: "c", name: "C", hue: 0, cards: [{ ...newCard, hue: undefined }] }] }, "collections[0].cards[0].hue is not an integer in 0..15"],
+    [{ schemaVersion: 2, collections: [{ id: "c", name: "C", hue: 0, cards: [newCard, { ...newCard, links: [{ url: "u" }] }] }] }, "collections[0].cards[1].links[0].title is not a string"],
   ])("rejects %j", (raw, message) => {
     expect(() => DocumentReader.read(raw)).toThrow(message);
   });

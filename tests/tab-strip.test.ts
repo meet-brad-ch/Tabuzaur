@@ -10,9 +10,9 @@ function card(id: string, name: string, links: Card["links"]): Card {
 }
 
 const library = Library.fromData({ schemaVersion: 2, collections: [
-  { id: "main", name: "Main", cards: [card("w", "Work", [pageA]), card("r", "Reading", [pageB])] },
-  { id: "later", name: "Later", cards: [card("t", "Trip", [pageB])] },
-  { id: "empty", name: "Empty", cards: [] },
+  { id: "main", name: "Main", hue: 0, cards: [card("w", "Work", [pageA]), card("r", "Reading", [pageB])] },
+  { id: "later", name: "Later", hue: 0, cards: [card("t", "Trip", [pageB])] },
+  { id: "empty", name: "Empty", hue: 0, cards: [] },
 ] });
 
 describe("TabStrip.tabs", () => {

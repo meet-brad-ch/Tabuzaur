@@ -51,7 +51,7 @@ To update: unzip the new release over the same folder, then click the reload ico
 - **Open tabs.** The thin rail on the left shows how many tabs are open. Rest the pointer on it
   and the panel opens with every open tab, grouped by window. The pin keeps it open as a column.
 - **Collections.** The bar under the header has one tab per collection. Click a tab to open it.
-  The + at the end of the bar makes a new collection. The pen on the open tab, or a double click,
+  The + at the end of the bar makes a new collection, and its tab gets its own color. The pen on the open tab, or a double click,
   renames it. Drag a tab along the bar to change the order. The trash deletes an empty collection.
   Tabuzaur keeps the last collection, and it remembers which collection was open.
 - **Create a card.** Type a name in the field **New card** in the header and click Create. Tabuzaur
@@ -137,7 +137,8 @@ gate, zips `dist/` and publishes the zip with its SHA-256 as a GitHub Release.
   new-tab option. It keeps no state and reads the settings on every event.
 - Permissions are `tabs` and `storage`. All data lives in `chrome.storage.local`.
 - A link is a saved page. A card groups links and has a name and a color. A collection groups
-  cards and is a tab of the page. The stored document (schema 2) holds collections of cards of
+  cards, has a name and a color, and is a tab of the page. A file from 0.9.0 has no tab colors:
+  each collection gets the color of its place. The stored document (schema 2) holds collections of cards of
   links. A card id is unique in the whole document.
 - On the first load of a document of 0.8 or earlier (schema 1, cards only), Tabuzaur copies it
   unchanged to `tabuzaur-backup-v1`. Then it reads the document as one collection Main and saves
