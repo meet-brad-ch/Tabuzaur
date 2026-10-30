@@ -114,7 +114,9 @@ export interface TabBrowser {
   actionShortcut(): Promise<string>;
 }
 
+/** The TabBrowser on Chrome's tabs, windows and commands APIs. */
 export class ChromeTabBrowser implements TabBrowser {
+  /** @inheritdoc */
   async openTabs(): Promise<readonly OpenTab[]> {
     const tabs = await chrome.tabs.query({});
     const open: OpenTab[] = [];
@@ -134,6 +136,7 @@ export class ChromeTabBrowser implements TabBrowser {
     return open;
   }
 
+  /** @inheritdoc */
   async currentWindowId(): Promise<number> {
     const window = await chrome.windows.getCurrent();
     if (window.id === undefined) {
@@ -142,15 +145,18 @@ export class ChromeTabBrowser implements TabBrowser {
     return window.id;
   }
 
+  /** @inheritdoc */
   async activate(tab: OpenTab): Promise<void> {
     await chrome.tabs.update(tab.tabId, { active: true });
     await chrome.windows.update(tab.windowId, { focused: true });
   }
 
+  /** @inheritdoc */
   async openInNewTab(url: string): Promise<void> {
     await chrome.tabs.create({ url, active: true });
   }
 
+  /** @inheritdoc */
   async jumpTo(url: string): Promise<void> {
     const tabs = await this.openTabs();
     const open = OpenTabs.find(tabs, url);
@@ -161,6 +167,7 @@ export class ChromeTabBrowser implements TabBrowser {
     }
   }
 
+  /** @inheritdoc */
   async actionShortcut(): Promise<string> {
     const commands = await chrome.commands.getAll();
     const action = commands.find((c) => c.name === "_execute_action");
@@ -170,6 +177,7 @@ export class ChromeTabBrowser implements TabBrowser {
     return action.shortcut ?? "";
   }
 
+  /** @inheritdoc */
   onChange(listener: () => void): void {
     const events: { addListener(callback: () => void): void }[] = [
       chrome.tabs.onCreated,

@@ -38,13 +38,23 @@ export interface IdSource {
   next(): string;
 }
 
+/** The clock of the computer. */
 export class SystemClock implements Clock {
+  /**
+   * The current time.
+   * @returns now
+   */
   now(): Date {
     return new Date();
   }
 }
 
+/** Random UUIDs from the browser's crypto API. */
 export class RandomIdSource implements IdSource {
+  /**
+   * A new id.
+   * @returns a random UUID
+   */
   next(): string {
     return crypto.randomUUID();
   }
