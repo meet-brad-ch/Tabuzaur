@@ -27,6 +27,7 @@ const STATES = [
   ["drop", "drop.png"],
   ["dialog", "dialog.png"],
   ["settings", "settings.png"],
+  ["tabbar", "tabbar.png"],
   ["empty", "empty.png"],
   ["demo1", "demo-1.png"],
   ["demo2", "demo-2.png"],

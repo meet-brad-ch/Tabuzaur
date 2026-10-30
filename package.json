@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --reporter=default --reporter=json --outputFile=build/tests.json",
     "shots": "node tools/render/shoot.mjs",
+    "check:page": "node tools/render/check.mjs",
     "verify": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "devDependencies": {

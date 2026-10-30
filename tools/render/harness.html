@@ -15,7 +15,7 @@
       const state = location.hash.replace(/^#/, "") || "page";
       const noEvent = { addListener() {} };
       const page = (title, url) => ({ title, url });
-      const seeded = [
+      const cards = [
         { id: "c1", name: "Work", createdAt: "2026-10-12T10:00:00.000Z", hue: 9, pages: [
           page("Sprint board", "https://board.example-team.com/sprint/42"),
           page("Design review notes", "https://docs.example-team.com/d/review-notes"),
@@ -33,6 +33,18 @@
         ] },
         { id: "c4", name: "Home", createdAt: "2026-10-12T10:00:00.000Z", hue: 12, pages: [] },
       ];
+      const recipes = { id: "c5", name: "Recipes", createdAt: "2026-10-12T10:00:00.000Z", hue: 3, links: [
+        page("Recipe: pastel de nata", "https://food.example.com/recipes/pastel-de-nata"),
+        page("Bacalhau a bras", "https://food.example.com/recipes/bacalhau"),
+      ] };
+      // schema 2: Main keeps the four cards in order (the drop states address the third one), Later holds one
+      const asCard = ({ pages, ...rest }) => ({ ...rest, links: pages });
+      const library = { schemaVersion: 2, collections: [
+        { id: "main", name: "Main", cards: state === "empty" ? [] : cards.map(asCard) },
+        { id: "later", name: "Later", cards: state === "empty" ? [] : [recipes] },
+      ] };
+      // state v1: a document of 0.8 (cards only), to see the upgrade to one collection Main by eye
+      const oldDocument = { schemaVersion: 1, collections: cards };
       const openTabs = [
         [1, true, "Sprint board", "https://board.example-team.com/sprint/42"],
         [1, false, "Pull request #318: flyout folds during drag", "https://git.example-team.com/tabuzaur/pull/318"],
@@ -44,8 +56,8 @@
         [2, false, "Hardware store opening hours", "https://store.example.com/hours"],
       ].map(([windowId, active, title, url], i) => ({ id: 100 + i, windowId, active, title, url }));
       const store = {
-        tabuzaur: { schemaVersion: 1, collections: state === "empty" ? [] : seeded },
-        "tabuzaur-settings": { theme: state === "dark" ? "dark" : "light", cardWidth: "medium", panelPinned: state === "pinned", newTabPage: false },
+        tabuzaur: state === "v1" ? oldDocument : library,
+        "tabuzaur-settings": { theme: state === "dark" ? "dark" : "light", cardWidth: "medium", panelPinned: state === "pinned", newTabPage: false, openCollectionId: "main" },
       };
       window.chrome = {
         runtime: { getURL: (p) => "chrome-extension://tabuzaur/" + p, getManifest: () => ({ version: "0.0.0-harness" }) },
@@ -89,6 +101,10 @@
           const tab = openTabs[3];
           dt.setData(DRAG_TYPE, JSON.stringify({ link: { title: tab.title, url: tab.url } }));
           document.querySelectorAll(".card")[2].dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }));
+        } else if (state === "tabbar") {
+          // a card held by its band over the Later tab: the tab lifts, the card fades
+          document.querySelectorAll(".card")[2].classList.add("dragging");
+          document.querySelectorAll("li.ctab")[1].classList.add("over");
         } else if (state === "settings") {
           q("header.top button.settings").click();
         } else if (state === "dialog") {
@@ -101,7 +117,7 @@
         setTimeout(() => {
           const images = [...document.images];
           const broken = images.filter((i) => !i.complete || i.naturalWidth === 0).map((i) => i.getAttribute("src"));
-          document.title = `state ${state} | cards ${document.querySelectorAll(".card").length} | tabs ${document.querySelectorAll("aside .tab").length} | broken images ${broken.length}${broken.length ? ": " + broken.join(", ") : ""}`;
+          document.title = `state ${state} | collections ${document.querySelectorAll("li.ctab").length} | cards ${document.querySelectorAll(".card").length} | tabs ${document.querySelectorAll("aside .tab").length} | broken images ${broken.length}${broken.length ? ": " + broken.join(", ") : ""}`;
         }, 400);
       }, 300);
     </script>

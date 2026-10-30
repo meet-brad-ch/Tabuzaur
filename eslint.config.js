@@ -61,4 +61,9 @@ export default tseslint.config(
     ...tseslint.configs.disableTypeChecked,
     languageOptions: { globals: globals.node },
   },
+  {
+    // the tool scripts follow the same rule: stateless helpers are static members of a class
+    files: ["tools/**/*.mjs"],
+    rules: { "@typescript-eslint/no-extraneous-class": ["error", { allowStaticOnly: true }] },
+  },
 );
