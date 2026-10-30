@@ -53,6 +53,17 @@ export class RecordingActions implements PageActions {
   deleteCard(cardId: string): void { this.record("deleteCard", cardId); }
   reorderCard(cardId: string, place: number): void { this.record("reorderCard", cardId, place); }
   dropLink(cardId: string, drag: LinkDrag, to: number | undefined): void { this.record("dropLink", cardId, drag, to); }
+  moveCard(cardId: string, collectionId: string): void { this.record("moveCard", cardId, collectionId); }
+  openCollection(collectionId: string): void { this.record("openCollection", collectionId); }
+  startNewCollection(): void { this.record("startNewCollection"); }
+  createCollection(name: string): void { this.record("createCollection", name); }
+  cancelNewCollection(): void { this.record("cancelNewCollection"); }
+  startRenameCollection(collectionId: string): void { this.record("startRenameCollection", collectionId); }
+  renameCollection(collectionId: string, name: string): void { this.record("renameCollection", collectionId, name); }
+  cancelRenameCollection(): void { this.record("cancelRenameCollection"); }
+  deleteCollection(collectionId: string): void { this.record("deleteCollection", collectionId); }
+  reorderCollection(collectionId: string, place: number): void { this.record("reorderCollection", collectionId, place); }
+  explain(message: string): void { this.record("explain", message); }
 
   private record(name: string, ...args: unknown[]): void {
     this.calls.push({ name, args });

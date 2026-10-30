@@ -1,3 +1,4 @@
+import type { DragKind } from "../lib/drop-rules.ts";
 import type { Link } from "../lib/model.ts";
 
 /** Where a dragged link comes from when it is already saved in a card. */
@@ -21,29 +22,29 @@ export class DragKinds {
   static readonly LINK = "application/x-tabuzaur-page";
   /** A card, dragged by its colored band; the data is the card id. */
   static readonly CARD = "application/x-tabuzaur-card";
+  /** A collection, dragged by its tab; the data is the collection id. */
+  static readonly COLLECTION = "application/x-tabuzaur-collection";
 
   /**
-   * Whether the drag carries a link.
+   * What a drag carries, from its types (readable during dragover).
    * @param transfer the event's data transfer, null for synthetic events
-   * @returns true for a link drag
+   * @returns the kind, or undefined for a drag from outside the page
    */
-  static isLink(transfer: DataTransfer | null): boolean {
+  static kindOf(transfer: DataTransfer | null): DragKind | undefined {
     if (transfer === null) {
-      return false;
+      return undefined;
     }
-    return transfer.types.includes(DragKinds.LINK);
-  }
-
-  /**
-   * Whether the drag carries a card.
-   * @param transfer the event's data transfer, null for synthetic events
-   * @returns true for a card drag
-   */
-  static isCard(transfer: DataTransfer | null): boolean {
-    if (transfer === null) {
-      return false;
+    const types = transfer.types;
+    if (types.includes(DragKinds.LINK)) {
+      return "link";
     }
-    return transfer.types.includes(DragKinds.CARD);
+    if (types.includes(DragKinds.CARD)) {
+      return "card";
+    }
+    if (types.includes(DragKinds.COLLECTION)) {
+      return "collection";
+    }
+    return undefined;
   }
 
   /**
@@ -103,6 +104,45 @@ export class DragKinds {
    */
   static readCard(event: DragEvent): string {
     return event.dataTransfer?.getData(DragKinds.CARD) ?? "";
+  }
+
+  /**
+   * Starts a collection drag from its tab.
+   * @param event the dragstart event
+   * @param tab the tab element
+   * @param collectionId the collection's id
+   */
+  static startCollection(event: DragEvent, tab: HTMLElement, collectionId: string): void {
+    const transfer = event.dataTransfer;
+    if (transfer === null) {
+      return;
+    }
+    transfer.setData(DragKinds.COLLECTION, collectionId);
+    transfer.effectAllowed = "move";
+    setTimeout(() => {
+      tab.classList.add("dragging");
+    }, 0);
+  }
+
+  /**
+   * The collection id a drop carries.
+   * @param event the drop event
+   * @returns the id, or an empty string when the drop carries no collection
+   */
+  static readCollection(event: DragEvent): string {
+    return event.dataTransfer?.getData(DragKinds.COLLECTION) ?? "";
+  }
+
+  /**
+   * Whether the pointer is in the right half of the element: the drop goes after it.
+   * @param target the element under the pointer
+   * @param event the drag event
+   * @returns true for the right half
+   */
+  static isRightHalf(target: HTMLElement, event: DragEvent): boolean {
+    const box = target.getBoundingClientRect();
+    const fromLeft = event.clientX - box.left;
+    return fromLeft > box.width / 2;
   }
 
   /**

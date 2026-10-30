@@ -70,6 +70,7 @@ export class PageController implements PageActions {
   search(query: string): void {
     this.state.query = query;
     this.renderer.renderCards();
+    this.renderer.renderTabs();
   }
 
   /** @inheritdoc */
@@ -206,6 +207,92 @@ export class PageController implements PageActions {
   dropLink(cardId: string, drag: LinkDrag, to: number | undefined): void {
     this.state.justAdded = { cardId, url: drag.link.url };
     this.run(() => this.change(this.placed(cardId, drag, to)), "all");
+  }
+
+  /** @inheritdoc */
+  moveCard(cardId: string, collectionId: string): void {
+    this.state.flashCollectionId = collectionId;
+    this.run(() => this.change(this.state.library.moveCard(cardId, collectionId)), "all");
+  }
+
+  /** @inheritdoc */
+  openCollection(collectionId: string): void {
+    this.closeEditors();
+    this.state.settings = { ...this.state.settings, openCollectionId: collectionId };
+    this.state.cardsToTop = true;
+    this.renderer.renderAll();
+    this.run(() => this.services.settings.save(this.state.settings), "none");
+  }
+
+  /** @inheritdoc */
+  startNewCollection(): void {
+    this.closeEditors();
+    this.state.addingCollection = true;
+    this.renderer.renderTabs();
+    this.renderer.focus("nav.tabbar li.add input", false);
+  }
+
+  /** @inheritdoc */
+  createCollection(name: string): void {
+    this.state.addingCollection = false;
+    this.run(async () => {
+      const next = this.state.library.createCollection(name, this.services.ids);
+      const created = next.collections[next.collections.length - 1];
+      await this.change(next);
+      if (created !== undefined) {
+        this.state.cardsToTop = true;
+        await this.saveSettings({ ...this.state.settings, openCollectionId: created.id });
+      }
+    }, "all");
+  }
+
+  /** @inheritdoc */
+  cancelNewCollection(): void {
+    this.state.addingCollection = false;
+    this.renderer.renderTabs();
+  }
+
+  /** @inheritdoc */
+  startRenameCollection(collectionId: string): void {
+    this.closeEditors();
+    this.state.renamingCollection = collectionId;
+    this.renderer.renderTabs();
+    this.renderer.focus("nav.tabbar input.name", true);
+  }
+
+  /** @inheritdoc */
+  renameCollection(collectionId: string, name: string): void {
+    this.state.renamingCollection = undefined;
+    this.run(() => this.change(this.state.library.renameCollection(collectionId, name)), "all");
+  }
+
+  /** @inheritdoc */
+  cancelRenameCollection(): void {
+    this.state.renamingCollection = undefined;
+    this.renderer.renderTabs();
+  }
+
+  /** @inheritdoc */
+  deleteCollection(collectionId: string): void {
+    this.run(() => this.change(this.state.library.removeCollection(collectionId)), "all");
+  }
+
+  /** @inheritdoc */
+  reorderCollection(collectionId: string, place: number): void {
+    this.run(() => this.change(this.state.library.reorderCollection(collectionId, place)), "all");
+  }
+
+  /** @inheritdoc */
+  explain(message: string): void {
+    this.renderer.notify(message, "info");
+  }
+
+  /** Closes every inline editor: card and collection names, the link editor, the new collection field. */
+  private closeEditors(): void {
+    this.state.renaming = undefined;
+    this.state.editingLink = undefined;
+    this.state.renamingCollection = undefined;
+    this.state.addingCollection = false;
   }
 
   /**

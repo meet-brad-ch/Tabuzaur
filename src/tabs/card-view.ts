@@ -1,3 +1,4 @@
+import { DropRules } from "../lib/drop-rules.ts";
 import type { Card } from "../lib/model.ts";
 import { Dom, Icons } from "./dom.ts";
 import { DragKinds } from "./drag.ts";
@@ -67,22 +68,20 @@ export class CardView {
    */
   private static onDragOver(event: DragEvent, section: HTMLElement): void {
     const transfer = event.dataTransfer;
-    if (transfer === null) {
+    const kind = DragKinds.kindOf(transfer);
+    if (transfer === null || kind === undefined || !DropRules.accepts(kind, "card")) {
       return;
     }
-    if (DragKinds.isCard(transfer)) {
-      event.preventDefault();
+    event.preventDefault();
+    if (kind === "card") {
       transfer.dropEffect = "move";
       const after = DragKinds.isLowerHalf(section, event);
       section.classList.toggle("insert-before", !after);
       section.classList.toggle("insert-after", after);
       return;
     }
-    if (DragKinds.isLink(transfer)) {
-      event.preventDefault();
-      transfer.dropEffect = transfer.effectAllowed === "move" ? "move" : "copy";
-      section.classList.add("over");
-    }
+    transfer.dropEffect = transfer.effectAllowed === "move" ? "move" : "copy";
+    section.classList.add("over");
   }
 
   /**

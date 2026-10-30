@@ -18,6 +18,8 @@ export interface Settings {
   readonly panelPinned: boolean;
   /** A new blank tab shows the Tabuzaur page instead of Chrome's new-tab page. */
   readonly newTabPage: boolean;
+  /** The collection the page shows; the page shows the first one when it no longer exists. */
+  readonly openCollectionId: string;
 }
 
 /**
@@ -28,7 +30,7 @@ export class SettingsStore {
   /** Where the record lives. */
   static readonly KEY = "tabuzaur-settings";
   /** The choices before the viewer made any. */
-  static readonly DEFAULTS: Settings = { theme: "system", cardWidth: "medium", panelPinned: false, newTabPage: false };
+  static readonly DEFAULTS: Settings = { theme: "system", cardWidth: "medium", panelPinned: false, newTabPage: false, openCollectionId: "main" };
 
   /**
    * Creates the store.
@@ -84,7 +86,25 @@ class SettingsReader {
       cardWidth: SettingsReader.cardWidth(record.cardWidth, "settings.cardWidth"),
       panelPinned: SettingsReader.flag(record.panelPinned, "settings.panelPinned"),
       newTabPage: SettingsReader.flag(record.newTabPage, "settings.newTabPage"),
+      openCollectionId: SettingsReader.openCollection(record.openCollectionId),
     };
+  }
+
+  /**
+   * The open collection's id. A record saved by 0.9 before the tab bar existed has none: the page
+   * opens the first collection, Main.
+   * @param raw the stored value
+   * @returns the id
+   * @throws Error when a value is stored but is not a string
+   */
+  static openCollection(raw: unknown): string {
+    if (raw === undefined) {
+      return SettingsStore.DEFAULTS.openCollectionId;
+    }
+    if (typeof raw !== "string") {
+      throw new Error(`settings.openCollectionId is not a string: ${JSON.stringify(raw)}`);
+    }
+    return raw;
   }
 
   /**
@@ -176,6 +196,7 @@ class LegacySettings {
       cardWidth: width === undefined ? defaults.cardWidth : SettingsReader.cardWidth(width, LegacySettings.CARD_WIDTH),
       panelPinned: pinned === undefined ? defaults.panelPinned : SettingsReader.flag(pinned, LegacySettings.PINNED),
       newTabPage: newTab === undefined ? defaults.newTabPage : SettingsReader.flag(newTab, LegacySettings.NEW_TAB),
+      openCollectionId: defaults.openCollectionId,
     };
   }
 

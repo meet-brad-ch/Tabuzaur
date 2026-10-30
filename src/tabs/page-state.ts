@@ -15,8 +15,6 @@ export interface AddedLink {
 export class PageState {
   /** The collections, their cards and links. */
   library = Library.empty();
-  /** The collection shown on the page; the first one when it no longer exists. */
-  openCollectionId = "main";
   /** The tabs open in every window. */
   openTabs: readonly OpenTab[] = [];
   /** The window this page lives in, -1 until known. */
@@ -35,6 +33,14 @@ export class PageState {
   editingLink: LinkSource | undefined = undefined;
   /** The link to highlight once. */
   justAdded: AddedLink | undefined = undefined;
+  /** The collection whose name is being edited in the tab bar. */
+  renamingCollection: string | undefined = undefined;
+  /** Whether the name field of a new collection is open in the tab bar. */
+  addingCollection = false;
+  /** The tab that flashes once after a card was dropped on it. */
+  flashCollectionId: string | undefined = undefined;
+  /** Whether the next full render starts the cards at their top (after a tab switch). */
+  cardsToTop = false;
   /** An info notice to show after the next full render. */
   pendingNotice: string | undefined = undefined;
   /** The windows folded in the panel. */
@@ -52,8 +58,9 @@ export class PageState {
    */
   openCollection(): Collection {
     const library = this.library;
-    if (library.hasCollection(this.openCollectionId)) {
-      return library.collection(this.openCollectionId);
+    const openId = this.settings.openCollectionId;
+    if (library.hasCollection(openId)) {
+      return library.collection(openId);
     }
     const first = library.collections[0];
     if (first === undefined) {

@@ -50,4 +50,26 @@ export interface PageActions {
   reorderCard(cardId: string, place: number): void;
   /** Puts a dragged link into a card, at a place or at the end. */
   dropLink(cardId: string, drag: LinkDrag, to: number | undefined): void;
+  /** Moves a card to the end of another collection. */
+  moveCard(cardId: string, collectionId: string): void;
+  /** Shows the cards of a collection. */
+  openCollection(collectionId: string): void;
+  /** Opens the name field of a new collection. */
+  startNewCollection(): void;
+  /** Creates a collection with this name and opens it. */
+  createCollection(name: string): void;
+  /** Closes the name field of a new collection without a change. */
+  cancelNewCollection(): void;
+  /** Opens the name editor of a collection. */
+  startRenameCollection(collectionId: string): void;
+  /** Saves a collection's new name. */
+  renameCollection(collectionId: string, name: string): void;
+  /** Closes the collection name editor without a change. */
+  cancelRenameCollection(): void;
+  /** Deletes an empty collection. */
+  deleteCollection(collectionId: string): void;
+  /** Moves a collection to a place among the tabs. */
+  reorderCollection(collectionId: string, place: number): void;
+  /** Shows a short explanation in the notice strip. */
+  explain(message: string): void;
 }

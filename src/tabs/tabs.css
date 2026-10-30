@@ -21,7 +21,7 @@ body {
 
 #app {
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto minmax(0, 1fr);
   height: 100%;
 }
 
@@ -35,8 +35,12 @@ body {
   grid-row: 2;
 }
 
-#app > .layout {
+#app > nav.tabbar {
   grid-row: 3;
+}
+
+#app > .layout {
+  grid-row: 4;
 }
 
 h1,
@@ -560,8 +564,149 @@ main {
   padding: 16px 24px 32px;
 }
 
-main h2 {
-  margin-bottom: 12px;
+/* ---- collection bar: one tab per collection, a + at the end --------------------------------- */
+
+nav.tabbar {
+  display: flex;
+  align-items: flex-end;
+  padding: 8px 24px 0;
+  overflow-x: auto;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+}
+
+.tab-list {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.ctab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  margin-bottom: -1px;
+  padding: 0 10px 0 14px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  color: var(--muted);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ctab:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+
+.ctab.open {
+  background: var(--bg);
+  border-color: var(--line);
+  color: var(--fg);
+  cursor: default;
+}
+
+.ctab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.ctab .count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ctab .count.zero {
+  background: var(--hover);
+  color: var(--muted);
+}
+
+.ctab button.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.ctab button.trash.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ctab input.name {
+  width: 160px;
+  height: 26px;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--fg);
+  font-weight: 600;
+  outline: none;
+}
+
+.ctab.dragging {
+  opacity: 0.4;
+}
+
+/* a card held over a tab: the tab lifts */
+.ctab.over {
+  background: var(--accent-soft);
+  color: var(--accent);
+  outline: 2px dashed var(--accent);
+  outline-offset: -3px;
+}
+
+/* a tab held over a tab: a green line shows where it lands */
+.ctab.insert-before::before,
+.ctab.insert-after::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.ctab.insert-before::before {
+  left: -4px;
+}
+
+.ctab.insert-after::after {
+  right: -4px;
+}
+
+/* the tab a card was just dropped on */
+.ctab.flash {
+  animation: settle 600ms ease-out;
+}
+
+.tab-list li.add {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 4px;
+}
+
+.tab-list li.add input.name {
+  width: 180px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--panel);
+  color: var(--fg);
+  outline: none;
 }
 
 /* ---- sidebar ------------------------------------------------------------------------------ */
@@ -964,6 +1109,10 @@ button.remove:hover {
 
 /* narrow window: a pinned panel becomes a strip above the collections; the rail stays at the left */
 @media (max-width: 760px) {
+  nav.tabbar {
+    padding-inline: 12px;
+  }
+
   .layout.pinned {
     grid-template-columns: 1fr;
   }

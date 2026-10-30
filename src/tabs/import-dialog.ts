@@ -76,7 +76,8 @@ export class ImportDialog {
     if (summary.kind === "cards") {
       heading.textContent = `Import ${fileCards} into ${question.openName} from ${question.fileName}`;
       const openCards = ImportPlan.count(question.openCards, "card");
-      replaceText.textContent = `Replace: the ${openCards} in ${question.openName} are removed first. Other collections stay.`;
+      const verb = question.openCards === 1 ? "is" : "are";
+      replaceText.textContent = `Replace: the ${openCards} in ${question.openName} ${verb} removed first. Other collections stay.`;
       mergeText.textContent = `Merge: the cards join the cards in ${question.openName} by name, links you already have are kept, nothing is removed.`;
       return;
     }

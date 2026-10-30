@@ -6,6 +6,7 @@ import { CardView } from "../../src/tabs/card-view.ts";
 import { DragKinds } from "../../src/tabs/drag.ts";
 import { PageState } from "../../src/tabs/page-state.ts";
 import { CountingIdSource, FixedClock, pageA, pageB } from "../fakes.ts";
+import { DragEvents } from "./drag-events.ts";
 import { RecordingActions } from "./recording-actions.ts";
 
 const clock = new FixedClock("2026-10-29T10:00:00.000Z");
@@ -23,19 +24,6 @@ function seeded(): PageState {
 
 function card(state: PageState, id: string): Card {
   return state.library.card(id);
-}
-
-function key(target: Element, name: string): void {
-  target.dispatchEvent(new KeyboardEvent("keydown", { key: name, bubbles: true }));
-}
-
-/** happy-dom ignores the dataTransfer of a DragEvent's init, so the event gets it as a property. */
-function drop(target: Element, type: string, data: string): void {
-  const transfer = new DataTransfer();
-  transfer.setData(type, data);
-  const event = new DragEvent("drop", { bubbles: true, cancelable: true });
-  Object.defineProperty(event, "dataTransfer", { value: transfer });
-  target.dispatchEvent(event);
 }
 
 describe("CardView", () => {
@@ -89,9 +77,9 @@ describe("CardView", () => {
       throw new Error("no name field");
     }
     input.value = "Office";
-    key(input, "Enter");
+    DragEvents.key(input, "Enter");
     expect(actions.last()).toEqual({ name: "renameCard", args: ["id-1", "Office"] });
-    key(input, "Escape");
+    DragEvents.key(input, "Escape");
     expect(actions.last()).toEqual({ name: "cancelRename", args: [] });
   });
 
@@ -127,16 +115,16 @@ describe("CardView", () => {
     }
     expect([title.value, url.value]).toEqual(["Docs", pageB.url]);
     title.value = "Reference";
-    key(url, "Enter");
+    DragEvents.key(url, "Enter");
     expect(actions.last()).toEqual({ name: "editLink", args: [{ cardId: "id-1", index: 1 }, "Reference", pageB.url] });
   });
 
   it("takes a dropped card before itself and a dropped link at its end", () => {
     const section = view.build(card(state, "id-2"), 0);
-    drop(section, DragKinds.CARD, "id-1");
+    DragEvents.fire(section, "drop", DragKinds.CARD, "id-1");
     expect(actions.last()).toEqual({ name: "reorderCard", args: ["id-1", 1] });
     const drag = { link: pageA };
-    drop(section, DragKinds.LINK, JSON.stringify(drag));
+    DragEvents.fire(section, "drop", DragKinds.LINK, JSON.stringify(drag));
     expect(actions.last()).toEqual({ name: "dropLink", args: ["id-2", drag, undefined] });
   });
 
@@ -146,7 +134,7 @@ describe("CardView", () => {
       throw new Error("no second row");
     }
     const drag = { link: { title: "New", url: "https://new.example/" } };
-    drop(row, DragKinds.LINK, JSON.stringify(drag));
+    DragEvents.fire(row, "drop", DragKinds.LINK, JSON.stringify(drag));
     expect(actions.names()).toEqual(["dropLink"]);
     expect(actions.last().args).toEqual(["id-1", drag, 1]);
   });

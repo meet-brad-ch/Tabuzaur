@@ -5,19 +5,22 @@ import { HeaderView } from "./header-view.ts";
 import type { PageActions } from "./page-actions.ts";
 import type { PageState } from "./page-state.ts";
 import { PanelView } from "./panel-view.ts";
+import { TabBarView } from "./tab-bar-view.ts";
 
 /** The kinds of notice in the strip under the header. */
 export type NoticeKind = "info" | "error";
 
 /**
- * Owns the page's regions (header, notice, panel with rail, cards) and rebuilds one or all of
- * them from the state. A rebuild keeps the scroll positions, or a drop into a card below the
- * fold would throw the viewer back to the top.
+ * Owns the page's regions (header, notice, collection bar, panel with rail, cards) and rebuilds
+ * one or all of them from the state. A rebuild keeps the scroll positions, or a drop into a card
+ * below the fold would throw the viewer back to the top; a switch to another collection starts
+ * its cards at the top.
  */
 export class Renderer {
   private readonly header: HeaderView;
   private readonly grid: CardGridView;
   private readonly panel: PanelView;
+  private readonly tabs: TabBarView;
 
   /**
    * Creates the renderer.
@@ -29,16 +32,22 @@ export class Renderer {
     this.header = new HeaderView(state, actions);
     this.grid = new CardGridView(state, actions);
     this.panel = new PanelView(state, actions);
+    this.tabs = new TabBarView(state, actions);
   }
 
   /** Rebuilds the whole page and shows a pending notice. */
   renderAll(): void {
-    const mainTop = this.root.querySelector("main")?.scrollTop ?? 0;
+    const mainTop = this.state.cardsToTop ? 0 : this.root.querySelector("main")?.scrollTop ?? 0;
     const asideTop = this.root.querySelector("aside")?.scrollTop ?? 0;
+    const barLeft = this.root.querySelector("nav.tabbar")?.scrollLeft ?? 0;
+    this.state.cardsToTop = false;
     const notice = Dom.el("p", "notice");
-    this.root.replaceChildren(this.header.build(), notice, this.layout());
+    const bar = this.tabs.build();
+    this.root.replaceChildren(this.header.build(), notice, bar, this.layout(bar));
+    this.state.flashCollectionId = undefined;
     this.must("main").scrollTop = mainTop;
     this.must("aside").scrollTop = asideTop;
+    bar.scrollLeft = barLeft;
     const pending = this.state.pendingNotice;
     this.state.pendingNotice = undefined;
     if (pending === undefined) {
@@ -52,6 +61,14 @@ export class Renderer {
   renderCards(): void {
     this.grid.fill(this.must("main"));
     this.state.justAdded = undefined;
+  }
+
+  /** Rebuilds the collection bar. */
+  renderTabs(): void {
+    const bar = this.must("nav.tabbar");
+    const left = bar.scrollLeft;
+    this.tabs.fill(bar);
+    bar.scrollLeft = left;
   }
 
   /** Rebuilds the open-tab panel and the rail. */
@@ -89,15 +106,16 @@ export class Renderer {
   /**
    * The rail, the panel and the cards area. Pinned: a two-column grid. Unpinned: the panel is a
    * flyout over the cards, opened by hovering the rail.
+   * @param bar the collection bar, a second source of drags that may pass over the cards
    * @returns the layout element
    */
-  private layout(): HTMLElement {
+  private layout(bar: HTMLElement): HTMLElement {
     const layout = Dom.el("div", this.state.settings.panelPinned ? "layout pinned" : "layout");
     const rail = Dom.el("div", "rail");
     const aside = Dom.el("aside");
     const main = Dom.el("main");
     layout.append(rail, aside, main);
-    new DragScroller(main, [layout]);
+    new DragScroller(main, [layout, bar]);
     this.panel.fillPanel(aside);
     this.panel.fillRail(rail);
     this.grid.fill(main);

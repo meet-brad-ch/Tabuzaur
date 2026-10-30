@@ -82,7 +82,7 @@ export class LinkRowView {
       row.classList.remove("dragging");
     });
     row.addEventListener("dragover", (event) => {
-      if (DragKinds.isLink(event.dataTransfer)) {
+      if (DragKinds.kindOf(event.dataTransfer) === "link") {
         const after = DragKinds.isLowerHalf(row, event);
         row.classList.toggle("drop-before", !after);
         row.classList.toggle("drop-after", after);
