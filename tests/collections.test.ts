@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { CollectionBook, findMatch } from "../src/lib/collections.ts";
+import { CollectionBook } from "../src/lib/collections.ts";
 import { SCHEMA_VERSION } from "../src/lib/model.ts";
 import { CountingIdSource, FixedClock, pageA, pageB } from "./fakes.ts";
 
@@ -281,18 +281,6 @@ describe("CollectionBook.merge", () => {
     expect(book.merge({ schemaVersion: 1, collections: [] }).collections).toEqual(book.collections);
     book.merge(bookWithTwo().toData());
     expect(book.get("id-2").pages.length).toBe(2);
-  });
-});
-
-describe("findMatch", () => {
-  it("splits the text around the first case-insensitive hit, keeping the original case", () => {
-    expect(findMatch("Hello Docs world", "docs")).toEqual({ before: "Hello ", match: "Docs", after: " world" });
-    expect(findMatch("abcabc", "ABC")).toEqual({ before: "", match: "abc", after: "abc" });
-  });
-
-  it("returns undefined for a blank query or no hit", () => {
-    expect(findMatch("Hello", "  ")).toBeUndefined();
-    expect(findMatch("Hello", "x")).toBeUndefined();
   });
 });
 

@@ -1,5 +1,6 @@
 import type { Clock, Collection, IdSource, SavedPage, StoreData } from "./model.ts";
 import { HUE_COUNT, SCHEMA_VERSION } from "./model.ts";
+import { Palette } from "./palette.ts";
 
 /**
  * The immutable list of collections with every operation the pages need.
@@ -37,21 +38,8 @@ export class CollectionBook {
    * differ and the palette is spent evenly.
    */
   nextHue(): number {
-    const counts = new Array<number>(HUE_COUNT).fill(0);
-    for (const c of this.collections) {
-      if (c.hue !== undefined) {
-        counts[c.hue] = (counts[c.hue] ?? 0) + 1;
-      }
-    }
-    const last = this.collections[this.collections.length - 1]?.hue ?? -1;
-    let best = (last + 1) % HUE_COUNT;
-    for (let step = 0; step < HUE_COUNT; step++) {
-      const hue = (last + 1 + step) % HUE_COUNT;
-      if ((counts[hue] ?? 0) < (counts[best] ?? 0)) {
-        best = hue;
-      }
-    }
-    return best;
+    const hues = this.collections.map((c) => c.hue);
+    return Palette.next(hues);
   }
 
   /** Gives every collection without a hue the color it shows today (its position), so colors stick from now on. */
@@ -207,25 +195,6 @@ export class CollectionBook {
   private replace(id: string, updated: Collection): CollectionBook {
     return new CollectionBook(this.collections.map((c) => (c.id === id ? updated : c)));
   }
-}
-
-/** The pieces of a text around its first case-insensitive match of the query; undefined when none or the query is blank. */
-export interface TextMatch {
-  readonly before: string;
-  readonly match: string;
-  readonly after: string;
-}
-
-export function findMatch(text: string, query: string): TextMatch | undefined {
-  const needle = query.trim().toLowerCase();
-  if (needle === "") {
-    return undefined;
-  }
-  const at = text.toLowerCase().indexOf(needle);
-  if (at < 0) {
-    return undefined;
-  }
-  return { before: text.slice(0, at), match: text.slice(at, at + needle.length), after: text.slice(at + needle.length) };
 }
 
 /** The trimmed url, if it parses as one. */

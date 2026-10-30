@@ -1,13 +1,14 @@
-import { edgeScrollStep } from "../lib/autoscroll.ts";
-import { backupFileName, parseBackup, serializeBackup } from "../lib/backup.ts";
-import { CollectionBook, findMatch } from "../lib/collections.ts";
+import { EdgeScroll } from "../lib/autoscroll.ts";
+import { BackupFile } from "../lib/backup.ts";
+import { CollectionBook } from "../lib/collections.ts";
 import type { Clock, Collection, IdSource, SavedPage } from "../lib/model.ts";
 import { HUE_COUNT, RandomIdSource, SystemClock } from "../lib/model.ts";
 import type { CardSize, Persistence, Theme } from "../lib/storage.ts";
 import { CARD_SIZES, CardSizeStore, FlagStore, LocalPersistence, OPEN_IN_NEW_TAB_KEY, SIDEBAR_PINNED_KEY, THEMES, ThemeStore } from "../lib/storage.ts";
 import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
 import { ChromeTabBrowser } from "../lib/tabs.ts";
-import { hostnameOf, hueOf, initialOf } from "../lib/urls.ts";
+import { TextSearch } from "../lib/text-search.ts";
+import { UrlText } from "../lib/urls.ts";
 
 const REPO_URL = "https://github.com/meet-brad-ch/Tabuzaur";
 const DRAG_TYPE = "application/x-tabuzaur-page";
@@ -288,7 +289,7 @@ class TabsPage {
     const group = el("div", "backup");
     const exportButton = button(() => {
       const now = this.clock.now();
-      download(backupFileName(now), serializeBackup(this.book.toData(), now));
+      download(BackupFile.fileName(now), BackupFile.serialize(this.book.toData(), now));
     }, "button", "ghost");
     exportButton.append(icon("download"), text("Export"));
     const picker = el("input") as HTMLInputElement;
@@ -302,7 +303,7 @@ class TabsPage {
         return;
       }
       this.run(async () => {
-        const data = parseBackup(await file.text());
+        const data = BackupFile.parse(await file.text());
         const choice = await this.askImport(file.name, data.collections.length);
         if (choice === "cancel") {
           return;
@@ -492,8 +493,8 @@ class TabsPage {
 
   private tabMatches(tab: OpenTab): boolean {
     return this.tabQuery.trim() === ""
-      || findMatch(tab.title, this.tabQuery) !== undefined
-      || findMatch(tab.url, this.tabQuery) !== undefined;
+      || TextSearch.firstMatch(tab.title, this.tabQuery) !== undefined
+      || TextSearch.firstMatch(tab.url, this.tabQuery) !== undefined;
   }
 
   private tabRow(tab: OpenTab): HTMLElement {
@@ -504,7 +505,7 @@ class TabsPage {
     const title = el("span", "title");
     title.replaceChildren(...marked(tab.title, this.tabQuery));
     const host = el("span", "host");
-    host.replaceChildren(...marked(hostnameOf(tab.url), this.tabQuery));
+    host.replaceChildren(...marked(UrlText.hostname(tab.url), this.tabQuery));
     body.append(title, host);
     row.append(favicon(tab), body);
     row.addEventListener("click", () => { this.run(() => this.browser.activate(tab)); });
@@ -613,7 +614,7 @@ class TabsPage {
     const list = el("ul");
     collection.pages.forEach((page, index) => {
       const classes = ["page"];
-      if (findMatch(page.title, this.query) !== undefined || findMatch(page.url, this.query) !== undefined) {
+      if (TextSearch.firstMatch(page.title, this.query) !== undefined || TextSearch.firstMatch(page.url, this.query) !== undefined) {
         classes.push("hit");
       }
       if (this.justAdded?.collectionId === collection.id && this.justAdded.url === page.url) {
@@ -699,7 +700,7 @@ class TabsPage {
       link.title = page.url;
       link.addEventListener("click", (event) => { event.preventDefault(); });  // the row handles it
       const host = el("span", "host");
-      host.replaceChildren(...marked(hostnameOf(page.url), this.query));
+      host.replaceChildren(...marked(UrlText.hostname(page.url), this.query));
       body.append(link, host);
       const edit = button(() => {
         this.editingPage = { collectionId: collection.id, index };
@@ -874,7 +875,7 @@ class DragScroller {
       return;
     }
     const box = this.area.getBoundingClientRect();
-    const step = edgeScrollStep(this.pointerY, box.top, box.bottom);
+    const step = EdgeScroll.step(this.pointerY, box.top, box.bottom, EdgeScroll.MARGIN, EdgeScroll.MAX_STEP);
     if (step !== 0) {
       this.area.scrollTop += step;
     }
@@ -916,7 +917,7 @@ function focusAndSelect(input: HTMLInputElement | null): void {
 
 /** The text with its first match of the query wrapped in <mark>; the plain text when there is none. */
 function marked(content: string, query: string): (string | HTMLElement)[] {
-  const match = findMatch(content, query);
+  const match = TextSearch.firstMatch(content, query);
   if (match === undefined) {
     return [content];
   }
@@ -939,8 +940,8 @@ function favicon(page: SavedPage): HTMLElement {
 
 function letterTile(url: string): HTMLElement {
   const tile = el("span", "favicon letter");
-  tile.textContent = initialOf(url);
-  tile.style.setProperty("--h", String(hueOf(hostnameOf(url))));
+  tile.textContent = UrlText.initial(url);
+  tile.style.setProperty("--h", String(UrlText.hue(UrlText.hostname(url))));
   return tile;
 }
 

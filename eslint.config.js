@@ -13,6 +13,10 @@ export default tseslint.config(
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
       globals: { ...globals.browser, chrome: "readonly" },
     },
+    rules: {
+      // Behaviour lives in classes, also stateless helpers (static members), never in free functions.
+      "@typescript-eslint/no-extraneous-class": ["error", { allowStaticOnly: true }],
+    },
   },
   {
     files: ["eslint.config.js", "tools/**/*.mjs"],

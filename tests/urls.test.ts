@@ -1,43 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { hostnameOf, hueOf, initialOf } from "../src/lib/urls.ts";
+import { UrlText } from "../src/lib/urls.ts";
 
-describe("hostnameOf", () => {
+describe("UrlText.hostname", () => {
   it("drops www. and everything but the host", () => {
-    expect(hostnameOf("https://www.example.com/a/b?c=1#d")).toBe("example.com");
-    expect(hostnameOf("http://docs.example.co.uk:8080/")).toBe("docs.example.co.uk");
+    expect(UrlText.hostname("https://www.example.com/a/b?c=1#d")).toBe("example.com");
+    expect(UrlText.hostname("http://docs.example.co.uk:8080/")).toBe("docs.example.co.uk");
   });
 
   it("falls back to the scheme when there is no host", () => {
-    expect(hostnameOf("file:///C:/notes/x.html")).toBe("file");
-    expect(hostnameOf("about:blank")).toBe("about");
+    expect(UrlText.hostname("file:///C:/notes/x.html")).toBe("file");
+    expect(UrlText.hostname("about:blank")).toBe("about");
   });
 
   it("keeps the host of a chrome:// page", () => {
-    expect(hostnameOf("chrome://extensions/")).toBe("extensions");
+    expect(UrlText.hostname("chrome://extensions/")).toBe("extensions");
   });
 
   it("fails on an unparsable URL", () => {
-    expect(() => hostnameOf("not a url")).toThrow();
+    expect(() => UrlText.hostname("not a url")).toThrow();
   });
 });
 
-describe("initialOf", () => {
+describe("UrlText.initial", () => {
   it("is the upper-cased first character of the host", () => {
-    expect(initialOf("https://www.example.com/")).toBe("E");
-    expect(initialOf("file:///x")).toBe("F");
+    expect(UrlText.initial("https://www.example.com/")).toBe("E");
+    expect(UrlText.initial("file:///x")).toBe("F");
   });
 });
 
-describe("hueOf", () => {
+describe("UrlText.hue", () => {
   it("is deterministic and within [0, 360)", () => {
-    expect(hueOf("example.com")).toBe(hueOf("example.com"));
+    expect(UrlText.hue("example.com")).toBe(UrlText.hue("example.com"));
     for (const text of ["", "a", "example.com", "docs.example.co.uk"]) {
-      expect(hueOf(text)).toBeGreaterThanOrEqual(0);
-      expect(hueOf(text)).toBeLessThan(360);
+      expect(UrlText.hue(text)).toBeGreaterThanOrEqual(0);
+      expect(UrlText.hue(text)).toBeLessThan(360);
     }
   });
 
   it("differs for different hosts", () => {
-    expect(hueOf("example.com")).not.toBe(hueOf("example.org"));
+    expect(UrlText.hue("example.com")).not.toBe(UrlText.hue("example.org"));
   });
 });

@@ -1,5 +1,5 @@
 import { FlagStore, OPEN_IN_NEW_TAB_KEY } from "./lib/storage.ts";
-import { ChromeTabBrowser, extraPageTabs, homeTab, isBlankNewTab, isPageUrl } from "./lib/tabs.ts";
+import { ChromeTabBrowser, OpenTabs } from "./lib/tabs.ts";
 
 /** The toolbar button opens the Tabuzaur page, or jumps to it when it is already open. */
 chrome.action.onClicked.addListener(() => {
@@ -28,10 +28,10 @@ function closeCopies(tabId: number): void {
   const browser = new ChromeTabBrowser();
   chrome.tabs.get(tabId)
     .then(async (tab) => {
-      if (!tab.active || tab.url === undefined || !isPageUrl(tab.url, pageUrl)) {
+      if (!tab.active || tab.url === undefined || !OpenTabs.isPageUrl(tab.url, pageUrl)) {
         return;
       }
-      const copies = extraPageTabs(await browser.openTabs(), pageUrl, tab.windowId, tabId);
+      const copies = OpenTabs.extraPageTabs(await browser.openTabs(), pageUrl, tab.windowId, tabId);
       if (copies.length > 0) {
         await chrome.tabs.remove(copies.map((t) => t.tabId));
       }
@@ -55,7 +55,7 @@ chrome.tabs.onUpdated.addListener((tabId, change) => {
  * been stopped and restarted in between.
  */
 chrome.tabs.onCreated.addListener((tab) => {
-  if (tab.id === undefined || !isBlankNewTab(tab.url, tab.pendingUrl)) {
+  if (tab.id === undefined || !OpenTabs.isBlankNewTab(tab.url, tab.pendingUrl)) {
     return;
   }
   const created = tab.id;
@@ -67,7 +67,7 @@ chrome.tabs.onCreated.addListener((tab) => {
         return;
       }
       const pageUrl = chrome.runtime.getURL("tabs.html");
-      const home = homeTab(await browser.openTabs(), pageUrl, windowId);
+      const home = OpenTabs.homeTab(await browser.openTabs(), pageUrl, windowId);
       if (home === undefined) {
         await chrome.tabs.update(created, { url: pageUrl });
       } else {

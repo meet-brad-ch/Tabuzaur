@@ -8,42 +8,93 @@ export interface OpenTab extends SavedPage {
   readonly active: boolean;
 }
 
-/** The open tab showing a URL, exact match, first in tab-strip order; undefined when none. */
-export function findOpenTab(tabs: readonly OpenTab[], url: string): OpenTab | undefined {
-  return tabs.find((t) => t.url === url);
-}
+/** Rules over the list of open tabs: finding a page's tab, Chrome's new-tab page, Tabuzaur's own tabs. */
+export class OpenTabs {
+  /**
+   * The open tab showing a URL, exact match, first in tab-strip order.
+   * @param tabs the open tabs
+   * @param url the address to find
+   * @returns that tab, or undefined when none shows it
+   */
+  static find(tabs: readonly OpenTab[], url: string): OpenTab | undefined {
+    return tabs.find((t) => t.url === url);
+  }
 
-/**
- * Whether a freshly created tab is Chrome's blank new-tab page (Ctrl+T, the + button), as opposed
- * to a tab opened on an address. Chrome reports the page as pendingUrl while it loads and as url
- * afterwards, with or without a trailing slash.
- */
-export function isBlankNewTab(url: string | undefined, pendingUrl: string | undefined): boolean {
-  const blank = (u: string | undefined): boolean => u === "chrome://newtab/" || u === "chrome://newtab";
-  return blank(pendingUrl) || (pendingUrl === undefined && blank(url));
-}
+  /**
+   * Whether a freshly created tab is Chrome's blank new-tab page (Ctrl+T, the + button), as opposed
+   * to a tab opened on an address. Chrome reports the page as pendingUrl while it loads and as url
+   * afterwards, with or without a trailing slash.
+   * @param url the tab's url, if known
+   * @param pendingUrl the url the tab is loading, if any
+   * @returns true for the new-tab page
+   */
+  static isBlankNewTab(url: string | undefined, pendingUrl: string | undefined): boolean {
+    if (pendingUrl !== undefined) {
+      return OpenTabs.isNewTabPage(pendingUrl);
+    }
+    if (url === undefined) {
+      return false;
+    }
+    return OpenTabs.isNewTabPage(url);
+  }
 
-/**
- * The Tabuzaur tab already open in a window: the first one in tab-strip order showing the page,
- * with or without a query or a fragment. A new blank tab in that window jumps to it instead of
- * becoming a second copy. Undefined when the window has none.
- */
-export function homeTab(tabs: readonly OpenTab[], pageUrl: string, windowId: number): OpenTab | undefined {
-  return pageTabsIn(tabs, pageUrl, windowId)[0];
-}
+  /**
+   * The Tabuzaur tab already open in a window: the first one in tab-strip order. A new blank tab
+   * in that window jumps to it instead of becoming a second copy.
+   * @param tabs the open tabs
+   * @param pageUrl the Tabuzaur page address
+   * @param windowId the window to look in
+   * @returns that tab, or undefined when the window has none
+   */
+  static homeTab(tabs: readonly OpenTab[], pageUrl: string, windowId: number): OpenTab | undefined {
+    const pageTabs = OpenTabs.pageTabsIn(tabs, pageUrl, windowId);
+    return pageTabs[0];
+  }
 
-/** The Tabuzaur tabs of a window other than `keptTabId`: the copies that close when that one is active. */
-export function extraPageTabs(tabs: readonly OpenTab[], pageUrl: string, windowId: number, keptTabId: number): OpenTab[] {
-  return pageTabsIn(tabs, pageUrl, windowId).filter((t) => t.tabId !== keptTabId);
-}
+  /**
+   * The Tabuzaur tabs of a window other than the kept one: the copies that close when it is active.
+   * @param tabs the open tabs
+   * @param pageUrl the Tabuzaur page address
+   * @param windowId the window to look in
+   * @param keptTabId the tab that stays
+   * @returns the copies in tab-strip order
+   */
+  static extraPageTabs(tabs: readonly OpenTab[], pageUrl: string, windowId: number, keptTabId: number): OpenTab[] {
+    const pageTabs = OpenTabs.pageTabsIn(tabs, pageUrl, windowId);
+    return pageTabs.filter((t) => t.tabId !== keptTabId);
+  }
 
-/** Whether the URL shows the page, with or without a query or a fragment. */
-export function isPageUrl(url: string, pageUrl: string): boolean {
-  return url.replace(/[?#].*$/, "") === pageUrl.replace(/[?#].*$/, "");
-}
+  /**
+   * Whether the URL shows the page, with or without a query or a fragment.
+   * @param url the address to test
+   * @param pageUrl the page address
+   * @returns true when both name the same page
+   */
+  static isPageUrl(url: string, pageUrl: string): boolean {
+    const bare = url.replace(/[?#].*$/, "");
+    const page = pageUrl.replace(/[?#].*$/, "");
+    return bare === page;
+  }
 
-function pageTabsIn(tabs: readonly OpenTab[], pageUrl: string, windowId: number): OpenTab[] {
-  return tabs.filter((t) => t.windowId === windowId && isPageUrl(t.url, pageUrl));
+  /**
+   * Whether the address is Chrome's new-tab page.
+   * @param url an address
+   * @returns true for chrome://newtab with or without the slash
+   */
+  private static isNewTabPage(url: string): boolean {
+    return url === "chrome://newtab/" || url === "chrome://newtab";
+  }
+
+  /**
+   * The Tabuzaur tabs of one window.
+   * @param tabs the open tabs
+   * @param pageUrl the page address
+   * @param windowId the window
+   * @returns those tabs in tab-strip order
+   */
+  private static pageTabsIn(tabs: readonly OpenTab[], pageUrl: string, windowId: number): OpenTab[] {
+    return tabs.filter((t) => t.windowId === windowId && OpenTabs.isPageUrl(t.url, pageUrl));
+  }
 }
 
 /** Reads and changes the browser's tabs. The Chrome adapter is the only implementation outside tests. */
@@ -101,7 +152,8 @@ export class ChromeTabBrowser implements TabBrowser {
   }
 
   async jumpTo(url: string): Promise<void> {
-    const open = findOpenTab(await this.openTabs(), url);
+    const tabs = await this.openTabs();
+    const open = OpenTabs.find(tabs, url);
     if (open === undefined) {
       await this.openInNewTab(url);
     } else {
