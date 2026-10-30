@@ -578,20 +578,22 @@ nav.tabbar {
 .tab-list {
   display: flex;
   align-items: flex-end;
-  gap: 4px;
+  padding-left: 6px;
 }
 
+/* Folder tabs: each tab is a trapezoid drawn by its ::before (a box tilted back from its bottom
+   edge), in its collection's color (hue-N). Neighbours overlap. A later tab lies over an earlier
+   one, and the open tab lies over all of them, in the strong shade, and covers the bar's line so
+   it joins the cards below. */
 .ctab {
   position: relative;
+  z-index: 0;
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 36px;
-  padding: 0 10px 0 14px;
-  border: 1px solid var(--line);
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  background: var(--card-bg);
+  margin-left: -14px;
+  padding: 0 22px;
   color: var(--muted);
   font-weight: 600;
   white-space: nowrap;
@@ -599,20 +601,44 @@ nav.tabbar {
   user-select: none;
 }
 
-/* a tab has its collection's color (hue-N): a closed tab the light shade, the open tab the band shade.
-   A closed tab keeps the bar's bottom line under it; the open tab covers the line. */
+.ctab:first-child {
+  margin-left: 0;
+}
+
+.ctab::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 9px 9px 0 0;
+  background: color-mix(in srgb, var(--card-band) 55%, var(--card-bg));
+  box-shadow: 1px 0 3px rgb(15 40 61 / 12%);
+  transform: perspective(48px) rotateX(10deg);
+  transform-origin: bottom;
+}
+
 .ctab:hover {
-  border-color: var(--muted);
+  z-index: 1;
   color: var(--fg);
 }
 
+.ctab:hover::before {
+  border-color: var(--muted);
+}
+
 .ctab.open {
+  z-index: 2;
   margin-bottom: -1px;
-  border-color: var(--line);
-  background: var(--card-band);
-  box-shadow: inset 0 3px 0 var(--accent);
+  height: 37px;
   color: var(--fg);
   cursor: default;
+}
+
+.ctab.open::before {
+  background: var(--card-band);
+  box-shadow: inset 0 3px 0 var(--accent), 0 -1px 6px rgb(15 40 61 / 18%);
 }
 
 .ctab:focus-visible {
@@ -664,14 +690,18 @@ nav.tabbar {
 
 /* a card held over a tab: the tab lifts */
 .ctab.over {
-  background: var(--accent-soft);
+  z-index: 3;
   color: var(--accent);
-  outline: 2px dashed var(--accent);
-  outline-offset: -3px;
+}
+
+.ctab.over::before {
+  border: 2px dashed var(--accent);
+  border-bottom: none;
+  background: var(--accent-soft);
 }
 
 /* a tab held over a tab: a green line shows where it lands */
-.ctab.insert-before::before,
+.ctab.insert-before::after,
 .ctab.insert-after::after {
   content: "";
   position: absolute;
@@ -682,12 +712,12 @@ nav.tabbar {
   background: var(--accent);
 }
 
-.ctab.insert-before::before {
-  left: -4px;
+.ctab.insert-before::after {
+  left: 4px;
 }
 
 .ctab.insert-after::after {
-  right: -4px;
+  right: 4px;
 }
 
 /* the tab a card was just dropped on */
