@@ -21,6 +21,7 @@
         <a href="#open">Open</a>
         <a href="#page">The page</a>
         <a href="#collections">Collections</a>
+        <a href="#cards">Cards</a>
         <a href="#find">Find</a>
         <a href="#backup">Backup</a>
         <a href="#keyboard">Keyboard</a>
@@ -32,9 +33,10 @@
       <section class="hero">
         <h1>Help</h1>
         <p class="lead">
-          Tabuzaur keeps the pages you work with in collections. You build a collection from the
-          tabs that are open, by dragging. A saved link jumps to its tab when the tab is open. All
-          data stays on this computer.
+          Tabuzaur keeps the pages you work with as links in cards. You fill a card from the tabs
+          that are open, by dragging. Cards sit in collections, and each collection has its tab at
+          the top of the page. A saved link jumps to its tab when the tab is open. All data stays
+          on this computer.
         </p>
         <p class="version">Version <span id="version">?</span></p>
       </section>
@@ -66,64 +68,80 @@
         <ul>
           <li><strong>The toolbar button.</strong> Click the dinosaur next to the address bar. Pin it there with the puzzle-piece menu if Chrome hides it.</li>
           <li><strong>Alt+T.</strong> Chrome assigns this key at install when no other extension uses it. The page header shows the key in effect. If it shows <em>No shortcut assigned</em>, click it and set a key on <code>chrome://extensions/shortcuts</code>.</li>
-          <li><strong>Every new tab.</strong> Off by default. Open Settings with the gear in the header and tick <strong>Open Tabuzaur in every new tab</strong>. A new blank tab then shows the Tabuzaur page. When the window already has a Tabuzaur tab, the new tab closes and you land on that one. A window keeps one Tabuzaur tab: when one is active, its copies in that window close. Untick it to get Chrome's new-tab page back.</li>
-          <li><strong>Collection width.</strong> Settings also holds a bar with three steps: Small, Medium, Large. It sets the least width of a collection. Narrower collections give more columns. The number of columns follows the window either way.</li>
+          <li><strong>Every new tab.</strong> Off by default. Open Settings with the gear in the header and tick <strong>Open Tabuzaur in every new tab</strong>. A new blank tab then shows the Tabuzaur page. When the window already has a Tabuzaur tab, the new tab closes and you land on that one. A window keeps one Tabuzaur tab: when one is active, its copies in that window close. Untick it to restore Chrome's new-tab page.</li>
+          <li><strong>Card width.</strong> Settings also holds a bar with three steps: Small, Medium, Large. It sets the least width of a card. Narrower cards give more columns. The number of columns follows the window either way.</li>
           <li><strong>Start page.</strong> Copy the ID from the Tabuzaur card. Open <code>chrome://settings/onStartup</code>, choose <strong>Open a specific page or set of pages</strong>, click <strong>Add a new page</strong> and enter <code>chrome-extension://&lt;id&gt;/tabs.html</code>.</li>
         </ul>
-        <figure><img src="help/img/settings.png" alt="The settings dialog with the new-tab option" /><figcaption>Settings: the collection width bar and the new-tab option, off until you tick it.</figcaption></figure>
+        <figure><img src="help/img/settings.png" alt="The settings dialog with the new-tab option" /><figcaption>Settings: the card width bar and the new-tab option, off until you tick it.</figcaption></figure>
         <figure><img src="help/img/chrome-startup.png" alt="Chrome's On startup setting with the Tabuzaur page added" /><figcaption>The On startup setting with the Tabuzaur page.</figcaption></figure>
         <figure><img src="help/img/chrome-shortcuts.png" alt="Chrome's keyboard shortcuts page with the Tabuzaur row" /><figcaption>The shortcuts page: any key can be set here.</figcaption></figure>
       </section>
 
       <section id="page">
         <h2>The page</h2>
-        <figure><img src="help/img/page.png" alt="The Tabuzaur page with four collections" /><figcaption>Header on top, the open-tab rail on the left, collections in the middle.</figcaption></figure>
+        <figure><img src="help/img/page.png" alt="The Tabuzaur page with the collection bar and four cards" /><figcaption>The header on top, the collection bar under it, the open-tab rail on the left, the cards in the middle.</figcaption></figure>
         <ul>
-          <li><strong>Header.</strong> The logo and the name lead to the project on GitHub. Then search, a field to create a collection, Export, Import, the theme button, Settings and this help.</li>
+          <li><strong>Header.</strong> The logo and the name lead to the project on GitHub. Then come the search, the field for a new card, Export, Import, the theme button, Settings and this help.</li>
+          <li><strong>Collection bar.</strong> Each collection has a tab here. The page shows the cards of the open collection. Tabuzaur remembers which collection was open.</li>
           <li><strong>Open tabs.</strong> The thin rail on the left shows how many tabs are open. Rest the pointer on it and the panel opens with every open tab, grouped by window.</li>
           <li><strong>Pin.</strong> The pin at the top of the panel keeps it open as a column. Click it again and the panel closes when the pointer leaves it.</li>
         </ul>
         <div class="pair">
-          <figure><img src="help/img/flyout.png" alt="The open-tab panel slid out over the collections" /><figcaption>The panel opens from the rail.</figcaption></figure>
+          <figure><img src="help/img/flyout.png" alt="The open-tab panel slid out over the cards" /><figcaption>The panel opens from the rail.</figcaption></figure>
           <figure><img src="help/img/pinned.png" alt="The open-tab panel pinned as a column" /><figcaption>Pinned, the panel is a column.</figcaption></figure>
         </div>
       </section>
 
       <section id="collections">
         <h2>Collections</h2>
-        <figure class="demo"><img src="help/img/demo.gif" alt="A tab dragged from the panel into a collection" /><figcaption>Drag a tab from the panel onto a collection. The tab stays open.</figcaption></figure>
+        <p>A collection groups cards, for example one collection for work and one for home. A new installation, and every update from Tabuzaur 0.8 or earlier, starts with one collection named Main that holds all cards.</p>
+        <figure><img src="help/img/tabbar.png" alt="A card held by its band over the tab of the collection Later" /><figcaption>Drag a card by its colored band onto a tab: the tab lifts, and the card moves to that collection.</figcaption></figure>
         <ul>
-          <li><strong>Create.</strong> Type a name in the header field and click Create. The new collection gets its own color.</li>
-          <li><strong>Add a link.</strong> Drag a tab from the panel onto a collection. The link keeps the title, the address and the icon of the tab. Tabuzaur refuses a link that is already in that collection, with a notice.</li>
+          <li><strong>Create.</strong> Click the + at the end of the collection bar. Type a name and press Enter. Tabuzaur opens the new collection.</li>
+          <li><strong>Open.</strong> Click a tab.</li>
+          <li><strong>Rename.</strong> Click the pen on the open tab, or double-click a tab. Enter saves, Escape cancels.</li>
+          <li><strong>Reorder.</strong> Drag a tab along the bar. A green line shows where it lands.</li>
+          <li><strong>Move a card.</strong> Drag the colored band of a card onto another tab. Tabuzaur adds the card at the end of that collection, and the tab flashes.</li>
+          <li><strong>Delete.</strong> Click the trash on the open tab. Tabuzaur deletes only an empty collection, and it keeps the last collection. When the trash is grey, its tooltip tells you why.</li>
+        </ul>
+      </section>
+
+      <section id="cards">
+        <h2>Cards</h2>
+        <figure class="demo"><img src="help/img/demo.gif" alt="A tab dragged from the panel into a card" /><figcaption>Drag a tab from the panel onto a card. The tab stays open.</figcaption></figure>
+        <ul>
+          <li><strong>Create.</strong> Type a name in the field <strong>New card</strong> in the header and click Create. Tabuzaur adds the card to the open collection and gives it its own color.</li>
+          <li><strong>Add a link.</strong> Drag a tab from the panel onto a card. The link keeps the title, the address and the icon of the tab. Tabuzaur refuses a link that is already in that card, with a notice.</li>
           <li><strong>Open a link.</strong> Click anywhere on the link row. When the page is open in a tab, Tabuzaur jumps to that tab. Otherwise it opens the page in a new tab.</li>
-          <li><strong>Reorder.</strong> Drag a link up or down inside its collection. A green line shows where it lands. Drag it onto another collection to move it there.</li>
-          <li><strong>Reach a collection below the fold.</strong> While you drag, hold the pointer near the top or the bottom edge of the collections. The page scrolls until you move away. The wheel does not scroll during a drag.</li>
+          <li><strong>Reorder links.</strong> Drag a link up or down inside its card. A green line shows where it lands. Drag it onto another card to move it there.</li>
+          <li><strong>Reach a card lower on the page.</strong> While you drag, hold the pointer near the top or the bottom edge of the cards. The page scrolls until you move away. The wheel does not scroll during a drag.</li>
           <li><strong>Edit a link.</strong> Rest the pointer on the link and click the pen. Change the title or the address. Enter saves, Escape cancels.</li>
           <li><strong>Remove a link.</strong> Rest the pointer on the link and click the cross.</li>
-          <li><strong>Rename a collection.</strong> Click the pen in the colored band.</li>
-          <li><strong>Move a collection.</strong> Drag the colored band onto another collection. A green line between the cards shows where it lands.</li>
-          <li><strong>Delete a collection.</strong> Click the trash icon in the band. Tabuzaur asks first.</li>
+          <li><strong>Rename a card.</strong> Click the pen in the colored band.</li>
+          <li><strong>Move a card.</strong> Drag the colored band onto another card to change the order. A green line between the cards shows where it lands. Drag the band onto a tab to move the card to another collection.</li>
+          <li><strong>Delete a card.</strong> Click the trash icon in the band. Tabuzaur asks first.</li>
         </ul>
         <div class="pair">
-          <figure><img src="help/img/drop.png" alt="A tab held over a collection" /><figcaption>The target collection lifts while a tab is over it.</figcaption></figure>
+          <figure><img src="help/img/drop.png" alt="A tab held over a card" /><figcaption>The target card lifts while a tab is over it.</figcaption></figure>
           <figure><img src="help/img/edit.png" alt="A link with its title and address open for editing" /><figcaption>The pen opens the title and the address.</figcaption></figure>
         </div>
       </section>
 
       <section id="find">
         <h2>Find</h2>
-        <p>Type in the search field in the header. Only collections with a match stay on the page, and Tabuzaur marks the match in the names and the links. The panel has its own filter for open tabs.</p>
-        <figure><img src="help/img/search.png" alt="The page filtered by the word lisbon" /><figcaption>A search for "lisbon".</figcaption></figure>
+        <p>Type in the search field in the header. The open collection shows only the cards with a match, and Tabuzaur marks the match in the names and the links. Every tab shows how many of its cards match. Click a tab to see them. The panel has its own filter for open tabs.</p>
+        <figure><img src="help/img/search.png" alt="The page filtered by the word lisbon, with a count on each tab" /><figcaption>A search for "lisbon": one card in Main, none in Later.</figcaption></figure>
       </section>
 
       <section id="backup">
         <h2>Backup</h2>
-        <p><strong>Export</strong> downloads all collections as one JSON file named <code>tabuzaur-backup-YYYY-MM-DD.json</code>. <strong>Import</strong> reads such a file and asks what to do with it.</p>
+        <p><strong>Export</strong> downloads every collection with its cards as one JSON file named <code>tabuzaur-backup-YYYY-MM-DD.json</code>. <strong>Import</strong> reads such a file and asks what to do with it.</p>
         <ul>
-          <li><strong>Replace</strong> removes the collections you have and loads the file.</li>
-          <li><strong>Merge</strong> adds the file to what you have. Collections with the same name join. Links you already have stay as they are. Nothing is removed.</li>
+          <li><strong>Replace</strong> removes everything you have and loads the file.</li>
+          <li><strong>Merge</strong> adds the file to what you have. A collection joins the collection with the same name. A card joins the card with the same name in that collection. Links you already have stay as they are. Nothing is removed.</li>
+          <li><strong>A file from Tabuzaur 0.8 or earlier</strong> holds cards only. Tabuzaur imports it into the open collection. Merge adds its cards there. Replace replaces the cards of that collection. The other collections stay.</li>
         </ul>
-        <p>The same file carries collections to another computer.</p>
+        <p>The same file carries your collections to another computer. Tabuzaur 0.8 and earlier cannot read a file from this version. Update the other computer first.</p>
         <figure><img src="help/img/dialog.png" alt="The import question with Replace, Merge and Cancel" /><figcaption>Import asks before it changes anything.</figcaption></figure>
       </section>
 
@@ -137,7 +155,7 @@
         <h2>Keyboard</h2>
         <table>
           <tr><th>Alt+T</th><td>Open Tabuzaur from any tab, or bring it to the front.</td></tr>
-          <tr><th>Enter</th><td>Save a name or a link you are editing.</td></tr>
+          <tr><th>Enter</th><td>Save a name or a link you are editing. On a focused tab of the collection bar, open that collection.</td></tr>
           <tr><th>Escape</th><td>Leave the editor without a change. Close the import question.</td></tr>
           <tr><th>Tab</th><td>Move through the fields and buttons. The pen, cross and trash buttons show when they have the focus.</td></tr>
         </table>
@@ -145,7 +163,7 @@
 
       <section id="privacy">
         <h2>Privacy</h2>
-        <p>Tabuzaur asks for two permissions: <code>tabs</code>, to list and open tabs, and <code>storage</code>, to keep the collections. It stores everything in Chrome's local storage on this computer. It makes no network request, has no account and sends nothing anywhere. Your backup file is the only copy outside Chrome, and you make it.</p>
+        <p>Tabuzaur asks for two permissions: <code>tabs</code>, to list and open tabs, and <code>storage</code>, to keep your collections, cards and settings. It stores everything in Chrome's local storage on this computer. It makes no network request, has no account and sends nothing anywhere. Your backup file is the only copy outside Chrome, and you make it.</p>
       </section>
     </main>
 
