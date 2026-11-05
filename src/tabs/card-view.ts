@@ -85,7 +85,8 @@ export class CardView {
   }
 
   /**
-   * A dropped card moves before or after this one; a dropped link goes to the end.
+   * A dropped card moves before or after this one, also from another collection; a dropped link
+   * goes to the end.
    * @param event the drop event
    * @param section the card element
    * @param card the card
@@ -97,7 +98,8 @@ export class CardView {
     if (movedId !== "") {
       const after = DragKinds.isLowerHalf(section, event) ? 1 : 0;
       const place = this.state.library.locate(card.id).cardIndex + after;
-      this.actions.reorderCard(movedId, place);
+      const collectionId = this.state.library.collectionOf(card.id).id;
+      this.actions.placeCard(movedId, collectionId, place);
       return;
     }
     const drag = DragKinds.readLink(event);

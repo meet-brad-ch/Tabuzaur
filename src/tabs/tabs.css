@@ -700,6 +700,16 @@ nav.tabbar {
   background: var(--accent-soft);
 }
 
+/* a link or a card resting on a closed tab: the tab opens after a moment */
+.ctab.opening {
+  z-index: 1;
+  color: var(--fg);
+}
+
+.ctab.opening::before {
+  border-color: var(--accent);
+}
+
 /* a tab held over a tab: a green line shows where it lands */
 .ctab.insert-before::after,
 .ctab.insert-after::after {

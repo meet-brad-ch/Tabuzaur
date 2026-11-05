@@ -187,6 +187,47 @@ async function reorderAndDelete(page) {
   Check.equal("an empty collection's trash deletes it", await page.value(tabNames), ["Later", "Main"]);
 }
 
+/** A card and a panel link held over a closed tab open it; each then drops on a card there. */
+async function springOpen(page, harness) {
+  await page.open(`${harness}#page`);
+  const hold = (source) => page.value(`(() => {
+    window.dt = new DataTransfer();
+    window.source = ${source};
+    window.source.dispatchEvent(new DragEvent("dragstart", { dataTransfer: dt, bubbles: true }));
+    const later = document.querySelectorAll("li.ctab")[1];
+    later.dispatchEvent(new DragEvent("dragover", { dataTransfer: dt, bubbles: true, cancelable: true }));
+    return later.classList.contains("opening");
+  })()`);
+  const dropOnRecipes = () => page.value(`(() => {
+    const recipes = document.querySelector("main .card");
+    const box = recipes.getBoundingClientRect();
+    const at = { dataTransfer: dt, bubbles: true, cancelable: true, clientX: box.left + 20, clientY: box.top + 5 };
+    recipes.dispatchEvent(new DragEvent("dragover", at));
+    recipes.dispatchEvent(new DragEvent("drop", at));
+    window.source.dispatchEvent(new DragEvent("dragend", { dataTransfer: dt, bubbles: true }));
+  })()`);
+  Check.equal("a card held over a closed tab marks it", await hold(`document.querySelector("main .card header")`), true);
+  await Check.sleep(900);
+  Check.equal("the tab opens while the card is held", [await page.value(openTab), await page.value(cardNames)], ["Later", ["Recipes"]]);
+  await dropOnRecipes();
+  await Check.sleep(400);
+  Check.equal("the card lands before the card it was dropped on", await page.value(`store.tabuzaur.collections.map((c) => c.cards.map((k) => k.name))`),
+    [["Reading", "Trip to Lisbon", "Home"], ["Work", "Recipes"]]);
+  await page.value(`document.querySelector("li.ctab").click()`);
+  await Check.sleep(300);
+  Check.equal("a panel link held over a closed tab marks it", await hold(`document.querySelector("aside li.tab")`), true);
+  await Check.sleep(900);
+  Check.equal("the tab opens while the link is held", await page.value(openTab), "Later");
+  await page.value(`(() => {
+    const card = [...document.querySelectorAll("main .card")].find((c) => c.querySelector("header .name").textContent === "Recipes");
+    card.dispatchEvent(new DragEvent("dragover", { dataTransfer: dt, bubbles: true, cancelable: true }));
+    card.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }));
+    window.source.dispatchEvent(new DragEvent("dragend", { dataTransfer: dt, bubbles: true }));
+  })()`);
+  await Check.sleep(400);
+  Check.equal("the link is in the card", await page.value(`store.tabuzaur.collections[1].cards[1].links.map((l) => l.title).at(-1)`), "Sprint board");
+}
+
 async function main() {
   if (!existsSync(join(dist, "tabs.js"))) {
     throw new Error("dist/tabs.js is missing: run `npm run build` first");
@@ -216,6 +257,7 @@ async function main() {
     await cardOntoTab(page);
     await searchCounts(page);
     await reorderAndDelete(page);
+    await springOpen(page, harness);
     socket.close();
   } finally {
     chrome.kill();

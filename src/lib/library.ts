@@ -269,6 +269,19 @@ export class Library {
     return removed.replaceCollection({ ...target, cards: [...target.cards, card] });
   }
 
+  /**
+   * Puts a card at a place in a collection, its own or another one.
+   * @param cardId the card
+   * @param collectionId the target collection
+   * @param to the place among the target's cards before the move, from 0 to their count
+   * @returns the library after the move
+   * @throws Error for an unknown card or collection, or "no place for a card at index N"
+   */
+  placeCard(cardId: string, collectionId: string, to: number): Library {
+    const moved = this.moveCard(cardId, collectionId);
+    return moved.reorderCard(cardId, to);
+  }
+
   // ---- links ------------------------------------------------------------------------------
 
   /**

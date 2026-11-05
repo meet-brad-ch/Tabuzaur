@@ -57,6 +57,16 @@ export class Renderer {
     this.notify(pending, "info");
   }
 
+  /**
+   * Shows the collection that was just opened: the bar and its cards, from the top. The header and
+   * the panel stay, so a drag that started there goes on.
+   */
+  renderCollection(): void {
+    this.renderTabs();
+    this.renderCards();
+    this.must("main").scrollTop = 0;
+  }
+
   /** Rebuilds the cards; the one-time highlight of a dropped link is spent. */
   renderCards(): void {
     this.grid.fill(this.must("main"));

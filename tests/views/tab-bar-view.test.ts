@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Library } from "../../src/lib/library.ts";
 import type { Card } from "../../src/lib/model.ts";
 import { DragKinds } from "../../src/tabs/drag.ts";
@@ -46,6 +46,11 @@ describe("TabBarView", () => {
     state = seeded();
     actions = new RecordingActions();
     view = new TabBarView(state, actions);
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("shows one tab per collection, the open one selected with a pen and a trash, and a +", () => {
@@ -136,5 +141,32 @@ describe("TabBarView", () => {
       { name: "moveCard", args: ["t", "main"] },
       { name: "reorderCollection", args: ["main", 2] },
     ]);
+  });
+
+  it("opens a closed tab when a link or a card rests on it", () => {
+    const bar = view.build();
+    DragEvents.fire(tab(bar, 0), "dragover", DragKinds.LINK, "{}");
+    expect(tab(bar, 0).classList.contains("opening")).toBe(true);
+    vi.advanceTimersByTime(TabBarView.SPRING_MS - 1);
+    DragEvents.fire(tab(bar, 0), "dragover", DragKinds.LINK, "{}");
+    expect(actions.calls).toEqual([]);
+    vi.advanceTimersByTime(1);
+    expect(actions.calls).toEqual([{ name: "openCollection", args: ["main"] }]);
+    DragEvents.fire(tab(bar, 2), "dragover", DragKinds.CARD, "t");
+    vi.advanceTimersByTime(TabBarView.SPRING_MS);
+    expect(actions.last()).toEqual({ name: "openCollection", args: ["empty"] });
+  });
+
+  it("does not open a tab the drag left or dropped on, the open tab, or for a collection drag", () => {
+    const bar = view.build();
+    DragEvents.fire(tab(bar, 0), "dragover", DragKinds.LINK, "{}");
+    tab(bar, 0).dispatchEvent(new DragEvent("dragleave", { bubbles: true }));
+    expect(tab(bar, 0).classList.contains("opening")).toBe(false);
+    DragEvents.fire(tab(bar, 2), "dragover", DragKinds.CARD, "t");
+    DragEvents.fire(tab(bar, 2), "drop", DragKinds.CARD, "t");
+    DragEvents.fire(tab(bar, 1), "dragover", DragKinds.LINK, "{}");
+    DragEvents.fire(tab(bar, 0), "dragover", DragKinds.COLLECTION, "later");
+    vi.advanceTimersByTime(TabBarView.SPRING_MS * 2);
+    expect(actions.calls).toEqual([{ name: "moveCard", args: ["t", "empty"] }]);
   });
 });

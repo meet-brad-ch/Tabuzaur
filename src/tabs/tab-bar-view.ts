@@ -10,9 +10,16 @@ import type { PageState } from "./page-state.ts";
 /**
  * The collection bar under the header: one tab per collection and a + for a new one. A click opens
  * a collection; the open tab has a pen and a trash. Tabs reorder by drag, and a card dropped on a
- * tab moves to that collection.
+ * tab moves to that collection. A link or a card held over a closed tab opens it (a spring-loaded
+ * tab), so the drag can go on to a card there.
  */
 export class TabBarView {
+  /** How long a link or a card rests over a closed tab before the tab opens. */
+  static readonly SPRING_MS = 600;
+
+  /** The pending spring: the collection it opens and its timer; undefined when none runs. */
+  private spring: { readonly collectionId: string; readonly timer: number } | undefined = undefined;
+
   /**
    * Creates the view.
    * @param state the page state
@@ -193,16 +200,50 @@ export class TabBarView {
       item.classList.remove("dragging");
     });
     item.addEventListener("dragover", (event) => {
+      this.holdSpring(event, item, tab);
       TabBarView.onDragOver(event, item);
     });
     item.addEventListener("dragleave", (event) => {
       if (!item.contains(event.relatedTarget as Node | null)) {
-        item.classList.remove("over", "insert-before", "insert-after");
+        item.classList.remove("over", "insert-before", "insert-after", "opening");
+        this.cancelSpring();
       }
     });
     item.addEventListener("drop", (event) => {
+      this.cancelSpring();
       this.onDrop(event, item, tab, index);
     });
+  }
+
+  /**
+   * Starts the spring of a closed tab when a link or a card comes over it. Later dragover events
+   * over the same tab keep the running timer.
+   * @param event the dragover event
+   * @param item the tab element
+   * @param tab its model
+   */
+  private holdSpring(event: DragEvent, item: HTMLElement, tab: TabModel): void {
+    const kind = DragKinds.kindOf(event.dataTransfer);
+    const springs = kind === "link" || kind === "card";
+    if (!springs || tab.open || this.spring?.collectionId === tab.id) {
+      return;
+    }
+    this.cancelSpring();
+    item.classList.add("opening");
+    const timer = window.setTimeout(() => {
+      this.spring = undefined;
+      this.actions.openCollection(tab.id);
+    }, TabBarView.SPRING_MS);
+    this.spring = { collectionId: tab.id, timer };
+  }
+
+  /** Stops a pending spring. */
+  private cancelSpring(): void {
+    if (this.spring === undefined) {
+      return;
+    }
+    window.clearTimeout(this.spring.timer);
+    this.spring = undefined;
   }
 
   /**

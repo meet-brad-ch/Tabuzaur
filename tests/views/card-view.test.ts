@@ -122,7 +122,7 @@ describe("CardView", () => {
   it("takes a dropped card before itself and a dropped link at its end", () => {
     const section = view.build(card(state, "id-2"), 0);
     DragEvents.fire(section, "drop", DragKinds.CARD, "id-1");
-    expect(actions.last()).toEqual({ name: "reorderCard", args: ["id-1", 1] });
+    expect(actions.last()).toEqual({ name: "placeCard", args: ["id-1", "main", 1] });
     const drag = { link: pageA };
     DragEvents.fire(section, "drop", DragKinds.LINK, JSON.stringify(drag));
     expect(actions.last()).toEqual({ name: "dropLink", args: ["id-2", drag, undefined] });

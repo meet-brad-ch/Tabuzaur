@@ -100,6 +100,16 @@ describe("Library cards", () => {
     expect(() => library.reorderCard("id-1", 3)).toThrow("no place for a card at index 3");
   });
 
+  it("places a card in its own collection or at a place in another one", () => {
+    const library = twoCollections().createCard("id-3", "Third", clock, { next: () => "id-9" });
+    const before = library.placeCard("id-1", "id-3", 0);
+    expect(before.collection("id-3").cards.map((c) => c.name)).toEqual(["First", "Third"]);
+    expect(before.collection("main").cards.map((c) => c.name)).toEqual(["Second"]);
+    expect(library.placeCard("id-1", "id-3", 1).collection("id-3").cards.map((c) => c.name)).toEqual(["Third", "First"]);
+    expect(library.placeCard("id-2", "main", 0).collection("main").cards.map((c) => c.name)).toEqual(["Second", "First"]);
+    expect(() => library.placeCard("id-1", "id-3", 5)).toThrow("no place for a card at index 5");
+  });
+
   it("moves a card to the end of another collection, keeping its links and color", () => {
     const library = twoCollections();
     const moved = library.moveCard("id-2", "id-3");

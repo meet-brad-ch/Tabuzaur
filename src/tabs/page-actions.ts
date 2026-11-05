@@ -46,8 +46,8 @@ export interface PageActions {
   removeLink(source: LinkSource): void;
   /** Deletes a card with its links. */
   deleteCard(cardId: string): void;
-  /** Moves a card to a place among the cards. */
-  reorderCard(cardId: string, place: number): void;
+  /** Moves a card to a place among the cards of a collection, its own or another one. */
+  placeCard(cardId: string, collectionId: string, place: number): void;
   /** Puts a dragged link into a card, at a place or at the end. */
   dropLink(cardId: string, drag: LinkDrag, to: number | undefined): void;
   /** Moves a card to the end of another collection. */

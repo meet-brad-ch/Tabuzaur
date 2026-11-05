@@ -51,7 +51,7 @@ export class RecordingActions implements PageActions {
   cancelEditLink(): void { this.record("cancelEditLink"); }
   removeLink(source: LinkSource): void { this.record("removeLink", source); }
   deleteCard(cardId: string): void { this.record("deleteCard", cardId); }
-  reorderCard(cardId: string, place: number): void { this.record("reorderCard", cardId, place); }
+  placeCard(cardId: string, collectionId: string, place: number): void { this.record("placeCard", cardId, collectionId, place); }
   dropLink(cardId: string, drag: LinkDrag, to: number | undefined): void { this.record("dropLink", cardId, drag, to); }
   moveCard(cardId: string, collectionId: string): void { this.record("moveCard", cardId, collectionId); }
   openCollection(collectionId: string): void { this.record("openCollection", collectionId); }

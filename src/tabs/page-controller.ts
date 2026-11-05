@@ -199,8 +199,8 @@ export class PageController implements PageActions {
   }
 
   /** @inheritdoc */
-  reorderCard(cardId: string, place: number): void {
-    this.run(() => this.change(this.state.library.reorderCard(cardId, place)), "all");
+  placeCard(cardId: string, collectionId: string, place: number): void {
+    this.run(() => this.change(this.state.library.placeCard(cardId, collectionId, place)), "all");
   }
 
   /** @inheritdoc */
@@ -219,8 +219,7 @@ export class PageController implements PageActions {
   openCollection(collectionId: string): void {
     this.closeEditors();
     this.state.settings = { ...this.state.settings, openCollectionId: collectionId };
-    this.state.cardsToTop = true;
-    this.renderer.renderAll();
+    this.renderer.renderCollection();
     this.run(() => this.services.settings.save(this.state.settings), "none");
   }
 

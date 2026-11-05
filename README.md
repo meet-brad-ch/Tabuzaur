@@ -63,7 +63,8 @@ To update: unzip the new release over the same folder, then click the reload ico
 - **Arrange.** Drag a link up or down, or onto another card. Drag a card by its colored band to
   another place, or onto a tab to move it to that collection. A green line shows where the drop
   lands. To reach a card lower on the page, hold the drag near the top or the bottom edge of the
-  cards. The page scrolls.
+  cards. The page scrolls. To reach a card in another collection, hold the drag on its tab for a
+  moment. The tab opens.
 - **Edit.** Rest the pointer on a link and click the pen to change its title or address. The pen in
   a band renames the card. The cross removes a link. The trash icon deletes a card after a question.
 - **Find.** Type in the search field. The open collection shows only the cards with a match, and
