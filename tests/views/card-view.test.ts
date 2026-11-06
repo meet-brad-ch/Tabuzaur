@@ -99,7 +99,7 @@ describe("CardView", () => {
   it("follows the link on a row click but not on its buttons", () => {
     const row = view.build(card(state, "id-1"), 0).querySelector<HTMLElement>("li.page");
     row?.click();
-    expect(actions.last()).toEqual({ name: "openLink", args: [pageA.url] });
+    expect(actions.last()).toEqual({ name: "openLink", args: [pageA] });
     row?.querySelector<HTMLButtonElement>("button.remove")?.click();
     expect(actions.names()).toEqual(["openLink", "removeLink"]);
     expect(actions.last().args).toEqual([{ cardId: "id-1", index: 0 }]);
@@ -116,7 +116,24 @@ describe("CardView", () => {
     expect([title.value, url.value]).toEqual(["Docs", pageB.url]);
     title.value = "Reference";
     DragEvents.key(url, "Enter");
-    expect(actions.last()).toEqual({ name: "editLink", args: [{ cardId: "id-1", index: 1 }, "Reference", pageB.url] });
+    expect(actions.last()).toEqual({ name: "editLink", args: [{ cardId: "id-1", index: 1 }, "Reference", pageB.url, true] });
+  });
+
+  it("shows the reuse box in the editor and marks a link that opens only its own tab", () => {
+    state.editingLink = { cardId: "id-1", index: 1 };
+    const section = view.build(card(state, "id-1"), 0);
+    const reuse = section.querySelector<HTMLInputElement>("input.reuse");
+    if (reuse === null) {
+      throw new Error("no reuse box");
+    }
+    expect(reuse.checked).toBe(true);
+    reuse.checked = false;
+    DragEvents.key(reuse, "Enter");
+    expect(actions.last().args[3]).toBe(false);
+    expect(section.querySelector(".own")).toBeNull();
+    state.editingLink = undefined;
+    const own = { ...card(state, "id-1"), links: [{ ...pageA, reuseSite: false as const }] };
+    expect(view.build(own, 0).querySelector(".host .own")?.textContent).toBe("own tab");
   });
 
   it("takes a dropped card before itself and a dropped link at its end", () => {

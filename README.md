@@ -58,8 +58,12 @@ To update: unzip the new release over the same folder, then click the reload ico
   adds the card to the open collection and gives it its own color. The card keeps that color.
 - **Add a link.** Drag a tab from the panel onto a card. The tab stays open. Tabuzaur refuses a link
   that is already in that card, with a notice.
-- **Open a link.** Click the link row. Tabuzaur jumps to the open tab with that address, or opens
-  the page in a new tab.
+- **Open a link.** Click the link row. Tabuzaur jumps to the open tab with that address. When only
+  another page of the same site is open, it jumps to the tab you used last on that site and leaves
+  its page as it is. Otherwise it opens the page in a new tab.
+- **One tab per address.** Some sites show a different account at each address, for example Gmail.
+  For such a link, click the pen and clear **Reuse a tab on the same site**. A click then jumps only
+  to a tab with exactly that address. The row shows "own tab".
 - **Arrange.** Drag a link up or down, or onto another card. Drag a card by its colored band to
   another place, or onto a tab to move it to that collection. A green line shows where the drop
   lands. To reach a card lower on the page, hold the drag near the top or the bottom edge of the
@@ -137,7 +141,9 @@ gate, zips `dist/` and publishes the zip with its SHA-256 as a GitHub Release.
   the Alt+T command, the first-install hook and the tab events for the one-tab rule and the
   new-tab option. It keeps no state and reads the settings on every event.
 - Permissions are `tabs` and `storage`. All data lives in `chrome.storage.local`.
-- A link is a saved page. A card groups links and has a name and a color. A collection groups
+- A link is a saved page. It may carry `reuseSite: false`: then a click looks only for a tab with
+  exactly its address, not for a tab on the same scheme, host and port. Only false is stored.
+- A card groups links and has a name and a color. A collection groups
   cards, has a name and a color, and is a tab of the page. A file from 0.9.0 has no tab colors:
   each collection gets the color of its place. The stored document (schema 2) holds collections of cards of
   links. A card id is unique in the whole document.

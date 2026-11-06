@@ -42,7 +42,7 @@ export class LinkRowView {
     row.addEventListener("click", (event) => {
       const onControl = (event.target as Element).closest("button, form, input") !== null;
       if (!onControl) {
-        this.actions.openLink(page.url);
+        this.actions.openLink(page);
       }
     });
     return row;
@@ -133,6 +133,12 @@ export class LinkRowView {
     });
     const host = Dom.el("span", "host");
     host.replaceChildren(...Dom.marked(UrlText.hostname(page.url), this.state.query));
+    if (page.reuseSite === false) {
+      const own = Dom.el("span", "own");
+      own.textContent = "own tab";
+      own.title = "Opens only a tab with exactly this address, not another tab on the same site";
+      host.append(own);
+    }
     body.append(link, host);
     return body;
   }
@@ -166,7 +172,7 @@ export class LinkRowView {
   }
 
   /**
-   * The editor: title and address; Enter or leaving saves, Escape cancels.
+   * The editor: title, address and the reuse box; Enter or leaving saves, Escape cancels.
    * @param page the link
    * @param source its card and place
    * @returns the form
@@ -180,10 +186,15 @@ export class LinkRowView {
     url.value = page.url;
     url.placeholder = "https://";
     url.spellcheck = false;
-    form.append(title, url);
+    const reuse = Dom.input("checkbox", "reuse");
+    reuse.checked = page.reuseSite !== false;
+    const label = Dom.el("label", "reuse");
+    label.append(reuse, "Reuse a tab on the same site");
+    label.title = "On: a click also takes an open tab on the same site. Off: only a tab with exactly this address.";
+    form.append(title, url, label);
     InlineEditor.attachForm(form, {
       save: () => {
-        this.actions.editLink(source, title.value, url.value);
+        this.actions.editLink(source, title.value, url.value, reuse.checked);
       },
       cancel: () => {
         this.actions.cancelEditLink();

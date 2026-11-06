@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { OpenTab } from "../src/lib/tabs.ts";
 import { OpenTabs } from "../src/lib/tabs.ts";
 
-const first: OpenTab = { tabId: 1, windowId: 10, active: false, title: "A", url: "https://a.example/" };
-const second: OpenTab = { tabId: 2, windowId: 20, active: true, title: "B", url: "https://b.example/x?y=1" };
-const again: OpenTab = { tabId: 3, windowId: 20, active: false, title: "A again", url: "https://a.example/" };
+const first: OpenTab = { tabId: 1, windowId: 10, active: false, lastAccessed: 0, title: "A", url: "https://a.example/" };
+const second: OpenTab = { tabId: 2, windowId: 20, active: true, lastAccessed: 0, title: "B", url: "https://b.example/x?y=1" };
+const again: OpenTab = { tabId: 3, windowId: 20, active: false, lastAccessed: 0, title: "A again", url: "https://a.example/" };
 
 describe("OpenTabs.find", () => {
   it("returns the first tab with exactly that url", () => {
@@ -19,10 +19,36 @@ describe("OpenTabs.find", () => {
   });
 });
 
+describe("OpenTabs.forLink", () => {
+  const mailOld: OpenTab = { tabId: 11, windowId: 10, active: false, lastAccessed: 100, title: "Mail", url: "https://mail.example/u/0/#inbox" };
+  const mailNew: OpenTab = { tabId: 12, windowId: 20, active: false, lastAccessed: 200, title: "Mail", url: "https://mail.example/u/1/#inbox" };
+  const otherPort: OpenTab = { tabId: 13, windowId: 10, active: false, lastAccessed: 300, title: "Mail", url: "https://mail.example:8443/" };
+  const tabs = [first, mailOld, mailNew, otherPort];
+
+  it("takes the tab with exactly the address first", () => {
+    expect(OpenTabs.forLink(tabs, { title: "M", url: "https://mail.example/u/0/#inbox" })).toBe(mailOld);
+    expect(OpenTabs.forLink(tabs, { title: "M", url: "https://mail.example/u/0/#inbox", reuseSite: false })).toBe(mailOld);
+  });
+
+  it("else takes the last used tab on the same scheme, host and port", () => {
+    expect(OpenTabs.forLink(tabs, { title: "M", url: "https://mail.example/settings" })).toBe(mailNew);
+    expect(OpenTabs.forLink(tabs, { title: "M", url: "http://mail.example/settings" })).toBeUndefined();
+  });
+
+  it("takes no other tab on the site when the link opens only its own tab", () => {
+    expect(OpenTabs.forLink(tabs, { title: "M", url: "https://mail.example/settings", reuseSite: false })).toBeUndefined();
+  });
+
+  it("does not reuse by site for an address that is not a web address", () => {
+    const files: OpenTab = { ...first, tabId: 14, url: "file:///C:/a.txt" };
+    expect(OpenTabs.forLink([files], { title: "F", url: "file:///C:/b.txt" })).toBeUndefined();
+  });
+});
+
 const PAGE = "chrome-extension://abc/tabs.html";
-const home10: OpenTab = { tabId: 5, windowId: 10, active: false, title: "Tabuzaur", url: PAGE };
-const home10b: OpenTab = { tabId: 6, windowId: 10, active: true, title: "Tabuzaur", url: `${PAGE}#x` };
-const home20: OpenTab = { tabId: 7, windowId: 20, active: false, title: "Tabuzaur", url: `${PAGE}?q=1` };
+const home10: OpenTab = { tabId: 5, windowId: 10, active: false, lastAccessed: 0, title: "Tabuzaur", url: PAGE };
+const home10b: OpenTab = { tabId: 6, windowId: 10, active: true, lastAccessed: 0, title: "Tabuzaur", url: `${PAGE}#x` };
+const home20: OpenTab = { tabId: 7, windowId: 20, active: false, lastAccessed: 0, title: "Tabuzaur", url: `${PAGE}?q=1` };
 
 describe("OpenTabs.homeTab", () => {
   it("is the first Tabuzaur tab of that window, fragment or query ignored", () => {

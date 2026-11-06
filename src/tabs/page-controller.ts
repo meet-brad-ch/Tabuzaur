@@ -1,7 +1,7 @@
 import { BackupFile } from "../lib/backup.ts";
 import { ImportPlan } from "../lib/import-plan.ts";
 import { Library } from "../lib/library.ts";
-import type { Clock, IdSource } from "../lib/model.ts";
+import type { Clock, IdSource, Link } from "../lib/model.ts";
 import type { CardWidth, Settings, SettingsStore } from "../lib/settings.ts";
 import type { Persistence } from "../lib/storage.ts";
 import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
@@ -146,8 +146,8 @@ export class PageController implements PageActions {
   }
 
   /** @inheritdoc */
-  openLink(url: string): void {
-    this.run(() => this.services.browser.jumpTo(url), "none");
+  openLink(link: Link): void {
+    this.run(() => this.services.browser.follow(link), "none");
   }
 
   /** @inheritdoc */
@@ -177,9 +177,9 @@ export class PageController implements PageActions {
   }
 
   /** @inheritdoc */
-  editLink(source: LinkSource, title: string, url: string): void {
+  editLink(source: LinkSource, title: string, url: string, reuseSite: boolean): void {
     this.state.editingLink = undefined;
-    this.run(() => this.change(this.state.library.editLink(source.cardId, source.index, title, url)), "all");
+    this.run(() => this.change(this.state.library.editLink(source.cardId, source.index, title, url, reuseSite)), "all");
   }
 
   /** @inheritdoc */

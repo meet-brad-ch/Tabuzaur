@@ -1,3 +1,4 @@
+import type { Link } from "../../src/lib/model.ts";
 import type { CardWidth } from "../../src/lib/settings.ts";
 import type { OpenTab } from "../../src/lib/tabs.ts";
 import type { LinkDrag, LinkSource } from "../../src/tabs/drag.ts";
@@ -42,12 +43,12 @@ export class RecordingActions implements PageActions {
   openHelp(): void { this.record("openHelp"); }
   openShortcuts(): void { this.record("openShortcuts"); }
   activateTab(tab: OpenTab): void { this.record("activateTab", tab); }
-  openLink(url: string): void { this.record("openLink", url); }
+  openLink(link: Link): void { this.record("openLink", link); }
   startRename(cardId: string): void { this.record("startRename", cardId); }
   renameCard(cardId: string, name: string): void { this.record("renameCard", cardId, name); }
   cancelRename(): void { this.record("cancelRename"); }
   startEditLink(source: LinkSource): void { this.record("startEditLink", source); }
-  editLink(source: LinkSource, title: string, url: string): void { this.record("editLink", source, title, url); }
+  editLink(source: LinkSource, title: string, url: string, reuseSite: boolean): void { this.record("editLink", source, title, url, reuseSite); }
   cancelEditLink(): void { this.record("cancelEditLink"); }
   removeLink(source: LinkSource): void { this.record("removeLink", source); }
   deleteCard(cardId: string): void { this.record("deleteCard", cardId); }

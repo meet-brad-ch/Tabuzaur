@@ -1,4 +1,5 @@
 import type { Link } from "./model.ts";
+import { UrlText } from "./urls.ts";
 
 /** A tab that is open right now. */
 export interface OpenTab extends Link {
@@ -6,6 +7,8 @@ export interface OpenTab extends Link {
   readonly windowId: number;
   /** The active tab of its window. */
   readonly active: boolean;
+  /** When the tab was last active, in milliseconds since the epoch. */
+  readonly lastAccessed: number;
 }
 
 /** Rules over the list of open tabs: finding a page's tab, Chrome's new-tab page, Tabuzaur's own tabs. */
@@ -18,6 +21,44 @@ export class OpenTabs {
    */
   static find(tabs: readonly OpenTab[], url: string): OpenTab | undefined {
     return tabs.find((t) => t.url === url);
+  }
+
+  /**
+   * The open tab a click on a saved link goes to: the tab with exactly its address; else, when the
+   * link may reuse its site, the last used tab on the same site.
+   * @param tabs the open tabs
+   * @param link the saved link
+   * @returns that tab, or undefined when a new tab must open
+   * @throws Error when an address does not parse
+   */
+  static forLink(tabs: readonly OpenTab[], link: Link): OpenTab | undefined {
+    const exact = OpenTabs.find(tabs, link.url);
+    if (exact !== undefined || link.reuseSite === false) {
+      return exact;
+    }
+    return OpenTabs.lastUsedOnSite(tabs, link.url);
+  }
+
+  /**
+   * The last used tab on the site of an address.
+   * @param tabs the open tabs
+   * @param url the address
+   * @returns that tab, or undefined when no tab shows the site or the address is not a web address
+   * @throws Error when an address does not parse
+   */
+  private static lastUsedOnSite(tabs: readonly OpenTab[], url: string): OpenTab | undefined {
+    const site = UrlText.site(url);
+    if (site === undefined) {
+      return undefined;
+    }
+    let best: OpenTab | undefined = undefined;
+    for (const tab of tabs) {
+      const later = best === undefined || tab.lastAccessed > best.lastAccessed;
+      if (later && UrlText.site(tab.url) === site) {
+        best = tab;
+      }
+    }
+    return best;
   }
 
   /**
@@ -108,6 +149,8 @@ export interface TabBrowser {
   openInNewTab(url: string): Promise<void>;
   /** Activates the open tab showing the URL, or opens the URL in a new tab. */
   jumpTo(url: string): Promise<void>;
+  /** Activates the open tab a saved link goes to (see OpenTabs.forLink), or opens it in a new tab. */
+  follow(link: Link): Promise<void>;
   /** Calls the listener after any tab is created, removed, moved, updated or activated. */
   onChange(listener: () => void): void;
   /** The key Chrome assigned to the toolbar action, e.g. "Alt+T"; empty when none is assigned. */
@@ -128,6 +171,7 @@ export class ChromeTabBrowser implements TabBrowser {
         tabId: tab.id,
         windowId: tab.windowId,
         active: tab.active,
+        lastAccessed: tab.lastAccessed,
         title: tab.title === undefined || tab.title === "" ? tab.url : tab.title,
         url: tab.url,
       };
@@ -162,6 +206,17 @@ export class ChromeTabBrowser implements TabBrowser {
     const open = OpenTabs.find(tabs, url);
     if (open === undefined) {
       await this.openInNewTab(url);
+    } else {
+      await this.activate(open);
+    }
+  }
+
+  /** @inheritdoc */
+  async follow(link: Link): Promise<void> {
+    const tabs = await this.openTabs();
+    const open = OpenTabs.forLink(tabs, link);
+    if (open === undefined) {
+      await this.openInNewTab(link.url);
     } else {
       await this.activate(open);
     }

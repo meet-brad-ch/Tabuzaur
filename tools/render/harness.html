@@ -54,11 +54,12 @@
         [1, false, "Inter font", "https://rsms.me/inter/"],
         [2, true, "Recipe: pastel de nata", "https://food.example.com/recipes/pastel-de-nata"],
         [2, false, "Hardware store opening hours", "https://store.example.com/hours"],
-      ].map(([windowId, active, title, url], i) => ({ id: 100 + i, windowId, active, title, url }));
+      ].map(([windowId, active, title, url], i) => ({ id: 100 + i, windowId, active, lastAccessed: 1000 + i, title, url }));
       const store = {
         tabuzaur: state === "v1" ? oldDocument : library,
         "tabuzaur-settings": { theme: state === "dark" ? "dark" : "light", cardWidth: "medium", panelPinned: state === "pinned", newTabPage: false, openCollectionId: "main" },
       };
+      window.tabCalls = [];
       window.chrome = {
         runtime: { getURL: (p) => "chrome-extension://tabuzaur/" + p, getManifest: () => ({ version: "0.0.0-harness" }) },
         storage: {
@@ -66,7 +67,10 @@
           onChanged: noEvent,
         },
         tabs: {
-          query: async () => (state === "empty" ? [] : openTabs), update: async () => {}, create: async () => {},
+          // the page check reads tabCalls to see which tab a click on a link reached
+          query: async () => (state === "empty" ? [] : openTabs),
+          update: async (id) => { tabCalls.push(`update ${String(id)}`); },
+          create: async ({ url }) => { tabCalls.push(`create ${url}`); },
           onCreated: noEvent, onRemoved: noEvent, onUpdated: noEvent, onMoved: noEvent, onActivated: noEvent, onAttached: noEvent, onDetached: noEvent,
         },
         windows: { getCurrent: async () => ({ id: 1 }), update: async () => {} },

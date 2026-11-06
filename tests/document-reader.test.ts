@@ -45,6 +45,19 @@ describe("DocumentReader, schema 2", () => {
     expect("favIconUrl" in (data?.collections[0]?.cards[0]?.links[0] ?? {})).toBe(false);
   });
 
+  it("keeps reuseSite only when it is false, and fails on a value that is not a boolean", () => {
+    const withFlag = (reuseSite: unknown) => ({ schemaVersion: 2, collections: [{ id: "main", name: "Main", hue: 0, cards: [
+      { id: "a", name: "Work", createdAt: "x", hue: 0, links: [{ ...pageA, reuseSite }] },
+    ] }] });
+    const linkOf = (raw: unknown) => {
+      const content = DocumentReader.read(raw);
+      return content.kind === "library" ? content.data.collections[0]?.cards[0]?.links[0] : undefined;
+    };
+    expect(linkOf(withFlag(false))).toEqual({ ...pageA, reuseSite: false });
+    expect(linkOf(withFlag(true))).toEqual(pageA);
+    expect(() => DocumentReader.read(withFlag("no"))).toThrow("collections[0].cards[0].links[0].reuseSite is not a boolean");
+  });
+
   it("gives a collection of 0.9.0 without a hue the hue of its place", () => {
     const old = { schemaVersion: 2, collections: [{ id: "a", name: "A", cards: [] }, { id: "b", name: "B", cards: [] }] };
     const content = DocumentReader.read(old);

@@ -228,6 +228,24 @@ async function springOpen(page, harness) {
   Check.equal("the link is in the card", await page.value(`store.tabuzaur.collections[1].cards[1].links.map((l) => l.title).at(-1)`), "Sprint board");
 }
 
+/** A click on a link takes an open tab on its site; with "Reuse a tab on the same site" off it opens a new tab. */
+async function reuseSite(page, harness) {
+  await page.open(`${harness}#page`);
+  const notes = `[...document.querySelectorAll("main li.page")].find((r) => r.textContent.includes("Design review notes"))`;
+  await page.value(`(() => { tabCalls.length = 0; ${notes}.click(); })()`);
+  await Check.sleep(300);
+  Check.equal("a link goes to the open tab on its site", await page.value(`tabCalls`), ["update 102"]);
+  await page.value(`${notes}.querySelector("button.edit").click()`);
+  await Check.sleep(300);
+  await page.value(`(() => { const box = document.querySelector("main input.reuse"); box.checked = false; box.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })); })()`);
+  await Check.sleep(400);
+  Check.equal("the switch is saved with the link", await page.value(`store.tabuzaur.collections[0].cards[0].links[1].reuseSite`), false);
+  Check.equal("the row says it opens its own tab", await page.value(`${notes}.querySelector(".host .own")?.textContent`), "own tab");
+  await page.value(`(() => { tabCalls.length = 0; ${notes}.click(); })()`);
+  await Check.sleep(300);
+  Check.equal("then a click opens a new tab", await page.value(`tabCalls`), ["create https://docs.example-team.com/d/review-notes"]);
+}
+
 async function main() {
   if (!existsSync(join(dist, "tabs.js"))) {
     throw new Error("dist/tabs.js is missing: run `npm run build` first");
@@ -258,6 +276,7 @@ async function main() {
     await searchCounts(page);
     await reorderAndDelete(page);
     await springOpen(page, harness);
+    await reuseSite(page, harness);
     socket.close();
   } finally {
     chrome.kill();

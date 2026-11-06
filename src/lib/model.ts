@@ -4,6 +4,12 @@ export interface Link {
   readonly url: string;
   /** The favicon address Chrome reported for the page, if any. */
   readonly favIconUrl?: string;
+  /**
+   * false: a click finds only a tab with exactly this address (for sites with one account per
+   * address, like Gmail). Absent: a click also takes an open tab on the same site. Only false is
+   * stored.
+   */
+  readonly reuseSite?: false;
 }
 
 /** A colored box of links, in the order they were added or arranged. May be empty. */

@@ -36,15 +36,23 @@ describe("CardLinks.remove", () => {
 
 describe("CardLinks.edit", () => {
   it("changes the title and the address, trimmed, and keeps an unchanged address", () => {
-    expect(CardLinks.edit(card, 1, "  Reference ", " https://ref.example/ ").links[1]).toEqual({ ...pageB, title: "Reference", url: "https://ref.example/" });
-    expect(CardLinks.edit(card, 0, "New", pageA.url).links[0]).toEqual({ title: "New", url: pageA.url });
+    expect(CardLinks.edit(card, 1, "  Reference ", " https://ref.example/ ", true).links[1]).toEqual({ ...pageB, title: "Reference", url: "https://ref.example/" });
+    expect(CardLinks.edit(card, 0, "New", pageA.url, true).links[0]).toEqual({ title: "New", url: pageA.url });
+  });
+
+  it("stores reuseSite only when it is off, and keeps the favicon", () => {
+    const withIcon = { ...card, links: [{ ...pageA, favIconUrl: "https://a.example/icon.png" }, pageB] };
+    const off = CardLinks.edit(withIcon, 0, "A", pageA.url, false).links[0];
+    expect(off).toEqual({ title: "A", url: pageA.url, favIconUrl: "https://a.example/icon.png", reuseSite: false });
+    const on = CardLinks.edit({ ...withIcon, links: [off ?? pageA, pageB] }, 0, "A", pageA.url, true).links[0];
+    expect(on).toEqual({ title: "A", url: pageA.url, favIconUrl: "https://a.example/icon.png" });
   });
 
   it("rejects an empty title, a bad address, an address of another link, or a missing link", () => {
-    expect(() => CardLinks.edit(card, 0, " ", pageA.url)).toThrow("a link needs a title");
-    expect(() => CardLinks.edit(card, 0, "T", "not a url")).toThrow("not a valid url: not a url");
-    expect(() => CardLinks.edit(card, 0, "T", pageB.url)).toThrow("already in Work");
-    expect(() => CardLinks.edit(card, 9, "T", pageA.url)).toThrow("card k has no link at index 9");
+    expect(() => CardLinks.edit(card, 0, " ", pageA.url, true)).toThrow("a link needs a title");
+    expect(() => CardLinks.edit(card, 0, "T", "not a url", true)).toThrow("not a valid url: not a url");
+    expect(() => CardLinks.edit(card, 0, "T", pageB.url, true)).toThrow("already in Work");
+    expect(() => CardLinks.edit(card, 9, "T", pageA.url, true)).toThrow("card k has no link at index 9");
   });
 });
 

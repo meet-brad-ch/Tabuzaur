@@ -140,11 +140,31 @@ export class DocumentReader {
    */
   private static link(raw: unknown, where: string): Link {
     const l = DocumentReader.record(raw, where);
-    const link: Link = { title: DocumentReader.text(l.title, `${where}.title`), url: DocumentReader.text(l.url, `${where}.url`) };
-    if (l.favIconUrl === undefined) {
+    let link: Link = { title: DocumentReader.text(l.title, `${where}.title`), url: DocumentReader.text(l.url, `${where}.url`) };
+    if (l.favIconUrl !== undefined) {
+      link = { ...link, favIconUrl: DocumentReader.text(l.favIconUrl, `${where}.favIconUrl`) };
+    }
+    if (DocumentReader.reuseSite(l.reuseSite, `${where}.reuseSite`)) {
       return link;
     }
-    return { ...link, favIconUrl: DocumentReader.text(l.favIconUrl, `${where}.favIconUrl`) };
+    return { ...link, reuseSite: false };
+  }
+
+  /**
+   * A link's reuseSite flag; absent means true.
+   * @param raw the stored value
+   * @param where its path for the error
+   * @returns whether a click may take a tab on the same site
+   * @throws Error "<where> is not a boolean"
+   */
+  private static reuseSite(raw: unknown, where: string): boolean {
+    if (raw === undefined) {
+      return true;
+    }
+    if (typeof raw !== "boolean") {
+      throw new Error(`${where} is not a boolean`);
+    }
+    return raw;
   }
 
   /**

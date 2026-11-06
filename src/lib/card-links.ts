@@ -34,10 +34,11 @@ export class CardLinks {
    * @param index the link's place, from 0
    * @param title the new title
    * @param url the new address
+   * @param reuseSite whether a click may take an open tab on the same site
    * @returns the card with the changed link
    * @throws Error for a missing link, an empty title, an address that does not parse, or one another link of the card has
    */
-  static edit(card: Card, index: number, title: string, url: string): Card {
+  static edit(card: Card, index: number, title: string, url: string, reuseSite: boolean): Card {
     CardLinks.at(card, index);
     const newTitle = title.trim();
     if (newTitle === "") {
@@ -47,8 +48,27 @@ export class CardLinks {
     if (card.links.some((l, i) => i !== index && l.url === newUrl)) {
       throw new Error(`already in ${card.name}`);
     }
-    const links = card.links.map((l, i) => (i === index ? { ...l, title: newTitle, url: newUrl } : l));
+    const links = card.links.map((l, i) => (i === index ? CardLinks.edited(l, newTitle, newUrl, reuseSite) : l));
     return { ...card, links };
+  }
+
+  /**
+   * A link with a new title, address and reuseSite flag; the favicon stays.
+   * @param link the link
+   * @param title the checked title
+   * @param url the checked address
+   * @param reuseSite whether a click may take a tab on the same site
+   * @returns the new link, with reuseSite stored only when false
+   */
+  private static edited(link: Link, title: string, url: string, reuseSite: boolean): Link {
+    let edited: Link = { title, url };
+    if (link.favIconUrl !== undefined) {
+      edited = { ...edited, favIconUrl: link.favIconUrl };
+    }
+    if (reuseSite) {
+      return edited;
+    }
+    return { ...edited, reuseSite: false };
   }
 
   /**

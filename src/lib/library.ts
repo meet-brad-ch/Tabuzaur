@@ -315,12 +315,13 @@ export class Library {
    * @param index the link's place, from 0
    * @param title the new title
    * @param url the new address
+   * @param reuseSite whether a click may take an open tab on the same site
    * @returns the library with the changed link
    * @throws Error from CardLinks.edit, or for an unknown card
    */
-  editLink(cardId: string, index: number, title: string, url: string): Library {
+  editLink(cardId: string, index: number, title: string, url: string, reuseSite: boolean): Library {
     const card = this.card(cardId);
-    return this.replaceCard(CardLinks.edit(card, index, title, url));
+    return this.replaceCard(CardLinks.edit(card, index, title, url, reuseSite));
   }
 
   /**

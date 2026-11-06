@@ -147,7 +147,7 @@ describe("Library links", () => {
   it("removes and edits a link", () => {
     const library = twoCollections();
     expect(library.removeLink("id-2", 0).card("id-2").links).toEqual([pageB]);
-    expect(library.editLink("id-2", 0, " T ", " https://t.example/ ").card("id-2").links[0]).toEqual({ title: "T", url: "https://t.example/" });
+    expect(library.editLink("id-2", 0, " T ", " https://t.example/ ", true).card("id-2").links[0]).toEqual({ title: "T", url: "https://t.example/" });
     expect(() => library.removeLink("id-2", 5)).toThrow("card id-2 has no link at index 5");
   });
 

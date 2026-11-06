@@ -1094,6 +1094,31 @@ button.remove:hover {
   color: var(--muted);
 }
 
+.page form.edit label.reuse {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.page form.edit input.reuse {
+  width: auto;
+  height: auto;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+/* a link that opens only a tab with exactly its address */
+.page .host .own {
+  margin-left: 6px;
+  padding: 0 5px;
+  border-radius: 6px;
+  background: var(--hover);
+  font-size: 10px;
+}
+
 .page.drop-before {
   box-shadow: 0 -2px 0 0 var(--accent);
 }

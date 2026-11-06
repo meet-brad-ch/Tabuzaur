@@ -10,7 +10,8 @@ Pillow). Run `npm run build` and then `npm run shots`.
 
 `check.mjs` drives the built page through the harness over the Chrome DevTools protocol and checks
 what the unit tests on happy-dom cannot: real drag events, the focus, the fake storage after each
-action, the upgrade of an old document, and the tab that opens when a drag rests on it. It prints one line per check and fails when one fails.
+action, the upgrade of an old document, the tab that opens when a drag rests on it, and the tab a click on a link
+reaches with and without reuse of its site. It prints one line per check and fails when one fails.
 Run `npm run build` and then `npm run check:page`.
 
 `showcase-backup.json` holds the same seeded library as a file you can import into a real

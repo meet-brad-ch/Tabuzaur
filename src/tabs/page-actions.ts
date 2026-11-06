@@ -1,3 +1,4 @@
+import type { Link } from "../lib/model.ts";
 import type { CardWidth } from "../lib/settings.ts";
 import type { OpenTab } from "../lib/tabs.ts";
 import type { LinkDrag, LinkSource } from "./drag.ts";
@@ -29,7 +30,7 @@ export interface PageActions {
   /** Brings an open tab and its window to the front. */
   activateTab(tab: OpenTab): void;
   /** Jumps to the tab showing the address, or opens it. */
-  openLink(url: string): void;
+  openLink(link: Link): void;
   /** Opens the name editor of a card. */
   startRename(cardId: string): void;
   /** Saves a card's new name. */
@@ -39,7 +40,7 @@ export interface PageActions {
   /** Opens the editor of a link. */
   startEditLink(source: LinkSource): void;
   /** Saves a link's title and address. */
-  editLink(source: LinkSource, title: string, url: string): void;
+  editLink(source: LinkSource, title: string, url: string, reuseSite: boolean): void;
   /** Closes the link editor without a change. */
   cancelEditLink(): void;
   /** Removes a link from its card. */

@@ -17,6 +17,18 @@ export class UrlText {
   }
 
   /**
+   * The site of a web address: its scheme, host and port.
+   * @param url an absolute URL
+   * @returns the origin, or undefined for an address that is not http or https
+   * @throws Error when the URL does not parse
+   */
+  static site(url: string): string | undefined {
+    const parsed = new URL(url);
+    const web = parsed.protocol === "http:" || parsed.protocol === "https:";
+    return web ? parsed.origin : undefined;
+  }
+
+  /**
    * The first character of the host, upper-cased: the favicon placeholder.
    * @param url an absolute URL
    * @returns one character
