@@ -118,7 +118,8 @@ Load `dist/` with **Load unpacked** to run a development build. After a rebuild,
 icon on the card.
 
 Releases are built by CI from a tag `v<version>`. The tag must equal the version in
-`public/manifest.json`, which must equal the version in `package.json`. The build job runs the
+`public/manifest.json`, which must equal the version in `package.json`. `CHANGELOG.md` must have a
+section `## <version>`: it becomes the top of the release text. The build job runs the
 gate, zips `dist/` and publishes the zip with its SHA-256 as a GitHub Release.
 
 ### Layout

@@ -14,5 +14,8 @@ action, the upgrade of an old document, the tab that opens when a drag rests on 
 reaches with and without reuse of its site. It prints one line per check and fails when one fails.
 Run `npm run build` and then `npm run check:page`.
 
+`changelog-section.mjs <version>` prints the section of one version from `CHANGELOG.md`, one line
+per bullet, and fails when it is missing or empty. CI puts it at the top of each release text.
+
 `showcase-backup.json` holds the same seeded library as a file you can import into a real
 Tabuzaur, for screenshots taken in Chrome.

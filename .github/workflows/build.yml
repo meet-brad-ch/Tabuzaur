@@ -52,6 +52,12 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "zip=Tabuzaur-v$version.zip" >> "$GITHUB_OUTPUT"
 
+      # Every release says what changed. A tag whose version has no section in CHANGELOG.md fails
+      # here, before anything is built.
+      - name: Changelog section
+        if: github.ref_type == 'tag'
+        run: node tools/changelog-section.mjs "${{ steps.version.outputs.version }}"
+
       - name: Install the pinned toolchain
         run: npm ci
 
@@ -109,6 +115,13 @@ jobs:
       VERSION: ${{ needs.build.outputs.version }}
       ARCHIVE: ${{ needs.build.outputs.zip }}
     steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: |
+            CHANGELOG.md
+            tools/changelog-section.mjs
+          sparse-checkout-cone-mode: false
+
       - name: Download the zip built above
         run: gh run download "$GITHUB_RUN_ID" --name "$ARCHIVE" --dir dist
 
@@ -117,6 +130,12 @@ jobs:
           test -f "dist/$ARCHIVE"
           sha=$(cut -d' ' -f1 dist/SHA256SUMS)
           {
+            echo "## What changed"
+            echo
+            node tools/changelog-section.mjs "$VERSION"
+            echo
+            echo "## Install"
+            echo
             echo "Tabuzaur $VERSION: tab collections for Chrome, stored locally only."
             echo
             echo "Install: unzip \`$ARCHIVE\`, then chrome://extensions > Developer mode > Load unpacked > the unzipped folder."
