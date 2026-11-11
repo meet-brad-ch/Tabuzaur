@@ -48,26 +48,29 @@ export class TabBarView {
     const state = this.state;
     const tabs = TabStrip.tabs(state.library, state.settings.openCollectionId, state.query);
     tabs.forEach((tab, index) => {
-      list.append(this.tab(tab, index));
+      list.append(this.tab(tab, index, tabs.length));
     });
     list.append(this.addItem());
     bar.replaceChildren(list);
   }
 
   /**
-   * One tab.
+   * One tab. It lies over the tab on its right (--z), and holds the hidden line that shows where a
+   * dragged tab lands.
    * @param tab its model
    * @param index its place in the bar, from 0
+   * @param count the number of tabs
    * @returns the list item
    */
-  private tab(tab: TabModel, index: number): HTMLElement {
+  private tab(tab: TabModel, index: number, count: number): HTMLElement {
     const item = Dom.el("li", this.tabClasses(tab));
     item.setAttribute("role", "tab");
     item.setAttribute("aria-selected", String(tab.open));
     item.tabIndex = 0;
     item.dataset.id = tab.id;
+    item.style.setProperty("--z", String(count - index));
     const renaming = this.state.renamingCollection === tab.id;
-    item.append(...this.label(tab, renaming));
+    item.append(Dom.el("i", "slot"), ...this.label(tab, renaming));
     if (tab.open && !renaming) {
       item.append(this.renameButton(tab), this.deleteButton(tab));
     }

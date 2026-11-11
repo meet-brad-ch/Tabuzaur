@@ -581,19 +581,29 @@ nav.tabbar {
   padding-left: 6px;
 }
 
-/* Folder tabs: each tab is a trapezoid drawn by its ::before (a box tilted back from its bottom
-   edge), in its collection's color (hue-N). Neighbours overlap. A later tab lies over an earlier
-   one, and the open tab lies over all of them, in the strong shade, and covers the bar's line so
-   it joins the cards below. */
+/* Folder tabs, like the classic browser tabs. Each tab is a trapezoid with one fixed slope (8px
+   over the 36px height) and top corners rounded with a 10px radius, drawn in two layers: ::before
+   is the outline, ::after the fill in its collection's color (hue-N), 1px inside. Neighbours
+   overlap by the slope, so their sides cross halfway up. A tab lies over the tab on its right (--z,
+   set by the view), and the open tab lies over all of them, in the strong shade, and covers the
+   bar's line so it joins the cards below. The corner points follow the 10px arc. */
 .ctab {
+  --slope: 8px;
+  --tab-shape: polygon(0 100%,
+    6.3px 7.8px, 7px 5.7px, 8.2px 3.8px, 9.8px 2.2px, 11.7px 1px, 13.8px 0.3px, 16px 0,
+    calc(100% - 16px) 0, calc(100% - 13.8px) 0.3px, calc(100% - 11.7px) 1px, calc(100% - 9.8px) 2.2px,
+    calc(100% - 8.2px) 3.8px, calc(100% - 7px) 5.7px, calc(100% - 6.3px) 7.8px,
+    100% 100%);
+  --tab-outline: color-mix(in srgb, var(--muted) 45%, transparent);
+  --tab-fill: color-mix(in srgb, var(--card-band) 55%, var(--card-bg));
   position: relative;
-  z-index: 0;
+  z-index: var(--z, 0);
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 36px;
-  margin-left: -14px;
-  padding: 0 22px;
+  margin-left: calc(-1 * var(--slope));
+  padding: 0 calc(var(--slope) + 10px);
   color: var(--muted);
   font-weight: 600;
   white-space: nowrap;
@@ -605,40 +615,40 @@ nav.tabbar {
   margin-left: 0;
 }
 
-.ctab::before {
+.ctab::before,
+.ctab::after {
   content: "";
   position: absolute;
-  inset: 0;
   z-index: -1;
-  border: 1px solid var(--line);
-  border-bottom: none;
-  border-radius: 9px 9px 0 0;
-  background: color-mix(in srgb, var(--card-band) 55%, var(--card-bg));
-  box-shadow: 1px 0 3px rgb(15 40 61 / 12%);
-  transform: perspective(48px) rotateX(10deg);
-  transform-origin: bottom;
+  clip-path: var(--tab-shape);
+}
+
+.ctab::before {
+  inset: 0;
+  background: var(--tab-outline);
+}
+
+.ctab::after {
+  inset: 1px 1px 0;
+  background: var(--tab-fill);
 }
 
 .ctab:hover {
-  z-index: 1;
+  --tab-outline: var(--muted);
   color: var(--fg);
 }
 
-.ctab:hover::before {
-  border-color: var(--muted);
-}
-
 .ctab.open {
-  z-index: 2;
+  --tab-fill: var(--card-band);
+  z-index: 100;
   margin-bottom: -1px;
   height: 37px;
   color: var(--fg);
   cursor: default;
 }
 
-.ctab.open::before {
-  background: var(--card-band);
-  box-shadow: inset 0 3px 0 var(--accent), 0 -1px 6px rgb(15 40 61 / 18%);
+.ctab.open::after {
+  box-shadow: inset 0 3px 0 var(--accent);
 }
 
 .ctab:focus-visible {
@@ -690,44 +700,38 @@ nav.tabbar {
 
 /* a card held over a tab: the tab lifts */
 .ctab.over {
-  z-index: 3;
+  --tab-outline: var(--accent);
+  --tab-fill: color-mix(in srgb, var(--accent) 22%, var(--panel));
+  z-index: 101;
   color: var(--accent);
-}
-
-.ctab.over::before {
-  border: 2px dashed var(--accent);
-  border-bottom: none;
-  background: var(--accent-soft);
 }
 
 /* a link or a card resting on a closed tab: the tab opens after a moment */
 .ctab.opening {
-  z-index: 1;
+  --tab-outline: var(--accent);
   color: var(--fg);
 }
 
-.ctab.opening::before {
-  border-color: var(--accent);
-}
-
-/* a tab held over a tab: a green line shows where it lands */
-.ctab.insert-before::after,
-.ctab.insert-after::after {
-  content: "";
+/* a tab held over a tab: a green line inside the tab shows where it lands, clear of the slope that
+   the tab on its left covers */
+.ctab .slot {
+  display: none;
   position: absolute;
-  top: 4px;
+  top: 6px;
   bottom: 4px;
   width: 3px;
   border-radius: 2px;
   background: var(--accent);
 }
 
-.ctab.insert-before::after {
-  left: 4px;
+.ctab.insert-before .slot {
+  display: block;
+  left: calc(var(--slope) + 1px);
 }
 
-.ctab.insert-after::after {
-  right: 4px;
+.ctab.insert-after .slot {
+  display: block;
+  right: calc(var(--slope) + 1px);
 }
 
 /* the tab a card was just dropped on */
