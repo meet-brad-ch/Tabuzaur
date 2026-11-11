@@ -3,6 +3,13 @@
 What changed in each release. Each release on GitHub shows its section. Before 0.9.0, a card was
 called a collection.
 
+## 0.9.4 (2026-11-11)
+
+- Collection tabs have one slope and soft top corners. Each tab lies over the tab on its right, so
+  every tab shows its whole outline. The open tab lies over all of them.
+- Each tab has an outline, also in the dark theme.
+- When you drag a tab along the bar, the green line that shows where it lands stays visible.
+
 ## 0.9.3 (2026-11-06)
 
 - A click on a saved link goes to the tab with exactly its address. When no such tab is open, it
