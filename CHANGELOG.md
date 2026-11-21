@@ -3,6 +3,15 @@
 What changed in each release. Each release on GitHub shows its section. Before 0.9.0, a card was
 called a collection.
 
+## 0.9.5 (2026-11-21)
+
+- Drag the site icon at the left of Chrome's address bar, or a link on any page, onto a card. The
+  link takes the title and the icon of the open tab with that address, else the link text, else
+  the address. Tabuzaur saves only web addresses (http and https) from outside the page.
+- A link dropped outside the cards no longer replaces the Tabuzaur page with that address.
+- A refused action shows its notice again, for example "already in Home" for a link that the card
+  already has. Since 0.9.0, such a refusal was silent.
+
 ## 0.9.4 (2026-11-11)
 
 - Collection tabs have one slope and soft top corners. Each tab lies over the tab on its right, so

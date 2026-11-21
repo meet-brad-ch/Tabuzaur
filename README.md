@@ -9,7 +9,8 @@
 ![Chrome Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-0a8d73)
 
 Tabuzaur is a Chrome extension that keeps the pages you work with as links in cards. You fill a
-card from the tabs that are open, by dragging. Cards sit in collections, and each collection has
+card by dragging: an open tab from the panel, the site icon of the address bar, or a link on a
+page. Cards sit in collections, and each collection has
 its tab at the top of the page. A saved link jumps to its tab when the tab is open, and opens the
 page when it is not. All data stays on your computer: there is no account, no sync and no network
 request.
