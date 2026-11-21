@@ -11,6 +11,8 @@ export interface LinkSource {
 export interface LinkDrag {
   readonly link: Link;
   readonly from?: LinkSource;
+  /** true for an address dropped from outside the page: the address bar's site icon, or a link on a page. */
+  readonly outside?: true;
 }
 
 /**
@@ -24,11 +26,14 @@ export class DragKinds {
   static readonly CARD = "application/x-tabuzaur-card";
   /** A collection, dragged by its tab; the data is the collection id. */
   static readonly COLLECTION = "application/x-tabuzaur-collection";
+  /** An address from outside the page: Chrome's site icon in the address bar, or a link on a page. */
+  static readonly ADDRESS = "text/uri-list";
 
   /**
-   * What a drag carries, from its types (readable during dragover).
+   * What a drag carries, from its types (readable during dragover). An address from outside the
+   * page is a link.
    * @param transfer the event's data transfer, null for synthetic events
-   * @returns the kind, or undefined for a drag from outside the page
+   * @returns the kind, or undefined for a drag that carries none of them (text, a file)
    */
   static kindOf(transfer: DataTransfer | null): DragKind | undefined {
     if (transfer === null) {
@@ -44,7 +49,27 @@ export class DragKinds {
     if (types.includes(DragKinds.COLLECTION)) {
       return "collection";
     }
+    if (types.includes(DragKinds.ADDRESS)) {
+      return "link";
+    }
     return undefined;
+  }
+
+  /**
+   * The drop effect a link drag may have: a saved link moves, an open tab is copied, and an
+   * address from outside the page is copied or linked, as its source allows.
+   * @param transfer the event's data transfer
+   * @returns the drop effect
+   */
+  static linkEffect(transfer: DataTransfer): "move" | "copy" | "link" {
+    const allowed = transfer.effectAllowed;
+    if (allowed === "move") {
+      return "move";
+    }
+    if (allowed === "link") {
+      return "link";
+    }
+    return "copy";
   }
 
   /**
@@ -66,16 +91,65 @@ export class DragKinds {
   }
 
   /**
-   * The link a drop carries.
+   * The link a drop carries: a link of the page, or an address from outside it.
    * @param event the drop event
    * @returns the link drag, or undefined when the drop carries no link
    */
   static readLink(event: DragEvent): LinkDrag | undefined {
-    const raw = event.dataTransfer?.getData(DragKinds.LINK) ?? "";
-    if (raw === "") {
+    const transfer = event.dataTransfer;
+    if (transfer === null) {
       return undefined;
     }
-    return JSON.parse(raw) as LinkDrag;
+    const raw = transfer.getData(DragKinds.LINK);
+    if (raw !== "") {
+      return JSON.parse(raw) as LinkDrag;
+    }
+    return DragKinds.readAddress(transfer);
+  }
+
+  /**
+   * An address dropped from outside the page. Its title is the link text when the drop has one (a
+   * link on a page), else the address; the controller takes the title of an open tab first.
+   * @param transfer the drop's data transfer
+   * @returns the link drag, or undefined when the drop has no address
+   */
+  private static readAddress(transfer: DataTransfer): LinkDrag | undefined {
+    const url = DragKinds.firstAddress(transfer.getData(DragKinds.ADDRESS));
+    if (url === "") {
+      return undefined;
+    }
+    const text = DragKinds.linkText(transfer.getData("text/html"));
+    const title = text === "" ? url : text;
+    return { link: { title, url }, outside: true };
+  }
+
+  /**
+   * The first address of a text/uri-list: lines starting with # are comments.
+   * @param list the list
+   * @returns the address, or an empty string when the list has none
+   */
+  private static firstAddress(list: string): string {
+    for (const line of list.split(/\r?\n/)) {
+      const address = line.trim();
+      if (address !== "" && !address.startsWith("#")) {
+        return address;
+      }
+    }
+    return "";
+  }
+
+  /**
+   * The text of the first link in dropped HTML.
+   * @param html the drop's text/html data, empty when it has none
+   * @returns the link text, trimmed, or an empty string
+   */
+  private static linkText(html: string): string {
+    if (html === "") {
+      return "";
+    }
+    const parsed = new DOMParser().parseFromString(html, "text/html");
+    const text = parsed.querySelector("a")?.textContent ?? "";
+    return text.trim();
   }
 
   /**
@@ -155,5 +229,30 @@ export class DragKinds {
     const box = target.getBoundingClientRect();
     const fromTop = event.clientY - box.top;
     return fromTop > box.height / 2;
+  }
+}
+
+/**
+ * Keeps a drop that no card or tab took from leaving the page. Chrome opens a dropped address or
+ * file in the tab when the page does not take the drop, which would replace Tabuzaur. The guard
+ * listens on the document, after the targets: a drag that no target accepted shows "no drop", and
+ * a drop is always cancelled there.
+ */
+export class DropGuard {
+  /**
+   * Starts listening.
+   * @param page the document of the page
+   */
+  static install(page: Document): void {
+    page.addEventListener("dragover", (event) => {
+      if (event.defaultPrevented || event.dataTransfer === null) {
+        return;
+      }
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "none";
+    });
+    page.addEventListener("drop", (event) => {
+      event.preventDefault();
+    });
   }
 }

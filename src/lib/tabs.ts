@@ -24,6 +24,32 @@ export class OpenTabs {
   }
 
   /**
+   * The link to save for a dropped tab or address: with the title and the icon of the open tab
+   * that shows the address, when there is one. An address dropped from outside the page must be a
+   * web address, so a dropped javascript: or file: link is not saved.
+   * @param tabs the open tabs
+   * @param link the dropped link
+   * @param outside whether it came from outside the page
+   * @returns the link to save
+   * @throws Error "only a web address (http or https) can be saved: <url>" for such an outside drop
+   */
+  static linkFor(tabs: readonly OpenTab[], link: Link, outside: boolean): Link {
+    const web = URL.canParse(link.url) && UrlText.site(link.url) !== undefined;
+    if (outside && !web) {
+      throw new Error(`only a web address (http or https) can be saved: ${link.url}`);
+    }
+    const open = OpenTabs.find(tabs, link.url);
+    if (open === undefined) {
+      return link;
+    }
+    const saved: Link = { title: open.title, url: open.url };
+    if (open.favIconUrl === undefined) {
+      return saved;
+    }
+    return { ...saved, favIconUrl: open.favIconUrl };
+  }
+
+  /**
    * The open tab a click on a saved link goes to: the tab with exactly its address; else, when the
    * link may reuse its site, the last used tab on the same site.
    * @param tabs the open tabs

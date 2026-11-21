@@ -80,7 +80,7 @@ export class CardView {
       section.classList.toggle("insert-after", after);
       return;
     }
-    transfer.dropEffect = transfer.effectAllowed === "move" ? "move" : "copy";
+    transfer.dropEffect = DragKinds.linkEffect(transfer);
     section.classList.add("over");
   }
 

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Library } from "../../src/lib/library.ts";
 import type { Card } from "../../src/lib/model.ts";
 import { CardView } from "../../src/tabs/card-view.ts";
-import { DragKinds } from "../../src/tabs/drag.ts";
+import { DragKinds, DropGuard } from "../../src/tabs/drag.ts";
 import { PageState } from "../../src/tabs/page-state.ts";
 import { CountingIdSource, FixedClock, pageA, pageB } from "../fakes.ts";
 import { DragEvents } from "./drag-events.ts";
@@ -143,6 +143,31 @@ describe("CardView", () => {
     const drag = { link: pageA };
     DragEvents.fire(section, "drop", DragKinds.LINK, JSON.stringify(drag));
     expect(actions.last()).toEqual({ name: "dropLink", args: ["id-2", drag, undefined] });
+  });
+
+  it("takes an address dropped from outside the page, titled by its link text or its address", () => {
+    const section = view.build(card(state, "id-2"), 0);
+    const address = "https://notes.example/release";
+    const over = DragEvents.fireItems(section, "dragover", { "text/uri-list": address }, "link");
+    expect([over.defaultPrevented, over.dataTransfer?.dropEffect]).toEqual([true, "link"]);
+    DragEvents.fireItems(section, "drop", { "text/uri-list": `# a comment\r\n${address}`, "text/html": `<a href="${address}"> Release notes </a>` }, "copyLink");
+    expect(actions.last()).toEqual({ name: "dropLink", args: ["id-2", { link: { title: "Release notes", url: address }, outside: true }, undefined] });
+    DragEvents.fireItems(section, "drop", { "text/uri-list": address }, "copyLink");
+    expect(actions.last().args[1]).toEqual({ link: { title: address, url: address }, outside: true });
+    DragEvents.fireItems(section, "drop", { "text/plain": "just text" }, "copy");
+    expect(actions.names()).toEqual(["dropLink", "dropLink"]);
+  });
+
+  it("guards the page: a drag no target took shows no drop, and every drop is cancelled", () => {
+    DropGuard.install(document);
+    const empty = document.createElement("div");
+    document.body.append(empty);
+    const over = DragEvents.fireItems(empty, "dragover", { "text/uri-list": "https://a.example/" }, "copyLink");
+    expect([over.defaultPrevented, over.dataTransfer?.dropEffect]).toEqual([true, "none"]);
+    const drop = DragEvents.fireItems(empty, "drop", { "text/uri-list": "https://a.example/" }, "copyLink");
+    expect(drop.defaultPrevented).toBe(true);
+    expect(actions.calls).toEqual([]);
+    empty.remove();
   });
 
   it("takes a link dropped on a row before that row", () => {

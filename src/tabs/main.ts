@@ -2,6 +2,7 @@ import { RandomIdSource, SystemClock } from "../lib/model.ts";
 import { SettingsStore } from "../lib/settings.ts";
 import { LibraryStore } from "../lib/storage.ts";
 import { ChromeTabBrowser } from "../lib/tabs.ts";
+import { DropGuard } from "./drag.ts";
 import { PageController } from "./page-controller.ts";
 import { PageState } from "./page-state.ts";
 
@@ -16,6 +17,7 @@ class TabsApp {
     if (root === null) {
       throw new Error("tabs.html has no #app element");
     }
+    DropGuard.install(document);
     const area = chrome.storage.local;
     const state = new PageState(chrome.runtime.getURL("tabs.html"));
     const controller = new PageController(state, {

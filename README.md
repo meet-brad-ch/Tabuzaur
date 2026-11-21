@@ -58,6 +58,11 @@ To update: unzip the new release over the same folder, then click the reload ico
   adds the card to the open collection and gives it its own color. The card keeps that color.
 - **Add a link.** Drag a tab from the panel onto a card. The tab stays open. Tabuzaur refuses a link
   that is already in that card, with a notice.
+- **Add from outside.** Drag the site icon at the left of Chrome's address bar, or a link on any
+  page, onto a card. To reach the Tabuzaur tab, hold the drag on its tab in the tab strip for a
+  moment. When the page is open in a tab, the link takes that tab's title and icon. Otherwise it
+  takes the link text, or the address. Tabuzaur saves only web addresses (http and https). The tab
+  strip itself gives no drag to a page: drag the site icon instead.
 - **Open a link.** Click the link row. Tabuzaur jumps to the open tab with that address. When only
   another page of the same site is open, it jumps to the tab you used last on that site and leaves
   its page as it is. Otherwise it opens the page in a new tab.

@@ -19,6 +19,30 @@ describe("OpenTabs.find", () => {
   });
 });
 
+describe("OpenTabs.linkFor", () => {
+  const withIcon: OpenTab = { ...second, favIconUrl: "https://b.example/icon.png" };
+
+  it("takes the title and the icon of the open tab with that address, and nothing else of the tab", () => {
+    expect(OpenTabs.linkFor([first, withIcon], { title: "https://b.example/x?y=1", url: withIcon.url }, true))
+      .toEqual({ title: "B", url: withIcon.url, favIconUrl: "https://b.example/icon.png" });
+    expect(OpenTabs.linkFor([first], { title: "A", url: first.url }, false)).toEqual({ title: "A", url: first.url });
+  });
+
+  it("keeps the dropped link when no tab shows it", () => {
+    const link = { title: "Notes", url: "https://notes.example/" };
+    expect(OpenTabs.linkFor([first], link, true)).toBe(link);
+  });
+
+  it("saves only a web address dropped from outside the page; a tab from the panel may be any page", () => {
+    expect(() => OpenTabs.linkFor([], { title: "x", url: "javascript:alert(1)" }, true))
+      .toThrow("only a web address (http or https) can be saved: javascript:alert(1)");
+    expect(() => OpenTabs.linkFor([], { title: "x", url: "not an address" }, true))
+      .toThrow("only a web address (http or https) can be saved: not an address");
+    const settings = { title: "Settings", url: "chrome://settings/" };
+    expect(OpenTabs.linkFor([], settings, false)).toBe(settings);
+  });
+});
+
 describe("OpenTabs.forLink", () => {
   const mailOld: OpenTab = { tabId: 11, windowId: 10, active: false, lastAccessed: 100, title: "Mail", url: "https://mail.example/u/0/#inbox" };
   const mailNew: OpenTab = { tabId: 12, windowId: 20, active: false, lastAccessed: 200, title: "Mail", url: "https://mail.example/u/1/#inbox" };

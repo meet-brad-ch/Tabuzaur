@@ -246,6 +246,44 @@ async function reuseSite(page, harness) {
   Check.equal("then a click opens a new tab", await page.value(`tabCalls`), ["create https://docs.example-team.com/d/review-notes"]);
 }
 
+/** An address dropped from outside the page (a link on a page, or the address bar's site icon) becomes a link. */
+async function outsideDrop(page, harness) {
+  await page.open(`${harness}#page`);
+  const drop = (items) => page.value(`(() => {
+    const home = [...document.querySelectorAll("main .card")].find((c) => c.querySelector("header .name").textContent === "Home");
+    const dt = new DataTransfer();
+    for (const [type, data] of Object.entries(${JSON.stringify(items)})) { dt.setData(type, data); }
+    dt.effectAllowed = "copyLink";
+    const over = new DragEvent("dragover", { dataTransfer: dt, bubbles: true, cancelable: true });
+    home.dispatchEvent(over);
+    home.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }));
+    return over.defaultPrevented;
+  })()`);
+  const homeLinks = `store.tabuzaur.collections[0].cards[3].links.map((l) => l.title + " " + l.url)`;
+  Check.equal("a card takes a link from a page", await drop({ "text/uri-list": "https://notes.example/release", "text/html": "<a href='https://notes.example/release'>Release notes</a>" }), true);
+  await Check.sleep(400);
+  Check.equal("it is saved with its link text", await page.value(homeLinks), ["Release notes https://notes.example/release"]);
+  await drop({ "text/uri-list": "https://weather.example.com/lisbon" });
+  await Check.sleep(400);
+  Check.equal("an open page takes the title of its tab", (await page.value(homeLinks))[1], "Lisbon weather in October https://weather.example.com/lisbon");
+  await drop({ "text/uri-list": "https://notes.example/release" });
+  await Check.sleep(400);
+  Check.equal("the same address again is refused with a notice", [await page.value(`document.querySelector(".notice").textContent`), (await page.value(homeLinks)).length],
+    ["already in Home", 2]);
+  await drop({ "text/uri-list": "javascript:alert(1)" });
+  await Check.sleep(400);
+  Check.equal("a script address is refused", [await page.value(`document.querySelector(".notice").textContent`), (await page.value(homeLinks)).length],
+    ["only a web address (http or https) can be saved: javascript:alert(1)", 2]);
+  const guarded = await page.value(`(() => {
+    const dt = new DataTransfer();
+    dt.setData("text/uri-list", "https://elsewhere.example/");
+    const over = new DragEvent("dragover", { dataTransfer: dt, bubbles: true, cancelable: true });
+    document.querySelector("header.top").dispatchEvent(over);
+    return [over.defaultPrevented, dt.dropEffect];
+  })()`);
+  Check.equal("a drop outside the cards is refused, so the page stays", guarded, [true, "none"]);
+}
+
 async function main() {
   if (!existsSync(join(dist, "tabs.js"))) {
     throw new Error("dist/tabs.js is missing: run `npm run build` first");
@@ -277,6 +315,7 @@ async function main() {
     await reorderAndDelete(page);
     await springOpen(page, harness);
     await reuseSite(page, harness);
+    await outsideDrop(page, harness);
     socket.close();
   } finally {
     chrome.kill();

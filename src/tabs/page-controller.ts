@@ -4,6 +4,7 @@ import { Library } from "../lib/library.ts";
 import type { Clock, IdSource, Link } from "../lib/model.ts";
 import type { CardWidth, Settings, SettingsStore } from "../lib/settings.ts";
 import type { Persistence } from "../lib/storage.ts";
+import { OpenTabs } from "../lib/tabs.ts";
 import type { OpenTab, TabBrowser } from "../lib/tabs.ts";
 import { Dom } from "./dom.ts";
 import type { LinkDrag, LinkSource } from "./drag.ts";
@@ -307,7 +308,8 @@ export class PageController implements PageActions {
     if (drag.from !== undefined) {
       return library.moveLink(drag.from.cardId, drag.from.index, cardId, to);
     }
-    return library.addLink(cardId, drag.link, to);
+    const link = OpenTabs.linkFor(this.state.openTabs, drag.link, drag.outside === true);
+    return library.addLink(cardId, link, to);
   }
 
   /**
@@ -367,11 +369,16 @@ export class PageController implements PageActions {
 
   /**
    * Runs an action, then rebuilds a region; a failure rebuilds too and shows in the notice strip.
+   * The action starts at once, inside a promise: a rule that throws before the action returns its
+   * promise (a link already in the card) is a failure like any other, not a lost exception.
    * @param action the work
    * @param region what to rebuild afterwards
    */
   private run(action: () => Promise<void>, region: Region): void {
-    action().then(
+    const work = new Promise<void>((resolve) => {
+      resolve(action());
+    });
+    work.then(
       () => {
         this.redraw(region);
       },

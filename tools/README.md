@@ -11,7 +11,8 @@ Pillow). Run `npm run build` and then `npm run shots`.
 `check.mjs` drives the built page through the harness over the Chrome DevTools protocol and checks
 what the unit tests on happy-dom cannot: real drag events, the focus, the fake storage after each
 action, the upgrade of an old document, the tab that opens when a drag rests on it, and the tab a click on a link
-reaches with and without reuse of its site. It prints one line per check and fails when one fails.
+reaches with and without reuse of its site, and an address dropped from outside the page. It prints
+one line per check and fails when one fails.
 Run `npm run build` and then `npm run check:page`.
 
 `changelog-section.mjs <version>` prints the section of one version from `CHANGELOG.md`, one line
